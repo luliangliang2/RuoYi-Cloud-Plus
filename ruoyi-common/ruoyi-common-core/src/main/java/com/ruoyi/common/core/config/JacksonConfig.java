@@ -45,15 +45,6 @@ public class JacksonConfig {
         objectMapper.registerModule(simpleModule);
         objectMapper.setTimeZone(TimeZone.getDefault());
 
-        //忽略未知
-//        objectMapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-//        //缩进输出
-//        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false);
-//        //在未知属性上失败
-//        //objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
-//        //忽略大小写
-//        objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
-
         return objectMapper;
     }
 
