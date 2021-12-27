@@ -1,17 +1,15 @@
 package com.ruoyi.common.core.config;
 
-import cn.hutool.core.date.DatePattern;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.ruoyi.common.core.jackson.BigNumberSerializer;
-import com.ruoyi.common.core.jackson.JavaTimeModule;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -19,8 +17,8 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.ZoneId;
-import java.util.Locale;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 /**
@@ -30,36 +28,31 @@ import java.util.TimeZone;
 @ConditionalOnClass(ObjectMapper.class)
 @AutoConfigureBefore(JacksonAutoConfiguration.class)
 public class JacksonConfig {
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer customizer() {
-        return builder -> {
-            JavaTimeModule javaTimeModule = new JavaTimeModule();
-            javaTimeModule.addSerializer(Long.class, BigNumberSerializer.INSTANCE);
-            javaTimeModule.addSerializer(Long.TYPE, BigNumberSerializer.INSTANCE);
-            javaTimeModule.addSerializer(BigInteger.class, BigNumberSerializer.INSTANCE);
-            javaTimeModule.addSerializer(BigDecimal.class, ToStringSerializer.instance);
-
-            builder.locale(Locale.CHINA);
-            builder.timeZone(TimeZone.getTimeZone(ZoneId.systemDefault()));
-            builder.simpleDateFormat(DatePattern.NORM_DATETIME_PATTERN);
-            builder.modules(javaTimeModule);
-        };
-    }
 
     @Primary
     @Bean
-    public ObjectMapper getObjectMapper(Jackson2ObjectMapperBuilder builder) {
+    public ObjectMapper getObjectMapper(Jackson2ObjectMapperBuilder builder, JacksonProperties jacksonProperties) {
         ObjectMapper objectMapper = builder.createXmlMapper(false).build();
         // 全局配置序列化返回 JSON 处理
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(Long.class, BigNumberSerializer.INSTANCE);
+        simpleModule.addSerializer(Long.TYPE, BigNumberSerializer.INSTANCE);
+        simpleModule.addSerializer(BigInteger.class, BigNumberSerializer.INSTANCE);
+        simpleModule.addSerializer(BigDecimal.class, ToStringSerializer.instance);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(jacksonProperties.getDateFormat());
+        simpleModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(formatter));
+        simpleModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(formatter));
+        objectMapper.registerModule(simpleModule);
+        objectMapper.setTimeZone(TimeZone.getDefault());
 
         //忽略未知
-        objectMapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-        //缩进输出
-        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false);
-        //在未知属性上失败
-        //objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
-        //忽略大小写
-        objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+//        objectMapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
+//        //缩进输出
+//        objectMapper.configure(SerializationFeature.INDENT_OUTPUT, false);
+//        //在未知属性上失败
+//        //objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+//        //忽略大小写
+//        objectMapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
 
         return objectMapper;
     }
