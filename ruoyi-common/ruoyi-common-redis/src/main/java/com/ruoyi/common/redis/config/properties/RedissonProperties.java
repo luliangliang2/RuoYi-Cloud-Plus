@@ -1,4 +1,4 @@
-package com.ruoyi.common.redis.configure;
+package com.ruoyi.common.redis.config.properties;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
