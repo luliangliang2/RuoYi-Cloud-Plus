@@ -9,8 +9,7 @@ import com.ruoyi.common.core.utils.ServletUtils;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.gateway.config.properties.IgnoreWhiteProperties;
-import io.jsonwebtoken.Claims;
-import org.slf4j.Logger;
+import io.jsonwebtoken.Claims;import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -19,7 +18,7 @@ import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
+import io.jsonwebtoken.Claims;import reactor.core.publisher.Mono;
 
 /**
  * 网关鉴权
@@ -34,7 +33,6 @@ public class AuthFilter implements GlobalFilter, Ordered
     // 排除过滤的 uri 地址，nacos自行添加
     @Autowired
     private IgnoreWhiteProperties ignoreWhite;
-
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain)
@@ -53,7 +51,7 @@ public class AuthFilter implements GlobalFilter, Ordered
         {
             return unauthorizedResponse(exchange, "令牌不能为空");
         }
-        Claims claims = JwtUtils.parseToken(token);
+        JSONObject claims = JwtUtils.parseToken(token);
         if (claims == null)
         {
             return unauthorizedResponse(exchange, "令牌已过期或验证不正确！");
