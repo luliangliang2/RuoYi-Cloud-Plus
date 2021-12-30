@@ -59,9 +59,7 @@ redisson:
     subscriptionsPerConnection: 5
     # DNS监测时间间隔，单位：毫秒
     dnsMonitoringInterval: 5000
-
---- # redisson 缓存配置
-redisson:
+  # redisson 缓存配置
   cacheGroup:
     # 用例: @Cacheable(cacheNames="groupId", key="#XXX") 方可使用缓存组配置
     - groupId: redissonCacheMap
