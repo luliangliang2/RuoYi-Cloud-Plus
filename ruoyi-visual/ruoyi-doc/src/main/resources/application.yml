@@ -4,35 +4,21 @@ server:
 # knife4j聚合配置
 knife4j:
   enableAggregation: true
-  # nacos模式
-  nacos:
+  # cloud模式
+  cloud:
     # 是否启用
     enable: true
-    # nacos地址
-    serviceUrl: http://${nacos.server}/nacos/
     # 需要聚合的服务集合
     routes:
-      # 服务名称(显示名称，最终在Ui的左上角下拉框进行显示)
-      #- name: 代码生成
-      #  # nacos注册中心的服务名称
-      # serviceName: ruoyi-gen
-      # # nacos分组名称
-      # # groupName: @nacos.config.group@
-      # # 命名空间id
-      # namespaceId: @profiles.active@
-      # # 具体资源接口地址
-      # location: /v2/api-docs
-      # # 最终在Ui中展示的接口前缀属性-仅是展示
-      # servicePath: /code
+        # 服务名称(显示名称，最终在Ui的左上角下拉框进行显示)
       - name: 代码生成
-        serviceName: ruoyi-gen
-        groupName: @nacos.config.group@
-        namespaceId: @profiles.active@
-        location: /v2/api-docs
-        servicePath: /code
+        # 服务的接口URI资源
+        uri: @gateway.uri@
+        # 具体资源接口地址
+        location: /code/v2/api-docs
+
       - name: 系统服务
-        serviceName: ruoyi-system
-        groupName: @nacos.config.group@
-        namespaceId: @profiles.active@
-        location: /v2/api-docs
-        servicePath: /system
+        # 服务的接口URI资源
+        uri: @gateway.uri@
+        # 具体资源接口地址
+        location: /system/v2/api-docs
