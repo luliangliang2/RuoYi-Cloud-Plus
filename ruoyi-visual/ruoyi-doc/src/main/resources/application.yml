@@ -1,0 +1,24 @@
+server:
+  port: 18000
+
+# knife4j聚合配置
+knife4j:
+  enableAggregation: true
+  # cloud模式
+  cloud:
+    # 是否启用
+    enable: true
+    # 需要聚合的服务集合
+    routes:
+        # 服务名称(显示名称，最终在Ui的左上角下拉框进行显示)
+      - name: 代码生成
+        # 服务的接口URI资源
+        uri: @gateway.uri@
+        # 具体资源接口地址
+        location: /code/v2/api-docs
+
+      - name: 系统服务
+        # 服务的接口URI资源
+        uri: @gateway.uri@
+        # 具体资源接口地址
+        location: /system/v2/api-docs
