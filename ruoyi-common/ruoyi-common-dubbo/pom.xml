@@ -47,5 +47,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+        <!-- Sa-Token 整合 Dubbo -->
+        <dependency>
+            <groupId>cn.dev33</groupId>
+            <artifactId>sa-token-context-dubbo</artifactId>
+            <version>1.28.0</version>
+        </dependency>
     </dependencies>
 </project>
