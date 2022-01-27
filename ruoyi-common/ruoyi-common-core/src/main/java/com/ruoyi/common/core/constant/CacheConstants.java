@@ -10,17 +10,17 @@ public interface CacheConstants {
     /**
      * 登录用户 redis key
      */
-    public static final String LOGIN_TOKEN_KEY = "Authorization:login:token:";
+    String LOGIN_TOKEN_KEY = "Authorization:login:token:";
 
     /**
      * 在线用户 redis key
      */
-    public static final String ONLINE_TOKEN_KEY = "online_tokens:";
+    String ONLINE_TOKEN_KEY = "online_tokens:";
 
     /**
      * loginid构造拼接字符串
      */
-    public static final String LOGINID_JOIN_CODE = ":";
+    String LOGINID_JOIN_CODE = ":";
 
     /**
      * 登陆错误 redis key

@@ -5,24 +5,19 @@ import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.ruoyi.gateway.config.properties.IgnoreWhiteProperties;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * [Sa-Token 权限认证] 配置类
- * @author kong
+ * @author Lion Li
  */
 @Configuration
-public class SaTokenConfigure {
-
-    // 排除过滤的 uri 地址，nacos自行添加
-    @Autowired
-    private IgnoreWhiteProperties ignoreWhite;
+public class SaTokenConfiguration {
 
     // 注册 Sa-Token全局过滤器
     @Bean
-    public SaReactorFilter getSaReactorFilter() {
+    public SaReactorFilter getSaReactorFilter(IgnoreWhiteProperties ignoreWhite) {
         return new SaReactorFilter()
             // 拦截地址
             .addInclude("/**")
