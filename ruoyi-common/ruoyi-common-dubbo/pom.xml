@@ -51,7 +51,7 @@
         <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-context-dubbo</artifactId>
-            <version>1.28.0</version>
+            <version>${satoken.version}</version>
         </dependency>
     </dependencies>
 </project>
