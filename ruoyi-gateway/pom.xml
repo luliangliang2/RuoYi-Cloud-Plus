@@ -63,11 +63,32 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-captcha</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-http</artifactId>
+        </dependency>
+
         <!-- Sa-Token 权限认证（Reactor响应式集成）, 在线文档：http://sa-token.dev33.cn/ -->
         <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-reactor-spring-boot-starter</artifactId>
             <version>${satoken.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-common-security</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>cn.dev33</groupId>
+                    <artifactId>sa-token-spring-boot-starter</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- RuoYi Common Redis-->
@@ -82,15 +103,6 @@
 <!--            <artifactId>ruoyi-common-loadbalancer</artifactId>-->
 <!--        </dependency>-->
 
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-captcha</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-http</artifactId>
-        </dependency>
 
     </dependencies>
 

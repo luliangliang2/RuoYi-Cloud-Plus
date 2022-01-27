@@ -29,12 +29,12 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     private final ISysPermissionService permissionService;
     private final ISysConfigService configService;
 
-    @Override
-    public LoginUser getUserInfo(String username) {
-        SysUser sysUser = userService.selectUserByUserName(username);
-        if (ObjectUtil.isNull(sysUser)) {
-            throw new ServiceException("用户名或密码错误");
-        }
+    /**
+     * 根据sysuser构造LoginUser
+     * @param sysUser
+     * @return
+     */
+    private LoginUser buildLoginUser(SysUser sysUser) {
         // 角色集合
         Set<String> roles = permissionService.getRolePermission(sysUser.getUserId());
         // 权限集合
@@ -48,6 +48,24 @@ public class RemoteUserServiceImpl implements RemoteUserService {
         sysUserVo.setRoles(roles);
         sysUserVo.setPermissions(permissions);
         return sysUserVo;
+    }
+
+    @Override
+    public LoginUser getUserInfo(String username) {
+        SysUser sysUser = userService.selectUserByUserName(username);
+        if (ObjectUtil.isNull(sysUser)) {
+            throw new ServiceException("用户名或密码错误");
+        }
+        return buildLoginUser(sysUser);
+    }
+
+    @Override
+    public LoginUser getUserInfoByUserId(Long userId) {
+        SysUser sysUser = userService.selectUserById(userId);
+        if (ObjectUtil.isNull(sysUser)) {
+            throw new ServiceException("用户名或密码错误");
+        }
+        return buildLoginUser(sysUser);
     }
 
     @Override

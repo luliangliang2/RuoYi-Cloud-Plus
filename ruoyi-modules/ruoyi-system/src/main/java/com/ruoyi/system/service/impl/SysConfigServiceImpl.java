@@ -4,6 +4,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ruoyi.common.core.constant.CacheConstants;
 import com.ruoyi.common.core.constant.Constants;
 import com.ruoyi.common.core.constant.UserConstants;
 import com.ruoyi.common.core.exception.ServiceException;
@@ -169,7 +170,7 @@ public class SysConfigServiceImpl implements ISysConfigService {
      */
     @Override
     public void clearConfigCache() {
-        Collection<String> keys = RedisUtils.keys(Constants.SYS_CONFIG_KEY + "*");
+        Collection<String> keys = RedisUtils.keys(CacheConstants.SYS_CONFIG_KEY + "*");
         RedisUtils.deleteObject(keys);
     }
 
@@ -205,6 +206,6 @@ public class SysConfigServiceImpl implements ISysConfigService {
      * @return 缓存键key
      */
     private String getCacheKey(String configKey) {
-        return Constants.SYS_CONFIG_KEY + configKey;
+        return CacheConstants.SYS_CONFIG_KEY + configKey;
     }
 }

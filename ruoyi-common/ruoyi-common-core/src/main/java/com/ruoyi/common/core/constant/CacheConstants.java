@@ -6,18 +6,36 @@ package com.ruoyi.common.core.constant;
  * @author Lion Li
  */
 public interface CacheConstants {
-    /**
-     * 缓存有效期，默认720（分钟）
-     */
-    long EXPIRATION = 720;
 
     /**
-     * 缓存刷新时间，默认120（分钟）
+     * 验证码 redis key
      */
-    long REFRESH_TIME = 120;
+    public static final String CAPTCHA_CODE_KEY = "captcha_codes:";
 
     /**
-     * 权限缓存前缀
+     * 验证码有效期（分钟）
      */
-    String LOGIN_TOKEN_KEY = "login_tokens:";
+    public static final long CAPTCHA_EXPIRATION = 2;
+
+
+    /**
+     * 参数管理 cache key
+     */
+    public static final String SYS_CONFIG_KEY = "sys_config:";
+
+    /**
+     * 字典管理 cache key
+     */
+    public static final String SYS_DICT_KEY = "sys_dict:";
+
+    /**
+     * 登录用户 redis key
+     */
+    public static final String LOGIN_TOKEN_KEY = "Authorization:login:token:";
+
+    /**
+     * 在线用户 redis key
+     */
+    public static final String ONLINE_TOKEN_KEY = "online_tokens:";
+
 }

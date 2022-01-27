@@ -19,6 +19,14 @@ public interface RemoteUserService {
     LoginUser getUserInfo(String username);
 
     /**
+     * 通过用户名查询用户信息
+     *
+     * @param userId 用户id
+     * @return 结果
+     */
+    LoginUser getUserInfoByUserId(Long userId);
+
+    /**
      * 注册用户信息
      *
      * @param sysUser 用户信息

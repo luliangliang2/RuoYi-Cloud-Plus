@@ -7,7 +7,6 @@ import com.ruoyi.common.core.web.controller.BaseController;
 import com.ruoyi.common.core.web.domain.AjaxResult;
 import com.ruoyi.common.log.annotation.Log;
 import com.ruoyi.common.log.enums.BusinessType;
-import com.ruoyi.common.security.service.TokenService;
 import com.ruoyi.common.security.utils.LoginHelper;
 import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.file.api.RemoteFileService;
@@ -33,7 +32,6 @@ import java.io.IOException;
 public class SysProfileController extends BaseController {
 
     private final ISysUserService userService;
-    private final TokenService tokenService;
 
     @DubboReference
     private RemoteFileService remoteFileService;
@@ -71,11 +69,11 @@ public class SysProfileController extends BaseController {
         user.setPassword(null);
         if (userService.updateUserProfile(user) > 0) {
             // 更新缓存用户信息
-            loginUser.getSysUser().setNickName(user.getNickName());
-            loginUser.getSysUser().setPhonenumber(user.getPhonenumber());
-            loginUser.getSysUser().setEmail(user.getEmail());
-            loginUser.getSysUser().setSex(user.getSex());
-            tokenService.setLoginUser(loginUser);
+//            loginUser.getSysUser().setNickName(user.getNickName());
+//            loginUser.getSysUser().setPhonenumber(user.getPhonenumber());
+//            loginUser.getSysUser().setEmail(user.getEmail());
+//            loginUser.getSysUser().setSex(user.getSex());
+//            tokenService.setLoginUser(loginUser);
             return AjaxResult.success();
         }
         return AjaxResult.error("修改个人信息异常，请联系管理员");
@@ -98,10 +96,10 @@ public class SysProfileController extends BaseController {
         }
         if (userService.resetUserPwd(username, SecurityUtils.encryptPassword(newPassword)) > 0) {
             // 更新缓存用户密码
-            LoginUser loginUser = LoginHelper.getLoginUser();
-            loginUser.getSysUser().setPassword(SecurityUtils.encryptPassword(newPassword));
-            tokenService.setLoginUser(loginUser);
-            return AjaxResult.success();
+//            LoginUser loginUser = LoginHelper.getLoginUser();
+//            loginUser.getSysUser().setPassword(SecurityUtils.encryptPassword(newPassword));
+//            tokenService.setLoginUser(loginUser);
+//            return AjaxResult.success();
         }
         return AjaxResult.error("修改密码异常，请联系管理员");
     }
@@ -127,8 +125,8 @@ public class SysProfileController extends BaseController {
                 AjaxResult ajax = AjaxResult.success();
                 ajax.put("imgUrl", url);
                 // 更新缓存用户头像
-                loginUser.getSysUser().setAvatar(url);
-                tokenService.setLoginUser(loginUser);
+//                loginUser.getSysUser().setAvatar(url);
+//                tokenService.setLoginUser(loginUser);
                 return ajax;
             }
         }

@@ -1,9 +1,11 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.system.api.domain;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
  * 当前在线会话
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @ApiModel("当前在线会话业务对象")
-public class SysUserOnline {
+public class SysUserOnline implements Serializable {
 
     /**
      * 会话编号

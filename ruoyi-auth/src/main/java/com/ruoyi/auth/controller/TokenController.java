@@ -2,13 +2,11 @@ package com.ruoyi.auth.controller;
 
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.auth.form.LoginBody;
 import com.ruoyi.auth.form.RegisterBody;
 import com.ruoyi.auth.service.SysLoginService;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.enums.DeviceType;
-import com.ruoyi.common.security.service.TokenService;
 import com.ruoyi.common.security.utils.LoginHelper;
 import com.ruoyi.system.api.model.LoginUser;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +28,6 @@ import java.util.Map;
 @RestController
 public class TokenController {
 
-    private final TokenService tokenService;
     private final SysLoginService sysLoginService;
 
     @PostMapping("login")
@@ -65,12 +62,12 @@ public class TokenController {
 
     @PostMapping("refresh")
     public R<?> refresh(HttpServletRequest request) {
-        LoginUser loginUser = tokenService.getLoginUser(request);
-        if (ObjectUtil.isNotNull(loginUser)) {
-            // 刷新令牌有效期
-            tokenService.refreshToken(loginUser);
-            return R.ok();
-        }
+//        LoginUser loginUser = tokenService.getLoginUser(request);
+//        if (ObjectUtil.isNotNull(loginUser)) {
+//            // 刷新令牌有效期
+//            tokenService.refreshToken(loginUser);
+//            return R.ok();
+//        }
         return R.ok();
     }
 

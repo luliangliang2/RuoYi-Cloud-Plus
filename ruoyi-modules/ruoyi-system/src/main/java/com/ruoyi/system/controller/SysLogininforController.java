@@ -8,7 +8,6 @@ import com.ruoyi.common.log.annotation.Log;
 import com.ruoyi.common.log.enums.BusinessType;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
-import com.ruoyi.common.security.annotation.InnerAuth;
 import com.ruoyi.system.api.domain.SysLogininfor;
 import com.ruoyi.system.service.ISysLogininforService;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +57,7 @@ public class SysLogininforController extends BaseController {
         return AjaxResult.success();
     }
 
-    @InnerAuth
+//    @InnerAuth
     @PostMapping
     public AjaxResult add(@RequestBody SysLogininfor logininfor) {
         return toAjax(logininforService.insertLogininfor(logininfor));

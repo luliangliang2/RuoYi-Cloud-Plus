@@ -40,13 +40,13 @@ public class SysLoginService {
         }
         // 密码如果不在指定范围内 错误
         if (password.length() < UserConstants.PASSWORD_MIN_LENGTH
-                || password.length() > UserConstants.PASSWORD_MAX_LENGTH) {
+            || password.length() > UserConstants.PASSWORD_MAX_LENGTH) {
             recordLogininfor(username, Constants.LOGIN_FAIL, "用户密码不在指定范围");
             throw new ServiceException("用户密码不在指定范围");
         }
         // 用户名不在指定范围内 错误
         if (username.length() < UserConstants.USERNAME_MIN_LENGTH
-                || username.length() > UserConstants.USERNAME_MAX_LENGTH) {
+            || username.length() > UserConstants.USERNAME_MAX_LENGTH) {
             recordLogininfor(username, Constants.LOGIN_FAIL, "用户名不在指定范围");
             throw new ServiceException("用户名不在指定范围");
         }
@@ -87,11 +87,11 @@ public class SysLoginService {
             throw new ServiceException("用户/密码必须填写");
         }
         if (username.length() < UserConstants.USERNAME_MIN_LENGTH
-                || username.length() > UserConstants.USERNAME_MAX_LENGTH) {
+            || username.length() > UserConstants.USERNAME_MAX_LENGTH) {
             throw new ServiceException("账户长度必须在2到20个字符之间");
         }
         if (password.length() < UserConstants.PASSWORD_MIN_LENGTH
-                || password.length() > UserConstants.PASSWORD_MAX_LENGTH) {
+            || password.length() > UserConstants.PASSWORD_MAX_LENGTH) {
             throw new ServiceException("密码长度必须在5到20个字符之间");
         }
 
