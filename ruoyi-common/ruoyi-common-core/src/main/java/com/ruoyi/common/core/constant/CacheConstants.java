@@ -8,27 +8,6 @@ package com.ruoyi.common.core.constant;
 public interface CacheConstants {
 
     /**
-     * 验证码 redis key
-     */
-    public static final String CAPTCHA_CODE_KEY = "captcha_codes:";
-
-    /**
-     * 验证码有效期（分钟）
-     */
-    public static final long CAPTCHA_EXPIRATION = 2;
-
-
-    /**
-     * 参数管理 cache key
-     */
-    public static final String SYS_CONFIG_KEY = "sys_config:";
-
-    /**
-     * 字典管理 cache key
-     */
-    public static final String SYS_DICT_KEY = "sys_dict:";
-
-    /**
      * 登录用户 redis key
      */
     public static final String LOGIN_TOKEN_KEY = "Authorization:login:token:";
@@ -42,5 +21,20 @@ public interface CacheConstants {
      * loginid构造拼接字符串
      */
     public static final String LOGINID_JOIN_CODE = ":";
+
+    /**
+     * 登陆错误 redis key
+     */
+    String LOGIN_ERROR = "login_error:";
+
+    /**
+     * 登录错误次数
+     */
+    Integer LOGIN_ERROR_NUMBER = 5;
+
+    /**
+     * 登录错误限制时间(分钟)
+     */
+    Integer LOGIN_ERROR_LIMIT_TIME = 10;
 
 }

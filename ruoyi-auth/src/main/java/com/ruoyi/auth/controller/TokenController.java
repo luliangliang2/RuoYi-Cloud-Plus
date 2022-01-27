@@ -54,8 +54,6 @@ public class TokenController {
 //            String username = JwtUtils.getUserName(token);
 //            // 删除用户缓存记录
 //            AuthUtil.logoutByToken(token);
-//            // 记录用户退出日志
-//            sysLoginService.logout(username);
 //        }
         return R.ok();
     }

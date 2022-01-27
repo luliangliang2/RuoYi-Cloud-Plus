@@ -1,12 +1,14 @@
 package com.ruoyi.auth.service;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.ruoyi.common.core.constant.CacheConstants;
 import com.ruoyi.common.core.constant.Constants;
 import com.ruoyi.common.core.constant.UserConstants;
 import com.ruoyi.common.core.enums.UserStatus;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.core.utils.ServletUtils;
 import com.ruoyi.common.core.utils.StringUtils;
+import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.system.api.RemoteLogService;
 import com.ruoyi.system.api.RemoteUserService;
@@ -15,6 +17,8 @@ import com.ruoyi.system.api.domain.SysUser;
 import com.ruoyi.system.api.model.LoginUser;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 登录校验方法
@@ -66,10 +70,36 @@ public class SysLoginService {
             recordLogininfor(username, Constants.LOGIN_FAIL, "用户已停用，请联系管理员");
             throw new ServiceException("对不起，您的账号：" + username + " 已停用");
         }
-        if (!SecurityUtils.matchesPassword(password, user.getPassword())) {
-            recordLogininfor(username, Constants.LOGIN_FAIL, "用户密码错误");
-            throw new ServiceException("用户不存在/密码错误");
+
+        // 获取用户登录错误次数(可自定义限制策略 例如: key + username + ip)
+        Integer errorNumber = RedisUtils.getCacheObject(CacheConstants.LOGIN_ERROR + username);
+        // 锁定时间内登录 则踢出
+        if (ObjectUtil.isNotNull(errorNumber) && errorNumber.equals(CacheConstants.LOGIN_ERROR_NUMBER)) {
+            String msg = "密码错误次数过多，帐户锁定" + CacheConstants.LOGIN_ERROR_LIMIT_TIME + "分钟";
+            recordLogininfor(username, Constants.LOGIN_FAIL, msg);
+            throw new ServiceException(msg, null);
         }
+
+        if (!SecurityUtils.matchesPassword(password, user.getPassword())) {
+            // 是否第一次
+            errorNumber = ObjectUtil.isNull(errorNumber) ? 1 : errorNumber + 1;
+            // 达到规定错误次数 则锁定登录
+            if (errorNumber.equals(CacheConstants.LOGIN_ERROR_NUMBER)) {
+                String msg = "密码错误次数过多，帐户锁定" + CacheConstants.LOGIN_ERROR_LIMIT_TIME + "分钟";
+                RedisUtils.setCacheObject(CacheConstants.LOGIN_ERROR + username, errorNumber, CacheConstants.LOGIN_ERROR_LIMIT_TIME, TimeUnit.MINUTES);
+                recordLogininfor(username, Constants.LOGIN_FAIL, msg);
+                throw new ServiceException(msg, null);
+            } else {
+                // 未达到规定错误次数 则递增
+                String msg = "密码输入错误" + errorNumber + "次";
+                RedisUtils.setCacheObject(CacheConstants.LOGIN_ERROR + username, errorNumber);
+                recordLogininfor(username, Constants.LOGIN_FAIL, msg);
+                throw new ServiceException(msg, null);
+            }
+            //throw new ServiceException("用户不存在/密码错误");
+        }
+        // 登录成功 清空错误次数
+        RedisUtils.deleteObject(CacheConstants.LOGIN_ERROR + username);
         recordLogininfor(username, Constants.LOGIN_SUCCESS, "登录成功");
         return userInfo;
     }
