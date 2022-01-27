@@ -8,7 +8,6 @@ import com.ruoyi.common.core.utils.JwtUtils;
 import com.ruoyi.common.core.utils.ServletUtils;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.redis.utils.RedisUtils;
-import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.system.api.model.LoginUser;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +42,7 @@ public class TokenService {
         Long userId = loginUser.getSysUser().getUserId();
         String userName = loginUser.getSysUser().getUserName();
         loginUser.setToken(token);
-        loginUser.setUserid(userId);
+        loginUser.setUserId(userId);
         loginUser.setUsername(userName);
         loginUser.setIpaddr(ServletUtils.getClientIP());
         refreshToken(loginUser);
@@ -77,7 +76,8 @@ public class TokenService {
      */
     public LoginUser getLoginUser(HttpServletRequest request) {
         // 获取请求携带的令牌
-        String token = SecurityUtils.getToken(request);
+        //String token = LoginHelper.getToken();
+        String token = null;
         return getLoginUser(token);
     }
 

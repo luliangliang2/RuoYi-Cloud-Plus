@@ -47,6 +47,7 @@
         <xxl-job.version>2.3.0</xxl-job.version>
         <knife4j-aggregation.version>2.0.9</knife4j-aggregation.version>
         <knife4j.version>3.0.3</knife4j.version>
+        <satoken.version>1.28.0</satoken.version>
 
         <!-- docker 配置 -->
         <docker.registry.url>localhost</docker.registry.url>

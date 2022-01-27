@@ -78,7 +78,7 @@ public class PreAuthorizeAspect {
             AuthUtil.checkRole(requiresRoles);
         }
 
-        // 校验 @RequiresPermissions 注解
+        // 校验 @SaCheckPermission 注解
         RequiresPermissions requiresPermissions = method.getAnnotation(RequiresPermissions.class);
         if (requiresPermissions != null) {
             AuthUtil.checkPermi(requiresPermissions);

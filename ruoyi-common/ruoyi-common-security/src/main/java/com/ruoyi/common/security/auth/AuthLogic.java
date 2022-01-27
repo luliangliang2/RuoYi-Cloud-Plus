@@ -10,7 +10,7 @@ import com.ruoyi.common.security.annotation.RequiresLogin;
 import com.ruoyi.common.security.annotation.RequiresPermissions;
 import com.ruoyi.common.security.annotation.RequiresRoles;
 import com.ruoyi.common.security.service.TokenService;
-import com.ruoyi.common.security.utils.SecurityUtils;
+import com.ruoyi.common.security.utils.LoginHelper;
 import com.ruoyi.system.api.model.LoginUser;
 import org.springframework.util.PatternMatchUtils;
 
@@ -40,7 +40,8 @@ public class AuthLogic {
      * 会话注销
      */
     public void logout() {
-        String token = SecurityUtils.getToken();
+        //String token = LoginHelper.getToken();
+        String token = null;
         if (token == null) {
             return;
         }
@@ -67,11 +68,12 @@ public class AuthLogic {
      * @return 用户缓存信息
      */
     public LoginUser getLoginUser() {
-        String token = SecurityUtils.getToken();
+        //String token = LoginHelper.getToken();
+        String token = null;
         if (token == null) {
             throw new NotLoginException("未提供token");
         }
-        LoginUser loginUser = SecurityUtils.getLoginUser();
+        LoginUser loginUser = LoginHelper.getLoginUser();
         if (loginUser == null) {
             throw new NotLoginException("无效的token");
         }
@@ -120,7 +122,7 @@ public class AuthLogic {
     }
 
     /**
-     * 根据注解(@RequiresPermissions)鉴权, 如果验证未通过，则抛出异常: NotPermissionException
+     * 根据注解(@SaCheckPermission)鉴权, 如果验证未通过，则抛出异常: NotPermissionException
      *
      * @param requiresPermissions 注解对象
      */
@@ -252,7 +254,7 @@ public class AuthLogic {
     }
 
     /**
-     * 根据注解(@RequiresPermissions)鉴权
+     * 根据注解(@SaCheckPermission)鉴权
      *
      * @param at 注解对象
      */

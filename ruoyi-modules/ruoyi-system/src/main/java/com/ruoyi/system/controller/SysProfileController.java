@@ -8,6 +8,7 @@ import com.ruoyi.common.core.web.domain.AjaxResult;
 import com.ruoyi.common.log.annotation.Log;
 import com.ruoyi.common.log.enums.BusinessType;
 import com.ruoyi.common.security.service.TokenService;
+import com.ruoyi.common.security.utils.LoginHelper;
 import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.file.api.RemoteFileService;
 import com.ruoyi.file.api.domain.SysFile;
@@ -42,7 +43,7 @@ public class SysProfileController extends BaseController {
      */
     @GetMapping
     public AjaxResult profile() {
-        String username = SecurityUtils.getUsername();
+        String username = LoginHelper.getUsername();
         SysUser user = userService.selectUserByUserName(username);
         AjaxResult ajax = AjaxResult.success(user);
         ajax.put("roleGroup", userService.selectUserRoleGroup(username));
@@ -56,7 +57,7 @@ public class SysProfileController extends BaseController {
     @Log(title = "个人信息", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult updateProfile(@RequestBody SysUser user) {
-        LoginUser loginUser = SecurityUtils.getLoginUser();
+        LoginUser loginUser = LoginHelper.getLoginUser();
         SysUser sysUser = loginUser.getSysUser();
         user.setUserName(sysUser.getUserName());
         if (StringUtils.isNotEmpty(user.getPhonenumber())
@@ -86,7 +87,7 @@ public class SysProfileController extends BaseController {
     @Log(title = "个人信息", businessType = BusinessType.UPDATE)
     @PutMapping("/updatePwd")
     public AjaxResult updatePwd(String oldPassword, String newPassword) {
-        String username = SecurityUtils.getUsername();
+        String username = LoginHelper.getUsername();
         SysUser user = userService.selectUserByUserName(username);
         String password = user.getPassword();
         if (!SecurityUtils.matchesPassword(oldPassword, password)) {
@@ -97,7 +98,7 @@ public class SysProfileController extends BaseController {
         }
         if (userService.resetUserPwd(username, SecurityUtils.encryptPassword(newPassword)) > 0) {
             // 更新缓存用户密码
-            LoginUser loginUser = SecurityUtils.getLoginUser();
+            LoginUser loginUser = LoginHelper.getLoginUser();
             loginUser.getSysUser().setPassword(SecurityUtils.encryptPassword(newPassword));
             tokenService.setLoginUser(loginUser);
             return AjaxResult.success();
@@ -116,7 +117,7 @@ public class SysProfileController extends BaseController {
         // userService.insertUser(new SysUser().setUserName("test").setNickName("test"));
 
         if (!file.isEmpty()) {
-            LoginUser loginUser = SecurityUtils.getLoginUser();
+            LoginUser loginUser = LoginHelper.getLoginUser();
             SysFile sysFile = remoteFileService.upload(file.getName(), file.getOriginalFilename(), file.getContentType(), file.getBytes());
             if (ObjectUtil.isNull(sysFile)) {
                 return AjaxResult.error("文件服务异常，请联系管理员");

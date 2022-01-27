@@ -3,7 +3,6 @@ package com.ruoyi.system.api.model;
 import com.ruoyi.system.api.domain.SysUser;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -26,7 +25,17 @@ public class LoginUser implements Serializable {
     /**
      * 用户名id
      */
-    private Long userid;
+    private Long userId;
+
+    /**
+     * 部门id
+     */
+    private Long deptId;
+
+    /**
+     * 用户类型
+     */
+    private String userType;
 
     /**
      * 用户名
@@ -62,5 +71,13 @@ public class LoginUser implements Serializable {
      * 用户信息
      */
     private SysUser sysUser;
+
+    /**
+     * 获取登录id
+     */
+    public String getLoginId() {
+        return userType + ":" + userId;
+//        return userType + LoginHelper.JOIN_CODE + userId;
+    }
 
 }

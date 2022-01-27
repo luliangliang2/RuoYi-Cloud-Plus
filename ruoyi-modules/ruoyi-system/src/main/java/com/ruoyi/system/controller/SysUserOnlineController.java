@@ -1,5 +1,6 @@
 package com.ruoyi.system.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.ruoyi.common.core.constant.CacheConstants;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.core.web.controller.BaseController;
@@ -8,7 +9,6 @@ import com.ruoyi.common.log.annotation.Log;
 import com.ruoyi.common.log.enums.BusinessType;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.redis.utils.RedisUtils;
-import com.ruoyi.common.security.annotation.RequiresPermissions;
 import com.ruoyi.system.api.model.LoginUser;
 import com.ruoyi.system.domain.SysUserOnline;
 import com.ruoyi.system.service.ISysUserOnlineService;
@@ -32,7 +32,7 @@ public class SysUserOnlineController extends BaseController {
 
     private final ISysUserOnlineService userOnlineService;
 
-    @RequiresPermissions("monitor:online:list")
+    @SaCheckPermission("monitor:online:list")
     @GetMapping("/list")
     public TableDataInfo<SysUserOnline> list(String ipaddr, String userName) {
         Collection<String> keys = RedisUtils.keys(CacheConstants.LOGIN_TOKEN_KEY + "*");
@@ -63,7 +63,7 @@ public class SysUserOnlineController extends BaseController {
     /**
      * 强退用户
      */
-    @RequiresPermissions("monitor:online:forceLogout")
+    @SaCheckPermission("monitor:online:forceLogout")
     @Log(title = "在线用户", businessType = BusinessType.FORCE)
     @DeleteMapping("/{tokenId}")
     public AjaxResult forceLogout(@PathVariable String tokenId) {

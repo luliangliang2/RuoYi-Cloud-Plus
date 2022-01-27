@@ -12,7 +12,7 @@ import com.ruoyi.common.mybatis.annotation.DataColumn;
 import com.ruoyi.common.mybatis.annotation.DataPermission;
 import com.ruoyi.common.mybatis.enums.DataScopeType;
 import com.ruoyi.common.mybatis.helper.DataPermissionHelper;
-import com.ruoyi.common.security.utils.SecurityUtils;
+import com.ruoyi.common.security.utils.LoginHelper;
 import com.ruoyi.system.api.domain.SysRole;
 import com.ruoyi.system.api.domain.SysUser;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +75,7 @@ public class PlusDataPermissionHandler {
         }
         SysUser currentUser = DataPermissionHelper.getVariable("user");
         if (ObjectUtil.isNull(currentUser)) {
-            currentUser = SecurityUtils.getLoginUser().getSysUser();
+            currentUser = LoginHelper.getLoginUser().getSysUser();
             DataPermissionHelper.setVariable("user", currentUser);
         }
         // 如果是超级管理员，则不过滤数据

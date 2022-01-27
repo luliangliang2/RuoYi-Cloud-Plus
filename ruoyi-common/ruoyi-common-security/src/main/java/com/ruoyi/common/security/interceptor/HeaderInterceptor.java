@@ -6,7 +6,6 @@ import com.ruoyi.common.core.context.SecurityContextHolder;
 import com.ruoyi.common.core.utils.ServletUtils;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.security.auth.AuthUtil;
-import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.system.api.model.LoginUser;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
@@ -31,7 +30,8 @@ public class HeaderInterceptor implements AsyncHandlerInterceptor {
         SecurityContextHolder.setUserName(ServletUtils.getHeader(request, SecurityConstants.DETAILS_USERNAME));
         SecurityContextHolder.setUserKey(ServletUtils.getHeader(request, SecurityConstants.USER_KEY));
 
-        String token = SecurityUtils.getToken();
+        //String token = LoginHelper.getToken();
+        String token = null;
         if (StringUtils.isNotEmpty(token)) {
             LoginUser loginUser = AuthUtil.getLoginUser(token);
             if (ObjectUtil.isNotNull(loginUser)) {
