@@ -57,7 +57,7 @@ public class SysLoginService {
             recordLogininfor(username, Constants.LOGIN_FAIL, "登录用户不存在");
             throw new ServiceException("登录用户：" + username + " 不存在");
         }
-        SysUser user = userInfo.getSysUser();
+        SysUser user = remoteUserService.getUserByUserId(userInfo.getUserId());
         if (UserStatus.DELETED.getCode().equals(user.getDelFlag())) {
             recordLogininfor(username, Constants.LOGIN_FAIL, "对不起，您的账号已被删除");
             throw new ServiceException("对不起，您的账号：" + username + " 已被删除");

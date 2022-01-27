@@ -17,7 +17,7 @@ public class SaInterfaceImpl implements StpInterface {
         LoginUser loginUser = LoginHelper.getLoginUser();
         UserType userType = UserType.getUserType(loginUser.getUserType());
         if (userType == UserType.SYS_USER) {
-            return new ArrayList<>(loginUser.getPermissions());
+            return new ArrayList<>(loginUser.getMenuPermission());
         } else if (userType == UserType.APP_USER) {
             // app端权限返回 自行根据业务编写
         }
@@ -29,7 +29,7 @@ public class SaInterfaceImpl implements StpInterface {
         LoginUser loginUser = LoginHelper.getLoginUser();
         UserType userType = UserType.getUserType(loginUser.getUserType());
         if (userType == UserType.SYS_USER) {
-            return new ArrayList<>(loginUser.getRoles());
+            return new ArrayList<>(loginUser.getRolePermission());
         } else if (userType == UserType.APP_USER) {
             // app端权限返回 自行根据业务编写
         }

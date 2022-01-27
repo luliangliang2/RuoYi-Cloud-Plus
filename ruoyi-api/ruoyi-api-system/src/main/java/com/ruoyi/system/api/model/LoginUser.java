@@ -1,10 +1,11 @@
 package com.ruoyi.system.api.model;
 
-import com.ruoyi.system.api.domain.SysUser;
+import com.ruoyi.common.core.constant.CacheConstants;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,29 +19,29 @@ public class LoginUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 用户ID
+     */
+    private Long userId;
+
+    /**
+     * 部门ID
+     */
+    private Long deptId;
+
+    /**
+     * 部门名
+     */
+    private String deptName;
+
+    /**
      * 用户唯一标识
      */
     private String token;
 
     /**
-     * 用户名id
-     */
-    private Long userId;
-
-    /**
-     * 部门id
-     */
-    private Long deptId;
-
-    /**
      * 用户类型
      */
     private String userType;
-
-    /**
-     * 用户名
-     */
-    private String username;
 
     /**
      * 登录时间
@@ -58,26 +59,50 @@ public class LoginUser implements Serializable {
     private String ipaddr;
 
     /**
-     * 权限列表
+     * 登录地点
      */
-    private Set<String> permissions;
+    private String loginLocation;
 
     /**
-     * 角色列表
+     * 浏览器类型
      */
-    private Set<String> roles;
+    private String browser;
 
     /**
-     * 用户信息
+     * 操作系统
      */
-    private SysUser sysUser;
+    private String os;
+
+    /**
+     * 菜单权限
+     */
+    private Set<String> menuPermission;
+
+    /**
+     * 角色权限
+     */
+    private Set<String> rolePermission;
+
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 角色对象
+     */
+    private List<RoleDTO> roles;
+
+    /**
+     * 数据权限 当前角色ID
+     */
+    private Long roleId;
 
     /**
      * 获取登录id
      */
     public String getLoginId() {
-        return userType + ":" + userId;
-//        return userType + LoginHelper.JOIN_CODE + userId;
+        return userType + CacheConstants.LOGINID_JOIN_CODE + userId;
     }
 
 }

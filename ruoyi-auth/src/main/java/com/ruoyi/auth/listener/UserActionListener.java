@@ -13,13 +13,10 @@ import com.ruoyi.common.core.utils.ServletUtils;
 import com.ruoyi.common.core.utils.ip.AddressUtils;
 import com.ruoyi.common.redis.utils.RedisUtils;
 import com.ruoyi.common.security.utils.LoginHelper;
-import com.ruoyi.system.api.RemoteUserService;
-import com.ruoyi.system.api.domain.SysUser;
 import com.ruoyi.system.api.domain.SysUserOnline;
 import com.ruoyi.system.api.model.LoginUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -36,9 +33,6 @@ public class UserActionListener implements SaTokenListener {
 
     private final SaTokenConfig tokenConfig;
 
-    @DubboReference
-    private RemoteUserService remoteUserService;
-
     /**
      * 每次登录时触发
      */
@@ -48,18 +42,18 @@ public class UserActionListener implements SaTokenListener {
         if (userType == UserType.SYS_USER) {
             UserAgent userAgent = UserAgentUtil.parse(ServletUtils.getRequest().getHeader("User-Agent"));
             String ip = ServletUtils.getClientIP();
-            LoginUser userinfo = remoteUserService.getUserInfoByUserId(LoginHelper.getUserId());
-            SysUser user = userinfo.getSysUser();
+            LoginUser user = LoginHelper.getLoginUser();
             String tokenValue = StpUtil.getTokenValue();
             SysUserOnline userOnline = new SysUserOnline();
+            userOnline.setIpaddr(ip);
             userOnline.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
             userOnline.setBrowser(userAgent.getBrowser().getName());
             userOnline.setOs(userAgent.getOs().getName());
             userOnline.setLoginTime(System.currentTimeMillis());
             userOnline.setTokenId(tokenValue);
-            userOnline.setUserName(user.getUserName());
-            if (ObjectUtil.isNotNull(user.getDept())) {
-                userOnline.setDeptName(user.getDept().getDeptName());
+            userOnline.setUserName(user.getUsername());
+            if (ObjectUtil.isNotNull(user.getDeptName())) {
+                userOnline.setDeptName(user.getDeptName());
             }
             RedisUtils.setCacheObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue, userOnline, tokenConfig.getTimeout(), TimeUnit.SECONDS);
             log.info("user doLogin, useId:{}, token:{}", loginId, tokenValue);

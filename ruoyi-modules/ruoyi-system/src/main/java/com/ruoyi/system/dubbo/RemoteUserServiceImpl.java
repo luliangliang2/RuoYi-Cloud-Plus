@@ -1,11 +1,13 @@
 package com.ruoyi.system.dubbo;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.core.constant.UserConstants;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.system.api.RemoteUserService;
 import com.ruoyi.system.api.domain.SysUser;
 import com.ruoyi.system.api.model.LoginUser;
+import com.ruoyi.system.api.model.RoleDTO;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysPermissionService;
 import com.ruoyi.system.service.ISysUserService;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,43 +32,36 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     private final ISysPermissionService permissionService;
     private final ISysConfigService configService;
 
-    /**
-     * 根据sysuser构造LoginUser
-     * @param sysUser
-     * @return
-     */
-    private LoginUser buildLoginUser(SysUser sysUser) {
-        // 角色集合
-        Set<String> roles = permissionService.getRolePermission(sysUser.getUserId());
-        // 权限集合
-        Set<String> permissions = permissionService.getMenuPermission(sysUser.getUserId());
-        LoginUser sysUserVo = new LoginUser();
-        sysUserVo.setUserId(sysUser.getUserId());
-        sysUserVo.setUsername(sysUser.getUserName());
-        sysUserVo.setDeptId(sysUser.getDeptId());
-        sysUserVo.setUserType(sysUser.getUserType());
-        sysUserVo.setSysUser(sysUser);
-        sysUserVo.setRoles(roles);
-        sysUserVo.setPermissions(permissions);
-        return sysUserVo;
-    }
-
     @Override
     public LoginUser getUserInfo(String username) {
         SysUser sysUser = userService.selectUserByUserName(username);
         if (ObjectUtil.isNull(sysUser)) {
             throw new ServiceException("用户名或密码错误");
         }
-        return buildLoginUser(sysUser);
+        // 角色集合
+        Set<String> rolePermission = permissionService.getRolePermission(sysUser.getUserId());
+        // 权限集合
+        Set<String> menuPermissions = permissionService.getMenuPermission(sysUser.getUserId());
+        LoginUser sysUserVo = new LoginUser();
+        sysUserVo.setUserId(sysUser.getUserId());
+        sysUserVo.setDeptId(sysUser.getDeptId());
+        sysUserVo.setUsername(sysUser.getUserName());
+        sysUserVo.setUserType(sysUser.getUserType());
+        sysUserVo.setDeptName(sysUser.getDept().getDeptName());
+        sysUserVo.setMenuPermission(menuPermissions);
+        sysUserVo.setRolePermission(rolePermission);
+        List<RoleDTO> roles = BeanUtil.copyToList(sysUser.getRoles(), RoleDTO.class);
+        sysUserVo.setRoles(roles);
+        return sysUserVo;
     }
 
     @Override
-    public LoginUser getUserInfoByUserId(Long userId) {
+    public SysUser getUserByUserId(Long userId) {
         SysUser sysUser = userService.selectUserById(userId);
         if (ObjectUtil.isNull(sysUser)) {
             throw new ServiceException("用户名或密码错误");
         }
-        return buildLoginUser(sysUser);
+        return sysUser;
     }
 
     @Override

@@ -13,8 +13,10 @@ import com.ruoyi.common.mybatis.annotation.DataPermission;
 import com.ruoyi.common.mybatis.enums.DataScopeType;
 import com.ruoyi.common.mybatis.helper.DataPermissionHelper;
 import com.ruoyi.common.security.utils.LoginHelper;
+import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.system.api.domain.SysRole;
 import com.ruoyi.system.api.domain.SysUser;
+import com.ruoyi.system.api.model.LoginUser;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -73,13 +75,13 @@ public class PlusDataPermissionHandler {
             inavlidCacheSet.add(mappedStatementId);
             return where;
         }
-        SysUser currentUser = DataPermissionHelper.getVariable("user");
+        LoginUser currentUser = DataPermissionHelper.getVariable("user");
         if (ObjectUtil.isNull(currentUser)) {
-            currentUser = LoginHelper.getLoginUser().getSysUser();
+            currentUser = LoginHelper.getLoginUser();
             DataPermissionHelper.setVariable("user", currentUser);
         }
         // 如果是超级管理员，则不过滤数据
-        if (ObjectUtil.isNull(currentUser) || currentUser.isAdmin()) {
+        if (ObjectUtil.isNull(currentUser) || SecurityUtils.isAdmin(currentUser.getUserId())) {
             return where;
         }
         String dataFilterSql = buildDataFilter(dataColumns, isSelect);

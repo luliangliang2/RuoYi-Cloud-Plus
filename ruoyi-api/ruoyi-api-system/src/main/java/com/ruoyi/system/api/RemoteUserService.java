@@ -24,7 +24,7 @@ public interface RemoteUserService {
      * @param userId 用户id
      * @return 结果
      */
-    LoginUser getUserInfoByUserId(Long userId);
+    SysUser getUserByUserId(Long userId);
 
     /**
      * 注册用户信息

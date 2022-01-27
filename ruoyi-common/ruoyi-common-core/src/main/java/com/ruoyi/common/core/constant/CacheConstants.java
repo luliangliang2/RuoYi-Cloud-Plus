@@ -38,4 +38,9 @@ public interface CacheConstants {
      */
     public static final String ONLINE_TOKEN_KEY = "online_tokens:";
 
+    /**
+     * loginid构造拼接字符串
+     */
+    public static final String LOGINID_JOIN_CODE = ":";
+
 }
