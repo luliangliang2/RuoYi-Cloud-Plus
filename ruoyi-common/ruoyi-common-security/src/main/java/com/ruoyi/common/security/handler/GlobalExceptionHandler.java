@@ -1,5 +1,6 @@
 package com.ruoyi.common.security.handler;
 
+import cn.dev33.satoken.exception.IdTokenInvalidException;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
@@ -51,10 +52,20 @@ public class GlobalExceptionHandler {
      * 认证失败
      */
     @ExceptionHandler(NotLoginException.class)
-    public AjaxResult handleAccessDeniedException(NotLoginException e, HttpServletRequest request) {
+    public AjaxResult handleNotLoginException(NotLoginException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',认证失败'{}',无法访问系统资源", requestURI, e.getMessage());
         return AjaxResult.error(HttpStatus.UNAUTHORIZED, StringUtils.format("请求地址'{}',认证失败'{}',无法访问系统资源", requestURI));
+    }
+
+    /**
+     * 无效认证
+     */
+    @ExceptionHandler(IdTokenInvalidException.class)
+    public AjaxResult handleIdTokenInvalidException(IdTokenInvalidException e, HttpServletRequest request) {
+        String requestURI = request.getRequestURI();
+        log.error("请求地址'{}',内网认证失败'{}'", requestURI, e.getMessage());
+        return AjaxResult.error(HttpStatus.UNAUTHORIZED, StringUtils.format("没有访问权限，请联系管理员授权"));
     }
 
     /**
