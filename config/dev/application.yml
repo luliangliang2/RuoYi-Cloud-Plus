@@ -300,3 +300,5 @@ sa-token:
   jwt-secret-key: abcdefghijklmnopqrstuvwxyz
   # 是否输出操作日志
   is-log: true
+  # 打开 RPC 调用鉴权
+  check-id-token: true
