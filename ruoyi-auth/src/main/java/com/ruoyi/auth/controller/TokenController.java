@@ -40,7 +40,6 @@ public class TokenController {
         Map<String, Object> rspMap = new HashMap<String, Object>();
         rspMap.put("access_token", StpUtil.getTokenValue());
         return R.ok(rspMap);
-//        return R.ok(tokenService.createToken(userInfo));
     }
 
     @DeleteMapping("logout")
@@ -49,23 +48,6 @@ public class TokenController {
             StpUtil.logout();
         } catch (NotLoginException e) {
         }
-//        String token = SecurityUtils.getToken(request);
-//        if (StringUtils.isNotEmpty(token)) {
-//            String username = JwtUtils.getUserName(token);
-//            // 删除用户缓存记录
-//            AuthUtil.logoutByToken(token);
-//        }
-        return R.ok();
-    }
-
-    @PostMapping("refresh")
-    public R<?> refresh(HttpServletRequest request) {
-//        LoginUser loginUser = tokenService.getLoginUser(request);
-//        if (ObjectUtil.isNotNull(loginUser)) {
-//            // 刷新令牌有效期
-//            tokenService.refreshToken(loginUser);
-//            return R.ok();
-//        }
         return R.ok();
     }
 

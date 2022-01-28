@@ -2,4 +2,4 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.ruoyi.common.security.handler.GlobalExceptionHandler,\
   com.ruoyi.common.security.satoken.dao.PlusSaTokenDao,\
   com.ruoyi.common.security.satoken.service.SaInterfaceImpl,\
-  com.ruoyi.common.security.config.SaTokenConfigure
+  com.ruoyi.common.security.config.SaTokenConfiguration

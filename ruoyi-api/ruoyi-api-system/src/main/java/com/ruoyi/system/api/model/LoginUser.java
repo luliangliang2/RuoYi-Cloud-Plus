@@ -1,5 +1,6 @@
 package com.ruoyi.system.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ruoyi.common.core.constant.CacheConstants;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -87,6 +88,12 @@ public class LoginUser implements Serializable {
      * 用户名
      */
     private String username;
+
+    /**
+     * 密码
+     */
+    @JsonIgnore
+    private String password;
 
     /**
      * 角色对象
