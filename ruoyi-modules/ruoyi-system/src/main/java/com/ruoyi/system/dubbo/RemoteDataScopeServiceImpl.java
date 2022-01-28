@@ -1,22 +1,29 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.system.dubbo;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ruoyi.system.api.RemoteDataScopeService;
 import com.ruoyi.system.api.domain.SysDept;
 import com.ruoyi.system.domain.SysRoleDept;
 import com.ruoyi.system.mapper.SysDeptMapper;
 import com.ruoyi.system.mapper.SysRoleDeptMapper;
-import com.ruoyi.system.service.ISysDataScopeService;
 import lombok.RequiredArgsConstructor;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 数据权限
+ *
+ * @author Lion Li
+ */
 @RequiredArgsConstructor
-@Service("sdss")
-public class SysDataScopeServiceImpl implements ISysDataScopeService {
+@Service
+@DubboService
+public class RemoteDataScopeServiceImpl implements RemoteDataScopeService {
 
     private final SysRoleDeptMapper roleDeptMapper;
     private final SysDeptMapper deptMapper;
