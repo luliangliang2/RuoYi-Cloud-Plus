@@ -8,7 +8,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.core.constant.HttpStatus;
 import com.ruoyi.common.core.exception.DemoModeException;
 import com.ruoyi.common.core.exception.ServiceException;
-import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.core.web.domain.AjaxResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
@@ -55,7 +54,7 @@ public class GlobalExceptionHandler {
     public AjaxResult handleNotLoginException(NotLoginException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',认证失败'{}',无法访问系统资源", requestURI, e.getMessage());
-        return AjaxResult.error(HttpStatus.UNAUTHORIZED, StringUtils.format("请求地址'{}',认证失败'{}',无法访问系统资源", requestURI));
+        return AjaxResult.error(HttpStatus.UNAUTHORIZED, "认证失败，无法访问系统资源");
     }
 
     /**
@@ -64,8 +63,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IdTokenInvalidException.class)
     public AjaxResult handleIdTokenInvalidException(IdTokenInvalidException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        log.error("请求地址'{}',内网认证失败'{}'", requestURI, e.getMessage());
-        return AjaxResult.error(HttpStatus.UNAUTHORIZED, StringUtils.format("没有访问权限，请联系管理员授权"));
+        log.error("请求地址'{}',内网认证失败'{}',无法访问系统资源", requestURI, e.getMessage());
+        return AjaxResult.error(HttpStatus.UNAUTHORIZED, "认证失败，无法访问系统资源");
     }
 
     /**

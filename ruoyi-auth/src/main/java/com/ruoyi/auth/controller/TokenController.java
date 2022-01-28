@@ -7,7 +7,7 @@ import com.ruoyi.auth.form.RegisterBody;
 import com.ruoyi.auth.service.SysLoginService;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.enums.DeviceType;
-import com.ruoyi.common.security.utils.LoginHelper;
+import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.system.api.model.LoginUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;

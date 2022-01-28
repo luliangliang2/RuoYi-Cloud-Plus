@@ -9,7 +9,7 @@ import com.ruoyi.common.core.utils.SpringUtils;
 import com.ruoyi.common.core.utils.ValidatorUtils;
 import com.ruoyi.common.excel.core.ExcelListener;
 import com.ruoyi.common.excel.core.ExcelResult;
-import com.ruoyi.common.security.utils.LoginHelper;
+import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.system.api.domain.SysUser;
 import com.ruoyi.system.domain.vo.SysUserImportVo;

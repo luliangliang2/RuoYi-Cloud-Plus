@@ -1,4 +1,4 @@
-package com.ruoyi.common.security.satoken.dao;
+package com.ruoyi.common.satoken.core.dao;
 
 import cn.dev33.satoken.dao.SaTokenDao;
 import cn.dev33.satoken.util.SaFoxUtil;

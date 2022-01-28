@@ -1,4 +1,4 @@
-package com.ruoyi.common.security.utils;
+package com.ruoyi.common.satoken.utils;
 
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.ObjectUtil;

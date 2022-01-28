@@ -12,7 +12,7 @@ import com.ruoyi.common.core.enums.UserType;
 import com.ruoyi.common.core.utils.ServletUtils;
 import com.ruoyi.common.core.utils.ip.AddressUtils;
 import com.ruoyi.common.redis.utils.RedisUtils;
-import com.ruoyi.common.security.utils.LoginHelper;
+import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.system.api.domain.SysUserOnline;
 import com.ruoyi.system.api.model.LoginUser;
 import lombok.RequiredArgsConstructor;

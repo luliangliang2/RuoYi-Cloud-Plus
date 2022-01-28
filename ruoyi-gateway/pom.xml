@@ -82,13 +82,7 @@
 
         <dependency>
             <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-common-security</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>cn.dev33</groupId>
-                    <artifactId>sa-token-spring-boot-starter</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>ruoyi-common-satoken</artifactId>
         </dependency>
 
         <!-- RuoYi Common Redis-->

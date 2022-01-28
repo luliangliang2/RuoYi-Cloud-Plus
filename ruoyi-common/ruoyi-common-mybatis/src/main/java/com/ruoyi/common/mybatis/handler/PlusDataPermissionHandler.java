@@ -12,7 +12,7 @@ import com.ruoyi.common.mybatis.annotation.DataColumn;
 import com.ruoyi.common.mybatis.annotation.DataPermission;
 import com.ruoyi.common.mybatis.enums.DataScopeType;
 import com.ruoyi.common.mybatis.helper.DataPermissionHelper;
-import com.ruoyi.common.security.utils.LoginHelper;
+import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.common.security.utils.SecurityUtils;
 import com.ruoyi.system.api.model.LoginUser;
 import com.ruoyi.system.api.model.RoleDTO;

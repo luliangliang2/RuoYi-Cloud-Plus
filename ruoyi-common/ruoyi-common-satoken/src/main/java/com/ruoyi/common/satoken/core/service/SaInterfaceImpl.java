@@ -1,14 +1,19 @@
-package com.ruoyi.common.security.satoken.service;
+package com.ruoyi.common.satoken.core.service;
 
 import cn.dev33.satoken.stp.StpInterface;
 import com.ruoyi.common.core.enums.UserType;
-import com.ruoyi.common.security.utils.LoginHelper;
+import com.ruoyi.common.satoken.utils.LoginHelper;
 import com.ruoyi.system.api.model.LoginUser;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 权限认证接口实现
+ *
+ * @author Lion Li
+ */
 @Component
 public class SaInterfaceImpl implements StpInterface {
 
