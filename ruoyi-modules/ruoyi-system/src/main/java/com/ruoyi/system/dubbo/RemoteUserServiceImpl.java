@@ -2,7 +2,9 @@ package com.ruoyi.system.dubbo;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.ruoyi.common.core.constant.Constants;
 import com.ruoyi.common.core.constant.UserConstants;
+import com.ruoyi.common.core.enums.UserStatus;
 import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.system.api.RemoteUserService;
 import com.ruoyi.system.api.domain.SysUser;
@@ -38,30 +40,28 @@ public class RemoteUserServiceImpl implements RemoteUserService {
         if (ObjectUtil.isNull(sysUser)) {
             throw new ServiceException("用户名或密码错误");
         }
+        if (UserStatus.DELETED.getCode().equals(sysUser.getDelFlag())) {
+            throw new ServiceException("对不起，您的账号：" + username + " 已被删除");
+        }
+        if (UserStatus.DISABLE.getCode().equals(sysUser.getStatus())) {
+            throw new ServiceException("对不起，您的账号：" + username + " 已停用");
+        }
         // 角色集合
         Set<String> rolePermission = permissionService.getRolePermission(sysUser.getUserId());
         // 权限集合
         Set<String> menuPermissions = permissionService.getMenuPermission(sysUser.getUserId());
-        LoginUser sysUserVo = new LoginUser();
-        sysUserVo.setUserId(sysUser.getUserId());
-        sysUserVo.setDeptId(sysUser.getDeptId());
-        sysUserVo.setUsername(sysUser.getUserName());
-        sysUserVo.setUserType(sysUser.getUserType());
-        sysUserVo.setDeptName(sysUser.getDept().getDeptName());
-        sysUserVo.setMenuPermission(menuPermissions);
-        sysUserVo.setRolePermission(rolePermission);
+        LoginUser loginUser = new LoginUser();
+        loginUser.setUserId(sysUser.getUserId());
+        loginUser.setDeptId(sysUser.getDeptId());
+        loginUser.setUsername(sysUser.getUserName());
+        loginUser.setPassword(sysUser.getPassword());
+        loginUser.setUserType(sysUser.getUserType());
+        loginUser.setDeptName(sysUser.getDept().getDeptName());
+        loginUser.setMenuPermission(menuPermissions);
+        loginUser.setRolePermission(rolePermission);
         List<RoleDTO> roles = BeanUtil.copyToList(sysUser.getRoles(), RoleDTO.class);
-        sysUserVo.setRoles(roles);
-        return sysUserVo;
-    }
-
-    @Override
-    public SysUser getUserByUserId(Long userId) {
-        SysUser sysUser = userService.selectUserById(userId);
-        if (ObjectUtil.isNull(sysUser)) {
-            throw new ServiceException("用户名或密码错误");
-        }
-        return sysUser;
+        loginUser.setRoles(roles);
+        return loginUser;
     }
 
     @Override

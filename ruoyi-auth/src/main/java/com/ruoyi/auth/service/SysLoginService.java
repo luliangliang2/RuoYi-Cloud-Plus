@@ -54,21 +54,18 @@ public class SysLoginService {
             recordLogininfor(username, Constants.LOGIN_FAIL, "用户名不在指定范围");
             throw new ServiceException("用户名不在指定范围");
         }
-        // 查询用户信息
-        LoginUser userInfo = remoteUserService.getUserInfo(username);
+        LoginUser userInfo;
+        try {
+            // 查询用户信息
+            userInfo = remoteUserService.getUserInfo(username);
 
-        if (ObjectUtil.isNull(userInfo)) {
-            recordLogininfor(username, Constants.LOGIN_FAIL, "登录用户不存在");
-            throw new ServiceException("登录用户：" + username + " 不存在");
-        }
-        SysUser user = remoteUserService.getUserByUserId(userInfo.getUserId());
-        if (UserStatus.DELETED.getCode().equals(user.getDelFlag())) {
-            recordLogininfor(username, Constants.LOGIN_FAIL, "对不起，您的账号已被删除");
-            throw new ServiceException("对不起，您的账号：" + username + " 已被删除");
-        }
-        if (UserStatus.DISABLE.getCode().equals(user.getStatus())) {
-            recordLogininfor(username, Constants.LOGIN_FAIL, "用户已停用，请联系管理员");
-            throw new ServiceException("对不起，您的账号：" + username + " 已停用");
+            if (ObjectUtil.isNull(userInfo)) {
+                recordLogininfor(username, Constants.LOGIN_FAIL, "登录用户不存在");
+                throw new ServiceException("登录用户：" + username + " 不存在");
+            }
+        } catch (Exception e) {
+            recordLogininfor(username, Constants.LOGIN_FAIL, e.getMessage());
+            throw new ServiceException(e.getMessage());
         }
 
         // 获取用户登录错误次数(可自定义限制策略 例如: key + username + ip)
@@ -80,7 +77,7 @@ public class SysLoginService {
             throw new ServiceException(msg, null);
         }
 
-        if (!SecurityUtils.matchesPassword(password, user.getPassword())) {
+        if (!SecurityUtils.matchesPassword(password, userInfo.getPassword())) {
             // 是否第一次
             errorNumber = ObjectUtil.isNull(errorNumber) ? 1 : errorNumber + 1;
             // 达到规定错误次数 则锁定登录
@@ -96,7 +93,6 @@ public class SysLoginService {
                 recordLogininfor(username, Constants.LOGIN_FAIL, msg);
                 throw new ServiceException(msg, null);
             }
-            //throw new ServiceException("用户不存在/密码错误");
         }
         // 登录成功 清空错误次数
         RedisUtils.deleteObject(CacheConstants.LOGIN_ERROR + username);

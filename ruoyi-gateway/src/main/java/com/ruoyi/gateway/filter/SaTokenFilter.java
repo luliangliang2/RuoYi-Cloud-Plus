@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Lion Li
  */
 @Configuration
-public class SaTokenConfiguration {
+public class SaTokenFilter {
 
     // 注册 Sa-Token全局过滤器
     @Bean
@@ -28,10 +28,6 @@ public class SaTokenConfiguration {
             .setAuth(obj -> {
                 // 登录校验 -- 拦截所有路由
                 SaRouter.match("/**", r -> StpUtil.checkLogin());
-            })
-            // 异常处理方法：每次setAuth函数出现异常时进入
-            .setError(e -> {
-                return SaResult.error(e.getMessage());
-            });
+            }).setError(e -> SaResult.error(e.getMessage()));
     }
 }
