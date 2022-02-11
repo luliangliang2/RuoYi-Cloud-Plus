@@ -172,7 +172,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -475,9 +475,11 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      this.loading = true;
       this.reset();
       const ${pkColumn.javaField} = row.${pkColumn.javaField} || this.ids
       get${BusinessName}(${pkColumn.javaField}).then(response => {
+        this.loading = false;
         this.form = response.data;
 #foreach ($column in $columns)
 #if($column.htmlType == "checkbox")
@@ -523,10 +525,13 @@ export default {
     handleDelete(row) {
       const ${pkColumn.javaField}s = row.${pkColumn.javaField} || this.ids;
       this.#[[$modal]]#.confirm('是否确认删除${functionName}编号为"' + ${pkColumn.javaField}s + '"的数据项？').then(function() {
+        this.loading = true;
         return del${BusinessName}(${pkColumn.javaField}s);
       }).then(() => {
         this.getList();
         this.#[[$modal]]#.msgSuccess("删除成功");
+      }).finally(() => {
+        this.loading = false;
       }).catch(() => {});
     },
 #if($table.sub)
