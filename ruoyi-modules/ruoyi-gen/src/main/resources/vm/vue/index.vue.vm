@@ -139,7 +139,7 @@
           <image-preview :src="scope.row.${javaField}" :width="50" :height="50"/>
         </template>
       </el-table-column>
-#elseif($column.list && "" != $column.dictType)
+#elseif($column.list && $column.dictType && "" != $column.dictType)
       <el-table-column label="${comment}" align="center" prop="${javaField}">
         <template slot-scope="scope">
 #if($column.htmlType == "checkbox")
@@ -172,7 +172,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -187,7 +187,6 @@
 #foreach($column in $columns)
 #set($field=$column.javaField)
 #if($column.insert && !$column.pk)
-#if(($column.usableColumn) || (!$column.superColumn))
 #set($parentheseIndex=$column.columnComment.indexOf("（"))
 #if($parentheseIndex != -1)
 #set($comment=$column.columnComment.substring(0, $parentheseIndex))
@@ -279,7 +278,6 @@
 #end
 #end
 #end
-#end
 #if($table.sub)
         <el-divider content-position="center">${subTable.functionName}信息</el-divider>
         <el-row :gutter="10" class="mb8">
@@ -331,6 +329,8 @@ export default {
 #end
   data() {
     return {
+      // 按钮loading
+      buttonLoading: false,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -436,7 +436,7 @@ export default {
 #elseif($column.htmlType == "checkbox")
         $column.javaField: []#if($foreach.count != $columns.size()),#end
 #else
-        $column.javaField: null#if($foreach.count != $columns.size()),#end
+        $column.javaField: undefined#if($foreach.count != $columns.size()),#end
 #end
 #end
       };
@@ -475,9 +475,11 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      this.loading = true;
       this.reset();
       const ${pkColumn.javaField} = row.${pkColumn.javaField} || this.ids
       get${BusinessName}(${pkColumn.javaField}).then(response => {
+        this.loading = false;
         this.form = response.data;
 #foreach ($column in $columns)
 #if($column.htmlType == "checkbox")
@@ -495,6 +497,7 @@ export default {
     submitForm() {
       this.#[[$]]#refs["form"].validate(valid => {
         if (valid) {
+          this.buttonLoading = true;
 #foreach ($column in $columns)
 #if($column.htmlType == "checkbox")
           this.form.$column.javaField = this.form.${column.javaField}.join(",");
@@ -508,12 +511,16 @@ export default {
               this.#[[$modal]]#.msgSuccess("修改成功");
               this.open = false;
               this.getList();
+            }).finally(() => {
+              this.buttonLoading = false;
             });
           } else {
             add${BusinessName}(this.form).then(response => {
               this.#[[$modal]]#.msgSuccess("新增成功");
               this.open = false;
               this.getList();
+            }).finally(() => {
+              this.buttonLoading = false;
             });
           }
         }
@@ -523,10 +530,14 @@ export default {
     handleDelete(row) {
       const ${pkColumn.javaField}s = row.${pkColumn.javaField} || this.ids;
       this.#[[$modal]]#.confirm('是否确认删除${functionName}编号为"' + ${pkColumn.javaField}s + '"的数据项？').then(function() {
+        this.loading = true;
         return del${BusinessName}(${pkColumn.javaField}s);
       }).then(() => {
+        this.loading = false;
         this.getList();
         this.#[[$modal]]#.msgSuccess("删除成功");
+      }).finally(() => {
+        this.loading = false;
       }).catch(() => {});
     },
 #if($table.sub)
