@@ -1,6 +1,7 @@
 package com.ruoyi.gen.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -373,12 +374,12 @@ public class GenTableServiceImpl implements IGenTableService {
     public void validateEdit(GenTable genTable) {
         if (GenConstants.TPL_TREE.equals(genTable.getTplCategory())) {
             String options = JsonUtils.toJsonString(genTable.getParams());
-            Map<String, String> paramsObj = JsonUtils.parseMap(options);
-            if (StringUtils.isEmpty(paramsObj.get(GenConstants.TREE_CODE))) {
+            Map<String, Object> paramsObj = JsonUtils.parseMap(options);
+            if (ObjectUtil.isEmpty(paramsObj.get(GenConstants.TREE_CODE))) {
                 throw new ServiceException("树编码字段不能为空");
-            } else if (StringUtils.isEmpty(paramsObj.get(GenConstants.TREE_PARENT_CODE))) {
+            } else if (ObjectUtil.isEmpty(paramsObj.get(GenConstants.TREE_PARENT_CODE))) {
                 throw new ServiceException("树父编码字段不能为空");
-            } else if (StringUtils.isEmpty(paramsObj.get(GenConstants.TREE_NAME))) {
+            } else if (ObjectUtil.isEmpty(paramsObj.get(GenConstants.TREE_NAME))) {
                 throw new ServiceException("树名称字段不能为空");
             } else if (GenConstants.TPL_SUB.equals(genTable.getTplCategory())) {
                 if (StringUtils.isEmpty(genTable.getSubTableName())) {
@@ -436,13 +437,13 @@ public class GenTableServiceImpl implements IGenTableService {
      * @param genTable 设置后的生成对象
      */
     public void setTableFromOptions(GenTable genTable) {
-        Map<String, String> paramsObj = JsonUtils.parseMap(genTable.getOptions());
+        Map<String, Object> paramsObj = JsonUtils.parseMap(genTable.getOptions());
         if (ObjectUtil.isNotNull(paramsObj)) {
-            String treeCode = paramsObj.get(GenConstants.TREE_CODE);
-            String treeParentCode = paramsObj.get(GenConstants.TREE_PARENT_CODE);
-            String treeName = paramsObj.get(GenConstants.TREE_NAME);
-            String parentMenuId = paramsObj.get(GenConstants.PARENT_MENU_ID);
-            String parentMenuName = paramsObj.get(GenConstants.PARENT_MENU_NAME);
+            String treeCode = Convert.toStr(paramsObj.get(GenConstants.TREE_CODE));
+            String treeParentCode = Convert.toStr(paramsObj.get(GenConstants.TREE_PARENT_CODE));
+            String treeName = Convert.toStr(paramsObj.get(GenConstants.TREE_NAME));
+            String parentMenuId = Convert.toStr(paramsObj.get(GenConstants.PARENT_MENU_ID));
+            String parentMenuName = Convert.toStr(paramsObj.get(GenConstants.PARENT_MENU_NAME));
 
             genTable.setTreeCode(treeCode);
             genTable.setTreeParentCode(treeParentCode);

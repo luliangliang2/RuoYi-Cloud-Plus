@@ -1,61 +1,60 @@
 package ${packageName}.service;
 
-import java.util.List;
+import com.ruoyi.common.mybatis.core.page.PageQuery;
+import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import ${packageName}.domain.${ClassName};
+import ${packageName}.domain.vo.${ClassName}Vo;
+import ${packageName}.domain.bo.${ClassName}Bo;
+#if($table.crud || $table.sub)
+#end
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * ${functionName}Service接口
- * 
+ *
  * @author ${author}
  * @date ${datetime}
  */
-public interface I${ClassName}Service 
-{
+public interface I${ClassName}Service {
     /**
-     * 查询${functionName}
-     * 
-     * @param ${pkColumn.javaField} ${functionName}主键
-     * @return ${functionName}
+     * 查询单个
+     * @return
      */
-    public ${ClassName} select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+    ${ClassName}Vo queryById(${pkColumn.javaType} ${pkColumn.javaField});
+
+    #if($table.crud || $table.sub)
+    /**
+     * 查询列表
+     */
+    TableDataInfo<${ClassName}Vo> queryPageList(${ClassName}Bo bo, PageQuery pageQuery);
+    #end
 
     /**
-     * 查询${functionName}列表
-     * 
-     * @param ${className} ${functionName}
-     * @return ${functionName}集合
+     * 查询列表
      */
-    public List<${ClassName}> select${ClassName}List(${ClassName} ${className});
+    List<${ClassName}Vo> queryList(${ClassName}Bo bo);
 
     /**
-     * 新增${functionName}
-     * 
-     * @param ${className} ${functionName}
-     * @return 结果
+     * 根据新增业务对象插入${functionName}
+     * @param bo ${functionName}新增业务对象
+     * @return
      */
-    public int insert${ClassName}(${ClassName} ${className});
+    Boolean insertByBo(${ClassName}Bo bo);
 
     /**
-     * 修改${functionName}
-     * 
-     * @param ${className} ${functionName}
-     * @return 结果
+     * 根据编辑业务对象修改${functionName}
+     * @param bo ${functionName}编辑业务对象
+     * @return
      */
-    public int update${ClassName}(${ClassName} ${className});
+    Boolean updateByBo(${ClassName}Bo bo);
 
     /**
-     * 批量删除${functionName}
-     * 
-     * @param ${pkColumn.javaField}s 需要删除的${functionName}主键集合
-     * @return 结果
+     * 校验并删除数据
+     * @param ids 主键集合
+     * @param isValid 是否校验,true-删除前校验,false-不校验
+     * @return
      */
-    public int delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaType}[] ${pkColumn.javaField}s);
-
-    /**
-     * 删除${functionName}信息
-     * 
-     * @param ${pkColumn.javaField} ${functionName}主键
-     * @return 结果
-     */
-    public int delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+    Boolean deleteWithValidByIds(Collection<${pkColumn.javaType}> ids, Boolean isValid);
 }

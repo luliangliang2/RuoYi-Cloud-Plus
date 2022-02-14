@@ -1,6 +1,7 @@
 package com.ruoyi.gen.util;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.core.constant.GenConstants;
 import com.ruoyi.common.core.utils.DateUtils;
@@ -76,7 +77,7 @@ public class VelocityUtils {
 
     public static void setMenuVelocityContext(VelocityContext context, GenTable genTable) {
         String options = genTable.getOptions();
-        Map<String, String> paramsObj = JsonUtils.parseMap(options);
+        Map<String, Object> paramsObj = JsonUtils.parseMap(options);
         String parentMenuId = getParentMenuId(paramsObj);
         context.put("parentMenuId", parentMenuId);
     }
@@ -125,6 +126,8 @@ public class VelocityUtils {
     public static List<String> getTemplateList(String tplCategory) {
         List<String> templates = new ArrayList<String>();
         templates.add("vm/java/domain.java.vm");
+        templates.add("vm/java/bo.java.vm");
+        templates.add("vm/java/vo.java.vm");
         templates.add("vm/java/mapper.java.vm");
         templates.add("vm/java/service.java.vm");
         templates.add("vm/java/serviceImpl.java.vm");
@@ -164,6 +167,12 @@ public class VelocityUtils {
 
         if (template.contains("domain.java.vm")) {
             fileName = StringUtils.format("{}/domain/{}.java", javaPath, className);
+        }
+        if (template.contains("vo.java.vm")) {
+            fileName = StringUtils.format("{}/domain/vo/{}Vo.java", javaPath, className);
+        }
+        if (template.contains("bo.java.vm")) {
+            fileName = StringUtils.format("{}/domain/bo/{}Bo.java", javaPath, className);
         }
         if (template.contains("sub-domain.java.vm") && StringUtils.equals(GenConstants.TPL_SUB, genTable.getTplCategory())) {
             fileName = StringUtils.format("{}/domain/{}.java", javaPath, genTable.getSubTable().getClassName());
@@ -260,10 +269,10 @@ public class VelocityUtils {
      * @param paramsObj 生成其他选项
      * @return 上级菜单ID字段
      */
-    public static String getParentMenuId(Map<String, String> paramsObj) {
+    public static String getParentMenuId(Map<String, Object> paramsObj) {
         if (CollUtil.isNotEmpty(paramsObj) && paramsObj.containsKey(GenConstants.PARENT_MENU_ID)
-                && StringUtils.isNotEmpty(paramsObj.get(GenConstants.PARENT_MENU_ID))) {
-            return paramsObj.get(GenConstants.PARENT_MENU_ID);
+                && StringUtils.isNotEmpty(Convert.toStr(paramsObj.get(GenConstants.PARENT_MENU_ID)))) {
+            return Convert.toStr(paramsObj.get(GenConstants.PARENT_MENU_ID));
         }
         return DEFAULT_PARENT_MENU_ID;
     }
