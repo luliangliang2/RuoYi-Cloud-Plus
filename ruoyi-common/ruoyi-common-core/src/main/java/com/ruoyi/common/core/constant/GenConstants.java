@@ -94,12 +94,12 @@ public interface GenConstants {
     /**
      * Entity基类字段
      */
-    String[] BASE_ENTITY = {"createBy", "createTime", "updateBy", "updateTime", "remark"};
+    String[] BASE_ENTITY = {"createBy", "createTime", "updateBy", "updateTime"};
 
     /**
      * Tree基类字段
      */
-    String[] TREE_ENTITY = {"parentName", "parentId", "orderNum", "ancestors"};
+    String[] TREE_ENTITY = {"parentName", "parentId", "children"};
 
     /**
      * 文本框
