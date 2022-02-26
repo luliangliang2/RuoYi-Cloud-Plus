@@ -1,5 +1,7 @@
 package com.ruoyi.gateway.filter;
 
+import cn.dev33.satoken.context.SaHolder;
+import cn.dev33.satoken.router.SaHttpMethod;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
@@ -25,6 +27,14 @@ public class AuthFilter {
             // 开放地址
             .setExcludeList(ignoreWhite.getWhites())
             .addExclude("/favicon.ico")
+            .setBeforeAuth(s -> {
+                SaHolder.getResponse()
+                    .setHeader("Access-Control-Allow-Origin", "*")
+                    .setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
+                    .setHeader("Access-Control-Max-Age", "3600")
+                    .setHeader("Access-Control-Allow-Headers", "*");
+                SaRouter.match(SaHttpMethod.OPTIONS) .back();
+            })
             // 鉴权方法：每次访问进入
             .setAuth(obj -> {
                 // 登录校验 -- 拦截所有路由
