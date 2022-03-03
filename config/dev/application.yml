@@ -265,6 +265,7 @@ swagger:
     name: Lion Li
     email: crazylionli@163.com
     url: https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus
+  basePackage: com.ruoyi
 
 knife4j:
   # 是否开启Knife4j增强模式
