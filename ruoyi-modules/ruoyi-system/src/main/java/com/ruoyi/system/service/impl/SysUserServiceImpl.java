@@ -119,7 +119,7 @@ public class SysUserServiceImpl implements ISysUserService {
         QueryWrapper<SysUser> wrapper = Wrappers.query();
         wrapper.eq("u.del_flag", UserConstants.USER_NORMAL)
             .and(w -> w.ne("r.role_id", user.getRoleId()).or().isNull("r.role_id"))
-            .notIn("u.user_id", userId)
+            .notIn(userId != null, "u.user_id", userId)
             .like(StringUtils.isNotBlank(user.getUserName()), "u.user_name", user.getUserName())
             .like(StringUtils.isNotBlank(user.getPhonenumber()), "u.phonenumber", user.getPhonenumber());
         Page<SysUser> page = baseMapper.selectUnallocatedList(pageQuery.build(), wrapper);
