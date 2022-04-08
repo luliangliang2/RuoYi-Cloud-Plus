@@ -14,6 +14,7 @@ public class RuoyiDocApplication {
     public static void main(String[] args) {
         SpringApplication.run(RuoyiDocApplication.class, args);
         System.out.println("(♥◠‿◠)ﾉﾞ  文档中心 启动成功   ლ(´ڡ`ლ)ﾞ  ");
+        System.out.println("芜湖~");
     }
 
 }
