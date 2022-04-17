@@ -42,7 +42,7 @@ public class SysLoginService {
      * 登录
      */
     public String login(String username, String password) {
-        LoginUser userInfo = remoteUserService.getUserInfo(username);
+        
 
         // 获取用户登录错误次数(可自定义限制策略 例如: key + username + ip)
         Integer errorNumber = RedisUtils.getCacheObject(CacheConstants.LOGIN_ERROR + username);
@@ -51,6 +51,7 @@ public class SysLoginService {
             recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.password.retry.limit.exceed", CacheConstants.LOGIN_ERROR_LIMIT_TIME));
             throw new UserException("user.password.retry.limit.exceed", CacheConstants.LOGIN_ERROR_LIMIT_TIME);
         }
+        LoginUser userInfo = remoteUserService.getUserInfo(username);
 
         if (!BCrypt.checkpw(password, userInfo.getPassword())) {
             // 是否第一次
