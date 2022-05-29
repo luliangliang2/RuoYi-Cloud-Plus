@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.project.common.web.config.I18nConfig,\
+  com.project.common.web.config.UndertowConfig

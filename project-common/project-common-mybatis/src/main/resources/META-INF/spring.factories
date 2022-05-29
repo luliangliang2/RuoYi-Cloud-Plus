@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.project.common.mybatis.config.MybatisPlusConfiguration,\
+  com.project.common.mybatis.service.SysDataScopeService

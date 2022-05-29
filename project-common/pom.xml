@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.project</groupId>
+        <artifactId>project-cloud-plus</artifactId>
+        <version>0.11.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>project-common-bom</module>
+        <module>project-common-alibaba-bom</module>
+        <module>project-common-log</module>
+        <module>project-common-dict</module>
+        <module>project-common-excel</module>
+        <module>project-common-core</module>
+        <module>project-common-redis</module>
+        <module>project-common-swagger</module>
+        <module>project-common-security</module>
+        <module>project-common-satoken</module>
+        <module>project-common-web</module>
+        <module>project-common-mybatis</module>
+        <module>project-common-job</module>
+        <module>project-common-dubbo</module>
+        <module>project-common-seata</module>
+        <module>project-common-loadbalancer</module>
+        <module>project-common-oss</module>
+        <module>project-common-idempotent</module>
+        <module>project-common-mail</module>
+        <module>project-common-sms</module>
+    </modules>
+
+    <artifactId>project-common</artifactId>
+    <packaging>pom</packaging>
+
+    <description>
+        project-common通用模块
+    </description>
+
+</project>

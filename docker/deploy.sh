@@ -63,17 +63,17 @@ base(){
 
 #启动监控模块
 monitor(){
-    docker-compose up -d ruoyi-monitor sentinel ruoyi-xxl-job-admin
+    docker-compose up -d project-monitor sentinel project-xxl-job-admin
 }
 
 #启动程序模块
 start(){
-    docker-compose up -d ruoyi-gateway ruoyi-auth ruoyi-system ruoyi-resource
+    docker-compose up -d project-gateway project-auth project-system project-resource
 }
 
 #停止程序模块
 stop(){
-    docker-compose stop ruoyi-gateway ruoyi-auth ruoyi-system ruoyi-resource
+    docker-compose stop project-gateway project-auth project-system project-resource
 }
 
 #关闭所有模块

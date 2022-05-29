@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.project.common.swagger.config.SwaggerAutoConfiguration,\
+  com.project.common.swagger.config.SwaggerBeanPostProcessor

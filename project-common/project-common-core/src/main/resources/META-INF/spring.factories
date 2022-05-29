@@ -1,0 +1,8 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.project.common.core.utils.SpringUtils,\
+  com.project.common.core.config.ApplicationConfig,\
+  com.project.common.core.config.JacksonConfig,\
+  com.project.common.core.config.ValidatorConfig,\
+  com.project.common.core.config.AsyncConfig
+
+

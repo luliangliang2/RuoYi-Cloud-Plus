@@ -1,6 +1,6 @@
 [
   {
-    "resource": "ruoyi-auth",
+    "resource": "project-auth",
     "count": 500,
     "grade": 1,
     "limitApp": "default",
@@ -8,7 +8,7 @@
     "controlBehavior": 0
   },
   {
-    "resource": "ruoyi-system",
+    "resource": "project-system",
     "count": 1000,
     "grade": 1,
     "limitApp": "default",
@@ -16,7 +16,7 @@
     "controlBehavior": 0
   },
   {
-    "resource": "ruoyi-resource",
+    "resource": "project-resource",
     "count": 500,
     "grade": 1,
     "limitApp": "default",

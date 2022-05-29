@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.project.common.loadbalance.config.CustomLoadBalanceAutoConfiguration
+org.springframework.boot.env.EnvironmentPostProcessor=\
+  com.project.common.loadbalance.config.CustomEnvironmentPostProcessor

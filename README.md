@@ -1,23 +1,23 @@
 ## 平台简介(公测)
 
-[![码云Gitee](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/badge/star.svg?theme=blue)](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus)
-[![GitHub](https://img.shields.io/github/stars/JavaLionLi/RuoYi-Cloud-Plus.svg?style=social&label=Stars)](https://github.com/JavaLionLi/RuoYi-Cloud-Plus)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/blob/master/LICENSE)
-[![使用IntelliJ IDEA开发维护](https://img.shields.io/badge/IntelliJ%20IDEA-提供支持-blue.svg)](https://www.jetbrains.com/?from=RuoYi-Cloud-Plus)
+[![码云Gitee](https://gitee.com/JavaLionLi/Project-Cloud-Plus/badge/star.svg?theme=blue)](https://gitee.com/JavaLionLi/Project-Cloud-Plus)
+[![GitHub](https://img.shields.io/github/stars/JavaLionLi/Project-Cloud-Plus.svg?style=social&label=Stars)](https://github.com/JavaLionLi/Project-Cloud-Plus)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://gitee.com/JavaLionLi/Project-Cloud-Plus/blob/master/LICENSE)
+[![使用IntelliJ IDEA开发维护](https://img.shields.io/badge/IntelliJ%20IDEA-提供支持-blue.svg)](https://www.jetbrains.com/?from=Project-Cloud-Plus)
 <br>
-[![RuoYi-Cloud-Plus](https://img.shields.io/badge/RuoYi_Cloud_Plus-0.11.0-success.svg)](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus)
+[![Project-Cloud-Plus](https://img.shields.io/badge/Project_Cloud_Plus-0.11.0-success.svg)](https://gitee.com/JavaLionLi/Project-Cloud-Plus)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.6-blue.svg)]()
 [![JDK-8+](https://img.shields.io/badge/JDK-8-green.svg)]()
 [![JDK-11](https://img.shields.io/badge/JDK-11-green.svg)]()
 
-> RuoYi-Cloud-Plus `微服务通用权限管理系统` 重写 RuoYi-Cloud 全方位升级(不兼容原框架)
+> Project-Cloud-Plus `微服务通用权限管理系统` 重写 Project-Cloud 全方位升级(不兼容原框架)
 
-> 系统演示: [传送门](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/系统演示?sort_id=4836388) 分布式集群版本(功能一致)
+> 系统演示: [传送门](https://gitee.com/JavaLionLi/Project-Vue-Plus/wikis/系统演示?sort_id=4836388) 分布式集群版本(功能一致)
 
 | 功能介绍         | 使用技术                     | 文档地址                                                                                              | 特性注意事项                       |
 |--------------|--------------------------|---------------------------------------------------------------------------------------------------|------------------------------|
-| 微服务权限管理系统    | RuoYi-Cloud-Plus         | [RuoYi-Cloud-Plus官网](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus)                               | 重写 RuoYi-Cloud 全方位升级(不兼容原框架) |
-| 分布式集群分支      | RuoYi-Vue-Plus           | [RuoYi-Vue-Plus官网](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus)                                   | 重写 RuoYi-Vue (不兼容原框架)        |
+| 微服务权限管理系统    | Project-Cloud-Plus         | [Project-Cloud-Plus官网](https://gitee.com/JavaLionLi/Project-Cloud-Plus)                               | 重写 Project-Cloud 全方位升级(不兼容原框架) |
+| 分布式集群分支      | Project-Vue-Plus           | [Project-Vue-Plus官网](https://gitee.com/JavaLionLi/Project-Vue-Plus)                                   | 重写 Project-Vue (不兼容原框架)        |
 | 前端开发框架       | Vue、Element UI           | [Element UI官网](https://element.eleme.cn/#/zh-CN)                                                  |                              |
 | 后端开发框架       | SpringBoot               | [SpringBoot官网](https://spring.io/projects/spring-boot/#learn)                                     |                              |
 | 微服务开发框架      | SpringCloud              | [SpringCloud官网](https://spring.io/projects/spring-cloud)                                          |                              |
@@ -48,8 +48,8 @@
 | 分布式幂等        | Redisson                 | [Lock4j文档](https://gitee.com/baomidou/lock4j)                                                     | 拦截重复提交                       |
 | 分布式任务调度      | Xxl-Job                  | [Xxl-Job官网](https://www.xuxueli.com/xxl-job/)                                                     | 高性能 高可靠 易扩展                  |
 | 分布式文件存储      | Minio                    | [Minio文档](https://docs.min.io/)                                                                   | 本地存储                         |
-| 分布式云存储       | 七牛、阿里、腾讯                 | [OSS使用文档](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/pages?sort_id=4359146&doc_id=1469725) | 云存储                          |
-| 短信模块         | 阿里、腾讯                    | [短信使用文档](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/wikis/pages?sort_id=5578491&doc_id=1469725)  | 短信发送                         |
+| 分布式云存储       | 七牛、阿里、腾讯                 | [OSS使用文档](https://gitee.com/JavaLionLi/Project-Vue-Plus/wikis/pages?sort_id=4359146&doc_id=1469725) | 云存储                          |
+| 短信模块         | 阿里、腾讯                    | [短信使用文档](https://gitee.com/JavaLionLi/Project-Vue-Plus/wikis/pages?sort_id=5578491&doc_id=1469725)  | 短信发送                         |
 | 分布式监控(未完成)   | Prometheus、Grafana       | [Prometheus文档](https://prometheus.io/docs/introduction/overview/)                                 | 全方位性能监控                      |
 | 服务监控         | SpringBoot-Admin         | [SpringBoot-Admin文档](https://codecentric.github.io/spring-boot-admin/current/)                    | 全方位服务监控                      |
 | 数据库框架        | Mybatis-Plus             | [Mybatis-Plus文档](https://baomidou.com/guide/)                                                     | 快速 CRUD 增加开发效率               |
@@ -69,14 +69,14 @@
 
 使用框架前请仔细阅读文档重点注意事项
 <br>
->[初始化项目 必看](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages?sort_id=5279751&doc_id=2056143)
->>[https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages?sort_id=5279751&doc_id=2056143](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages?sort_id=5279751&doc_id=2056143)
+>[初始化项目 必看](https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages?sort_id=5279751&doc_id=2056143)
+>>[https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages?sort_id=5279751&doc_id=2056143](https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages?sort_id=5279751&doc_id=2056143)
 >
->[应用部署 Wiki](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages?sort_id=5305504&doc_id=2056143)
->>[https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages?sort_id=5305504&doc_id=2056143](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages?sort_id=5305504&doc_id=2056143)
+>[应用部署 Wiki](https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages?sort_id=5305504&doc_id=2056143)
+>>[https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages?sort_id=5305504&doc_id=2056143](https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages?sort_id=5305504&doc_id=2056143)
 >
->[参考文档 Wiki](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages)
->>[https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages](https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus/wikis/pages)
+>[参考文档 Wiki](https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages)
+>>[https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages](https://gitee.com/JavaLionLi/Project-Cloud-Plus/wikis/pages)
 
 
 ## 软件架构图
@@ -89,10 +89,10 @@
 
 ### 其他
 
-* 同步升级 RuoYi-Cloud
-* github 地址 [RuoYi-Cloud-Plus-github](https://github.com/JavaLionLi/RuoYi-Cloud-Plus)
-* 分离版分支 [RuoYi-Vue-Plus](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus)
-* 单模块 fast 分支 [RuoYi-Vue-Plus-fast](https://gitee.com/JavaLionLi/RuoYi-Vue-Plus/tree/fast/)
+* 同步升级 Project-Cloud
+* github 地址 [Project-Cloud-Plus-github](https://github.com/JavaLionLi/Project-Cloud-Plus)
+* 分离版分支 [Project-Vue-Plus](https://gitee.com/JavaLionLi/Project-Vue-Plus)
+* 单模块 fast 分支 [Project-Vue-Plus-fast](https://gitee.com/JavaLionLi/Project-Vue-Plus/tree/fast/)
 
 ## 捐献作者
 

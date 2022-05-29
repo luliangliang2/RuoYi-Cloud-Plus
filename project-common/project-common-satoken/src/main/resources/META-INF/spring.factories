@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.project.common.satoken.core.dao.PlusSaTokenDao,\
+  com.project.common.satoken.core.service.SaPermissionImpl,\
+  com.project.common.satoken.config.SaTokenConfiguration

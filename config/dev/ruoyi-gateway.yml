@@ -40,8 +40,8 @@ spring:
           enabled: true
       routes:
         # 认证中心
-        - id: ruoyi-auth
-          uri: lb://ruoyi-auth
+        - id: project-auth
+          uri: lb://project-auth
           predicates:
             - Path=/auth/**
           filters:
@@ -50,22 +50,22 @@ spring:
             - ValidateCodeFilter
             - StripPrefix=1
         # 代码生成
-        - id: ruoyi-gen
-          uri: lb://ruoyi-gen
+        - id: project-gen
+          uri: lb://project-gen
           predicates:
             - Path=/code/**
           filters:
             - StripPrefix=1
         # 系统模块
-        - id: ruoyi-system
-          uri: lb://ruoyi-system
+        - id: project-system
+          uri: lb://project-system
           predicates:
             - Path=/system/**
           filters:
             - StripPrefix=1
         # 资源服务
-        - id: ruoyi-resource
-          uri: lb://ruoyi-resource
+        - id: project-resource
+          uri: lb://project-resource
           predicates:
             - Path=/resource/**
           filters:

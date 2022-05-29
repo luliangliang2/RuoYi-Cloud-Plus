@@ -52,7 +52,7 @@ dubbo:
     check: false
   scan:
     # 接口实现类扫描
-    base-packages: com.ruoyi.**.dubbo
+    base-packages: com.project.**.dubbo
   # 自定义配置
   custom:
     # 全局请求log
@@ -199,11 +199,11 @@ sa-token:
 mybatis-plus:
   # 不支持多包, 如有需要可在注解配置 或 提升扫包等级
   # 例如 com.**.**.mapper
-  mapperPackage: com.ruoyi.**.mapper
+  mapperPackage: com.project.**.mapper
   # 对应的 XML 文件位置
   mapperLocations: classpath*:mapper/**/*Mapper.xml
   # 实体扫描，多个package用逗号或者分号分隔
-  typeAliasesPackage: com.ruoyi.**.domain
+  typeAliasesPackage: com.project.**.domain
   # 启动时是否检查 MyBatis XML 文件的存在，默认不检查
   checkConfigLocation: false
   configuration:
@@ -239,7 +239,7 @@ swagger:
   # 是否开启swagger
   enabled: true
   # 标题
-  title: '标题：RuoYi-Cloud-Plus微服务权限管理系统_接口文档'
+  title: '标题：Project-Cloud-Plus微服务权限管理系统_接口文档'
   # 描述
   description: '描述：微服务权限管理系统, 具体包括XXX,XXX模块...'
   # 版本
@@ -248,7 +248,7 @@ swagger:
   contact:
     name: Lion Li
     email: crazylionli@163.com
-    url: https://gitee.com/JavaLionLi/RuoYi-Cloud-Plus
+    url: https://gitee.com/JavaLionLi/Project-Cloud-Plus
 
 knife4j:
   # 是否开启Knife4j增强模式
@@ -258,7 +258,7 @@ knife4j:
   # 登录认证
   basic:
     enable: true
-    username: ruoyi
+    username: project
     password: 123456
   # 前端Ui的个性化配置属性
   setting:
