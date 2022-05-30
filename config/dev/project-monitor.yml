@@ -2,8 +2,8 @@
 spring:
   security:
     user:
-      name: project
-      password: 123456
+      name: sentinel
+      password: sentinel
   boot:
     admin:
       ui:

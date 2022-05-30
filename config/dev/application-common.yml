@@ -97,11 +97,11 @@ spring:
       eager: true
       transport:
         # 控制台地址
-        dashboard: localhost:8718
+        dashboard: 43.138.100.4:8718
 
   # redis通用配置 子服务可以自行配置进行覆盖
   redis:
-    host: localhost
+    host: 43.138.100.4
     port: 6379
     # 密码(如没有密码请注释掉)
     # password:
