@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.project</groupId>
+        <artifactId>project-cloud-plus</artifactId>
+        <version>0.11.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>project-portal</module>
+        <module>project-user-center</module>
+        <module>project-community</module>
+        <module>project-wallet</module>
+        <module>project-order</module>
+        <module>project-product</module>
+        <module>project-contact</module>
+        <module>project-service-push</module>
+        <module>project-online-resume</module>
+        <module>project-dynamic</module>
+        <module>projecdt-consult</module>
+    </modules>
+
+    <artifactId>project-hello-classmate</artifactId>
+    <packaging>pom</packaging>
+
+    <description>
+        project-hello-classmate 你好同学项目模块
+    </description>
+
+    <dependencies>
+        <!-- 自定义负载均衡(多团队开发使用) -->
+        <!--        <dependency>-->
+        <!--            <groupId>com.project</groupId>-->
+        <!--            <artifactId>project-common-loadbalancer</artifactId>-->
+        <!--        </dependency>-->
+    </dependencies>
+</project>
