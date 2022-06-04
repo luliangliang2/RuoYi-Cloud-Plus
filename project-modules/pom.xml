@@ -14,6 +14,7 @@
         <module>project-job</module>
         <module>project-resource</module>
         <module>project-admin</module>
+        <module>project-portal</module>
     </modules>
 
     <artifactId>project-modules</artifactId>
