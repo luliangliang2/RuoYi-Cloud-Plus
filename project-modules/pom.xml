@@ -13,6 +13,7 @@
         <module>project-gen</module>
         <module>project-job</module>
         <module>project-resource</module>
+        <module>project-admin</module>
     </modules>
 
     <artifactId>project-modules</artifactId>

@@ -290,7 +290,6 @@
         <module>project-modules</module>
         <module>project-api</module>
         <module>project-common</module>
-        <module>project-hello-classmate</module>
     </modules>
     <packaging>pom</packaging>
 
