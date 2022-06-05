@@ -40,10 +40,21 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Project Common Security-->
+        <!-- Mysql Connector -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+        <!-- Project Common Log -->
         <dependency>
             <groupId>com.project</groupId>
-            <artifactId>project-common-security</artifactId>
+            <artifactId>project-common-log</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.project</groupId>
+            <artifactId>project-common-dict</artifactId>
         </dependency>
 
         <!-- Project Common Swagger -->
@@ -59,12 +70,28 @@
 
         <dependency>
             <groupId>com.project</groupId>
+            <artifactId>project-common-mybatis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.project</groupId>
             <artifactId>project-common-dubbo</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.project</groupId>
             <artifactId>project-common-seata</artifactId>
+        </dependency>
+
+        <!-- Project Api System -->
+        <dependency>
+            <groupId>com.project</groupId>
+            <artifactId>project-api-system</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.project</groupId>
+            <artifactId>project-api-resource</artifactId>
         </dependency>
 
         <!-- 自定义负载均衡(多团队开发使用) -->
