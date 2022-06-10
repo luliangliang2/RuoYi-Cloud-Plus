@@ -1,4 +1,4 @@
-package com.project.admin.contact.domain;
+package com.project.contact.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.project.common.core.web.domain.BaseEntity;
@@ -7,38 +7,38 @@ import lombok.EqualsAndHashCode;
 
 
 /**
- * 沟通消息对象 user_communication_message
+ * 对我感兴趣对象 user_interested_to_me
  *
- * @author project
- * @date 2022-06-05
+ * @author huan.li
+ * @date 2022-06-10
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@TableName("user_communication_message")
-public class UserCommunicationMessage extends BaseEntity {
+@TableName("user_interested_to_me")
+public class UserInterestedToMe extends BaseEntity {
 
 private static final long serialVersionUID=1L;
 
     /**
-     * 逻辑删除;0未删除1已删除
-     */
-    private Integer deleted;
-    /**
-     * id
+     * ID
      */
      @TableId(value = "id")
     private Long id;
     /**
-     * 代表当前用户
+     * 当前用户
      */
     private Long userInfoId;
     /**
-     * 代表人脉用户
+     * 人脉用户
      */
     private Long contactInfoId;
     /**
-     * 消息内容
+     * 搜索值
      */
-    private String messageContent;
+    private String searchValue;
+    /**
+     * 逻辑删除;0->未删除，1->删除
+     */
+    private Integer deleted;
 
 }

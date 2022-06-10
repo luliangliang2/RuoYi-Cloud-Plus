@@ -1,81 +1,134 @@
-DROP DATABASE IF EXISTS `ry-seata`;
+/*
+ Navicat Premium Data Transfer
 
-CREATE DATABASE  `ry-seata` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ Source Server         : localhost
+ Source Server Type    : MySQL
+ Source Server Version : 50737
+ Source Host           : localhost:3306
+ Source Schema         : ry-seata
+
+ Target Server Type    : MySQL
+ Target Server Version : 50737
+ File Encoding         : 65001
+
+ Date: 10/06/2022 21:46:53
+*/
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-USE `ry-seata`;
+-- ----------------------------
+-- Table structure for branch_table
+-- ----------------------------
+DROP TABLE IF EXISTS `branch_table`;
+CREATE TABLE `branch_table`  (
+  `branch_id` bigint(20) NOT NULL,
+  `xid` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `transaction_id` bigint(20) NULL DEFAULT NULL,
+  `resource_group_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `resource_id` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `branch_type` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `status` tinyint(4) NULL DEFAULT NULL,
+  `client_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `application_data` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `gmt_create` datetime(6) NULL DEFAULT NULL,
+  `gmt_modified` datetime(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`branch_id`) USING BTREE,
+  INDEX `idx_xid`(`xid`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- -------------------------------- The script used when storeMode is 'db' --------------------------------
--- the table to store GlobalSession data
-CREATE TABLE IF NOT EXISTS `global_table`
-(
-    `xid`                       VARCHAR(128) NOT NULL,
-    `transaction_id`            BIGINT,
-    `status`                    TINYINT      NOT NULL,
-    `application_id`            VARCHAR(32),
-    `transaction_service_group` VARCHAR(32),
-    `transaction_name`          VARCHAR(128),
-    `timeout`                   INT,
-    `begin_time`                BIGINT,
-    `application_data`          VARCHAR(2000),
-    `gmt_create`                DATETIME,
-    `gmt_modified`              DATETIME,
-    PRIMARY KEY (`xid`),
-    KEY `idx_gmt_modified_status` (`gmt_modified`, `status`),
-    KEY `idx_transaction_id` (`transaction_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+-- ----------------------------
+-- Records of branch_table
+-- ----------------------------
 
--- the table to store BranchSession data
-CREATE TABLE IF NOT EXISTS `branch_table`
-(
-    `branch_id`         BIGINT       NOT NULL,
-    `xid`               VARCHAR(128) NOT NULL,
-    `transaction_id`    BIGINT,
-    `resource_group_id` VARCHAR(32),
-    `resource_id`       VARCHAR(256),
-    `branch_type`       VARCHAR(8),
-    `status`            TINYINT,
-    `client_id`         VARCHAR(64),
-    `application_data`  VARCHAR(2000),
-    `gmt_create`        DATETIME(6),
-    `gmt_modified`      DATETIME(6),
-    PRIMARY KEY (`branch_id`),
-    KEY `idx_xid` (`xid`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+-- ----------------------------
+-- Table structure for distributed_lock
+-- ----------------------------
+DROP TABLE IF EXISTS `distributed_lock`;
+CREATE TABLE `distributed_lock`  (
+  `lock_key` char(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `lock_value` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `expire` bigint(20) NULL DEFAULT NULL,
+  PRIMARY KEY (`lock_key`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
--- the table to store lock data
-CREATE TABLE IF NOT EXISTS `lock_table`
-(
-    `row_key`        VARCHAR(128) NOT NULL,
-    `xid`            VARCHAR(128),
-    `transaction_id` BIGINT,
-    `branch_id`      BIGINT       NOT NULL,
-    `resource_id`    VARCHAR(256),
-    `table_name`     VARCHAR(32),
-    `pk`             VARCHAR(36),
-    `status`         TINYINT      NOT NULL DEFAULT '0' COMMENT '0:locked ,1:rollbacking',
-    `gmt_create`     DATETIME,
-    `gmt_modified`   DATETIME,
-    PRIMARY KEY (`row_key`),
-    KEY `idx_status` (`status`),
-    KEY `idx_branch_id` (`branch_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+-- ----------------------------
+-- Records of distributed_lock
+-- ----------------------------
+INSERT INTO `distributed_lock` VALUES ('AsyncCommitting', ' ', 0);
+INSERT INTO `distributed_lock` VALUES ('RetryCommitting', ' ', 0);
+INSERT INTO `distributed_lock` VALUES ('RetryRollbacking', ' ', 0);
+INSERT INTO `distributed_lock` VALUES ('TxTimeoutCheck', ' ', 0);
 
-CREATE TABLE IF NOT EXISTS `distributed_lock`
-(
-    `lock_key`       CHAR(20) NOT NULL,
-    `lock_value`     VARCHAR(20) NOT NULL,
-    `expire`         BIGINT,
-    primary key (`lock_key`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4;
+-- ----------------------------
+-- Table structure for global_table
+-- ----------------------------
+DROP TABLE IF EXISTS `global_table`;
+CREATE TABLE `global_table`  (
+  `xid` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `transaction_id` bigint(20) NULL DEFAULT NULL,
+  `status` tinyint(4) NOT NULL,
+  `application_id` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `transaction_service_group` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `transaction_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `timeout` int(11) NULL DEFAULT NULL,
+  `begin_time` bigint(20) NULL DEFAULT NULL,
+  `application_data` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `gmt_create` datetime(0) NULL DEFAULT NULL,
+  `gmt_modified` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`xid`) USING BTREE,
+  INDEX `idx_gmt_modified_status`(`gmt_modified`, `status`) USING BTREE,
+  INDEX `idx_transaction_id`(`transaction_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
-INSERT INTO `distributed_lock` (lock_key, lock_value, expire) VALUES ('AsyncCommitting', ' ', 0);
-INSERT INTO `distributed_lock` (lock_key, lock_value, expire) VALUES ('RetryCommitting', ' ', 0);
-INSERT INTO `distributed_lock` (lock_key, lock_value, expire) VALUES ('RetryRollbacking', ' ', 0);
-INSERT INTO `distributed_lock` (lock_key, lock_value, expire) VALUES ('TxTimeoutCheck', ' ', 0);
+-- ----------------------------
+-- Records of global_table
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for lock_table
+-- ----------------------------
+DROP TABLE IF EXISTS `lock_table`;
+CREATE TABLE `lock_table`  (
+  `row_key` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `xid` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `transaction_id` bigint(20) NULL DEFAULT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `resource_id` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `table_name` varchar(32) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `pk` varchar(36) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0:locked ,1:rollbacking',
+  `gmt_create` datetime(0) NULL DEFAULT NULL,
+  `gmt_modified` datetime(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`row_key`) USING BTREE,
+  INDEX `idx_status`(`status`) USING BTREE,
+  INDEX `idx_branch_id`(`branch_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of lock_table
+-- ----------------------------
+
+-- ----------------------------
+-- Table structure for undo_log
+-- ----------------------------
+DROP TABLE IF EXISTS `undo_log`;
+CREATE TABLE `undo_log`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `branch_id` bigint(20) NOT NULL,
+  `xid` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `context` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `rollback_info` longblob NOT NULL,
+  `log_status` int(11) NOT NULL,
+  `log_created` datetime(0) NOT NULL,
+  `log_modified` datetime(0) NOT NULL,
+  `ext` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `ux_undo_log`(`xid`, `branch_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of undo_log
+-- ----------------------------
+
+SET FOREIGN_KEY_CHECKS = 1;

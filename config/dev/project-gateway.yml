@@ -70,6 +70,13 @@ spring:
             - Path=/resource/**
           filters:
             - StripPrefix=1
+          # 后台管理模块
+        - id: project-admin
+          uri: lb://project-admin
+          predicates:
+            - Path=/contact/**
+          filters:
+            - StripPrefix=1
 
     # sentinel 配置
     sentinel:
