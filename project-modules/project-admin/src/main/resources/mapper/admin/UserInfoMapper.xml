@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.admin.mapper.UserInfoMapper">
+
+    <resultMap type="com.project.admin.domain.UserInfo" id="UserInfoResult">
+    <result property="id" column="id"/>
+    <result property="userLoginId" column="user_login_id"/>
+    <result property="headUrl" column="head_url"/>
+    <result property="nickName" column="nick_name"/>
+    <result property="realName" column="real_name"/>
+    <result property="idCardNo" column="id_card_no"/>
+    <result property="phone" column="phone"/>
+    <result property="school" column="school"/>
+    <result property="college" column="college"/>
+    <result property="grade" column="grade"/>
+    <result property="major" column="major"/>
+    <result property="personalSignature" column="personal_signature"/>
+    <result property="hometown" column="hometown"/>
+    <result property="deleted" column="deleted"/>
+    <result property="createTime" column="create_time"/>
+    <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+
+</mapper>
