@@ -11,7 +11,7 @@
  Target Server Version : 50737
  File Encoding         : 65001
 
- Date: 10/06/2022 21:46:45
+ Date: 11/06/2022 07:53:41
 */
 
 SET NAMES utf8mb4;
@@ -53,7 +53,7 @@ CREATE TABLE `xxl_job_group`  (
 -- ----------------------------
 -- Records of xxl_job_group
 -- ----------------------------
-INSERT INTO `xxl_job_group` VALUES (1, 'ruoyi-job-executor', '示例执行器', 0, NULL, '2022-06-10 21:41:34');
+INSERT INTO `xxl_job_group` VALUES (1, 'ruoyi-job-executor', '示例执行器', 0, NULL, '2022-06-11 07:53:38');
 
 -- ----------------------------
 -- Table structure for xxl_job_info
@@ -149,7 +149,7 @@ CREATE TABLE `xxl_job_log_report`  (
   `update_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `i_trigger_day`(`trigger_day`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of xxl_job_log_report
@@ -165,6 +165,7 @@ INSERT INTO `xxl_job_log_report` VALUES (8, '2022-06-08 00:00:00', 0, 0, 0, NULL
 INSERT INTO `xxl_job_log_report` VALUES (9, '2022-06-07 00:00:00', 0, 0, 0, NULL);
 INSERT INTO `xxl_job_log_report` VALUES (10, '2022-06-09 00:00:00', 0, 0, 0, NULL);
 INSERT INTO `xxl_job_log_report` VALUES (11, '2022-06-10 00:00:00', 0, 0, 0, NULL);
+INSERT INTO `xxl_job_log_report` VALUES (12, '2022-06-11 00:00:00', 0, 0, 0, NULL);
 
 -- ----------------------------
 -- Table structure for xxl_job_logglue
@@ -197,12 +198,12 @@ CREATE TABLE `xxl_job_registry`  (
   `update_time` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `i_g_k_v`(`registry_group`, `registry_key`, `registry_value`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 22 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of xxl_job_registry
 -- ----------------------------
-INSERT INTO `xxl_job_registry` VALUES (21, 'EXECUTOR', 'project-job-executor', 'http://192.168.10.1:9901/', '2022-06-10 21:41:33');
+INSERT INTO `xxl_job_registry` VALUES (26, 'EXECUTOR', 'project-job-executor', 'http://192.168.10.1:9901/', '2022-06-11 07:53:35');
 
 -- ----------------------------
 -- Table structure for xxl_job_user

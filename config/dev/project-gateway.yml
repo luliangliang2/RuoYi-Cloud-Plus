@@ -70,11 +70,25 @@ spring:
             - Path=/resource/**
           filters:
             - StripPrefix=1
-          # 后台管理模块
+        # 用户管理模块
         - id: project-admin
           uri: lb://project-admin
           predicates:
-            - Path=/contact/**
+            - Path=/admin/**
+          filters:
+            - StripPrefix=1
+        # 商品订单模块
+        - id: project-commodity
+          uri: lb://project-commodity
+          predicates:
+            - Path=/commodity/**
+          filters:
+            - StripPrefix=1
+        # 动态服务模块
+        - id: project-dynamic
+          uri: lb://project-dynamic
+          predicates:
+            - Path=/dynamic/**
           filters:
             - StripPrefix=1
 
