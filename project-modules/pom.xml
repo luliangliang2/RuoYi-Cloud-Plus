@@ -15,8 +15,6 @@
         <module>project-resource</module>
         <module>project-admin</module>
         <module>project-portal</module>
-        <module>project-commodity</module>
-        <module>project-dynamic</module>
     </modules>
 
     <artifactId>project-modules</artifactId>

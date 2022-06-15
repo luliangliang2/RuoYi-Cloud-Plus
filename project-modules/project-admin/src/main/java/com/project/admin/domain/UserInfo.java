@@ -7,10 +7,10 @@ import lombok.EqualsAndHashCode;
 
 
 /**
- * 用户详情对象 user_info
+ * 用户信息对象 user_info
  *
  * @author huan.li
- * @date 2022-06-10
+ * @date 2022-06-15
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -20,60 +20,68 @@ public class UserInfo extends BaseEntity {
 private static final long serialVersionUID=1L;
 
     /**
-     * id
+     * 用户ID
      */
      @TableId(value = "id")
     private Long id;
     /**
-     * 用户登录id
+     * 姓名
      */
-    private Long userLoginId;
+    private String name;
     /**
-     * 头像
-     */
-    private String headUrl;
-    /**
-     * 用户昵称
-     */
-    private String nickName;
-    /**
-     * 真实姓名
-     */
-    private String realName;
-    /**
-     * 身份证号码
-     */
-    private String idCardNo;
-    /**
-     * 电话
+     * 手机号码
      */
     private String phone;
     /**
-     * 学校
+     * 头像
      */
-    private String school;
+    private String avatar;
     /**
-     * 学院
+     * 影响力
      */
-    private String college;
+    private Long effectCount;
     /**
-     * 年级
+     * 访客数量
      */
-    private String grade;
+    private Long visitorCount;
     /**
-     * 专业
+     * 公司
      */
-    private String major;
+    private String company;
     /**
-     * 个性签名
+     * 职位
      */
-    private String personalSignature;
+    private String position;
+    /**
+     * 自我介绍
+     */
+    private String selfIntroduction;
+    /**
+     * 职业方向
+     */
+    private String careerDirection;
+    /**
+     * 所在位置
+     */
+    private String location;
     /**
      * 家乡
      */
     private String hometown;
     /**
-     * 逻辑删除;0未删除1已删除
+     * 星座
+     */
+    private Integer constellation;
+    /**
+     * 邮箱
+     */
+    private String email;
+    /**
+     * 搜索值
+     */
+    private String searchValue;
+    /**
+     * 逻辑删除
      */
     private Integer deleted;
 

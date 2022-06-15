@@ -11,100 +11,93 @@ import javax.validation.constraints.*;
 
 
 /**
- * 用户详情业务对象 user_info
+ * 用户信息业务对象 user_info
  *
  * @author huan.li
- * @date 2022-06-10
+ * @date 2022-06-15
  */
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ApiModel("用户详情业务对象")
+@ApiModel("用户信息业务对象")
 public class UserInfoBo extends BaseEntity {
 
     /**
-     * id
+     * 用户ID
      */
-    @ApiModelProperty(value = "id", required = true)
-    @NotNull(message = "id不能为空", groups = { EditGroup.class })
+    @ApiModelProperty(value = "用户ID", required = true)
+    @NotNull(message = "用户ID不能为空", groups = { EditGroup.class })
     private Long id;
 
     /**
-     * 用户登录id
+     * 姓名
      */
-    @ApiModelProperty(value = "用户登录id", required = true)
-    @NotNull(message = "用户登录id不能为空", groups = { AddGroup.class, EditGroup.class })
-    private Long userLoginId;
+    @ApiModelProperty(value = "姓名", required = true)
+    @NotBlank(message = "姓名不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String name;
+
+    /**
+     * 手机号码
+     */
+    @ApiModelProperty(value = "手机号码", required = true)
+    @NotBlank(message = "手机号码不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String phone;
 
     /**
      * 头像
      */
     @ApiModelProperty(value = "头像", required = true)
     @NotBlank(message = "头像不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String headUrl;
+    private String avatar;
 
     /**
-     * 用户昵称
+     * 影响力
      */
-    @ApiModelProperty(value = "用户昵称", required = true)
-    @NotBlank(message = "用户昵称不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String nickName;
+    @ApiModelProperty(value = "影响力", required = true)
+    @NotNull(message = "影响力不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Long effectCount;
 
     /**
-     * 真实姓名
+     * 访客数量
      */
-    @ApiModelProperty(value = "真实姓名", required = true)
-    @NotBlank(message = "真实姓名不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String realName;
+    @ApiModelProperty(value = "访客数量", required = true)
+    @NotNull(message = "访客数量不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Long visitorCount;
 
     /**
-     * 身份证号码
+     * 公司
      */
-    @ApiModelProperty(value = "身份证号码", required = true)
-    @NotBlank(message = "身份证号码不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String idCardNo;
+    @ApiModelProperty(value = "公司", required = true)
+    @NotBlank(message = "公司不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String company;
 
     /**
-     * 电话
+     * 职位
      */
-    @ApiModelProperty(value = "电话", required = true)
-    @NotBlank(message = "电话不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String phone;
+    @ApiModelProperty(value = "职位", required = true)
+    @NotBlank(message = "职位不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String position;
 
     /**
-     * 学校
+     * 自我介绍
      */
-    @ApiModelProperty(value = "学校", required = true)
-    @NotBlank(message = "学校不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String school;
+    @ApiModelProperty(value = "自我介绍", required = true)
+    @NotBlank(message = "自我介绍不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String selfIntroduction;
 
     /**
-     * 学院
+     * 职业方向
      */
-    @ApiModelProperty(value = "学院", required = true)
-    @NotBlank(message = "学院不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String college;
+    @ApiModelProperty(value = "职业方向", required = true)
+    @NotBlank(message = "职业方向不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String careerDirection;
 
     /**
-     * 年级
+     * 所在位置
      */
-    @ApiModelProperty(value = "年级", required = true)
-    @NotBlank(message = "年级不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String grade;
-
-    /**
-     * 专业
-     */
-    @ApiModelProperty(value = "专业", required = true)
-    @NotBlank(message = "专业不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String major;
-
-    /**
-     * 个性签名
-     */
-    @ApiModelProperty(value = "个性签名", required = true)
-    @NotBlank(message = "个性签名不能为空", groups = { AddGroup.class, EditGroup.class })
-    private String personalSignature;
+    @ApiModelProperty(value = "所在位置", required = true)
+    @NotBlank(message = "所在位置不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String location;
 
     /**
      * 家乡
@@ -114,10 +107,31 @@ public class UserInfoBo extends BaseEntity {
     private String hometown;
 
     /**
-     * 逻辑删除;0未删除1已删除
+     * 星座
      */
-    @ApiModelProperty(value = "逻辑删除;0未删除1已删除", required = true)
-    @NotNull(message = "逻辑删除;0未删除1已删除不能为空", groups = { EditGroup.class })
+    @ApiModelProperty(value = "星座", required = true)
+    @NotNull(message = "星座不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Integer constellation;
+
+    /**
+     * 邮箱
+     */
+    @ApiModelProperty(value = "邮箱", required = true)
+    @NotBlank(message = "邮箱不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String email;
+
+    /**
+     * 搜索值
+     */
+    @ApiModelProperty(value = "搜索值", required = true)
+    @NotBlank(message = "搜索值不能为空", groups = { AddGroup.class, EditGroup.class })
+    private String searchValue;
+
+    /**
+     * 逻辑删除
+     */
+    @ApiModelProperty(value = "逻辑删除", required = true)
+    @NotNull(message = "逻辑删除不能为空", groups = { AddGroup.class, EditGroup.class })
     private Integer deleted;
 
 

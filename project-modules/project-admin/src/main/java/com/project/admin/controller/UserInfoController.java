@@ -28,47 +28,47 @@ import javax.validation.constraints.NotNull;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 用户详情Controller
- * 前端访问路由地址为:/admin/userinfo
+ * 用户信息Controller
+ * 前端访问路由地址为:/admin/user-info
  * @author huan.li
- * @date 2022-06-10
+ * @date 2022-06-15
  */
 @Validated
-@Api(value = "用户详情控制器", tags = {"用户详情管理"})
+@Api(value = "用户信息控制器", tags = {"用户信息管理"})
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/userinfo")
+@RequestMapping("/user-info")
 public class UserInfoController extends BaseController {
 
     private final IUserInfoService iUserInfoService;
 
     /**
-     * 查询用户详情列表
+     * 查询用户信息列表
      */
-    @ApiOperation("查询用户详情列表")
-    @SaCheckPermission("admin:userinfo:list")
+    @ApiOperation("查询用户信息列表")
+    @SaCheckPermission("admin:user-info:list")
     @GetMapping("/list")
     public TableDataInfo<UserInfoVo> list(@Validated(QueryGroup.class) UserInfoBo bo, PageQuery pageQuery) {
         return iUserInfoService.queryPageList(bo, pageQuery);
     }
 
     /**
-     * 导出用户详情列表
+     * 导出用户信息列表
      */
-    @ApiOperation("导出用户详情列表")
-    @SaCheckPermission("admin:userinfo:export")
-    @Log(title = "用户详情", businessType = BusinessType.EXPORT)
+    @ApiOperation("导出用户信息列表")
+    @SaCheckPermission("admin:user-info:export")
+    @Log(title = "用户信息", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(@Validated UserInfoBo bo, HttpServletResponse response) {
         List<UserInfoVo> list = iUserInfoService.queryList(bo);
-        ExcelUtil.exportExcel(list, "用户详情", UserInfoVo.class, response);
+        ExcelUtil.exportExcel(list, "用户信息", UserInfoVo.class, response);
     }
 
     /**
-     * 获取用户详情详细信息
+     * 获取用户信息详细信息
      */
-    @ApiOperation("获取用户详情详细信息")
-    @SaCheckPermission("admin:userinfo:query")
+    @ApiOperation("获取用户信息详细信息")
+    @SaCheckPermission("admin:user-info:query")
     @GetMapping("/{id}")
     public R<UserInfoVo> getInfo(@ApiParam("主键")
                                      @NotNull(message = "主键不能为空")
@@ -77,33 +77,33 @@ public class UserInfoController extends BaseController {
     }
 
     /**
-     * 新增用户详情
+     * 新增用户信息
      */
-    @ApiOperation("新增用户详情")
-    @SaCheckPermission("admin:userinfo:add")
-    @Log(title = "用户详情", businessType = BusinessType.INSERT)
+    @ApiOperation("新增用户信息")
+    @SaCheckPermission("admin:user-info:add")
+    @Log(title = "用户信息", businessType = BusinessType.INSERT)
     @PostMapping()
     public R<Void> add(@Validated(AddGroup.class) @RequestBody UserInfoBo bo) {
         return toAjax(iUserInfoService.insertByBo(bo) ? 1 : 0);
     }
 
     /**
-     * 修改用户详情
+     * 修改用户信息
      */
-    @ApiOperation("修改用户详情")
-    @SaCheckPermission("admin:userinfo:edit")
-    @Log(title = "用户详情", businessType = BusinessType.UPDATE)
+    @ApiOperation("修改用户信息")
+    @SaCheckPermission("admin:user-info:edit")
+    @Log(title = "用户信息", businessType = BusinessType.UPDATE)
     @PutMapping()
     public R<Void> edit(@Validated(EditGroup.class) @RequestBody UserInfoBo bo) {
         return toAjax(iUserInfoService.updateByBo(bo) ? 1 : 0);
     }
 
     /**
-     * 删除用户详情
+     * 删除用户信息
      */
-    @ApiOperation("删除用户详情")
-    @SaCheckPermission("admin:userinfo:remove")
-    @Log(title = "用户详情", businessType = BusinessType.DELETE)
+    @ApiOperation("删除用户信息")
+    @SaCheckPermission("admin:user-info:remove")
+    @Log(title = "用户信息", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
     public R<Void> remove(@ApiParam("主键串")
                           @NotEmpty(message = "主键不能为空")

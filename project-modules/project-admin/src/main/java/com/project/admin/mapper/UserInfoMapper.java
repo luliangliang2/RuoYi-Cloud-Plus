@@ -5,10 +5,10 @@ import com.project.admin.domain.UserInfo;
 import com.project.admin.domain.vo.UserInfoVo;
 
 /**
- * 用户详情Mapper接口
+ * 用户信息Mapper接口
  *
  * @author huan.li
- * @date 2022-06-10
+ * @date 2022-06-15
  */
 public interface UserInfoMapper extends BaseMapperPlus<UserInfoMapper, UserInfo, UserInfoVo> {
 

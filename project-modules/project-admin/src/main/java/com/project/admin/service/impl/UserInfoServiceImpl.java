@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.Collection;
 
 /**
- * 用户详情Service业务层处理
+ * 用户信息Service业务层处理
  *
  * @author huan.li
- * @date 2022-06-10
+ * @date 2022-06-15
  */
 @RequiredArgsConstructor
 @Service
@@ -32,10 +32,10 @@ public class UserInfoServiceImpl implements IUserInfoService {
     private final UserInfoMapper baseMapper;
 
     /**
-     * 查询用户详情
+     * 查询用户信息
      *
-     * @param id 用户详情主键
-     * @return 用户详情
+     * @param id 用户信息主键
+     * @return 用户信息
      */
     @Override
     public UserInfoVo queryById(Long id){
@@ -43,10 +43,10 @@ public class UserInfoServiceImpl implements IUserInfoService {
     }
 
     /**
-     * 查询用户详情列表
+     * 查询用户信息列表
      *
-     * @param bo 用户详情
-     * @return 用户详情
+     * @param bo 用户信息
+     * @return 用户信息
      */
     @Override
     public TableDataInfo<UserInfoVo> queryPageList(UserInfoBo bo, PageQuery pageQuery) {
@@ -56,10 +56,10 @@ public class UserInfoServiceImpl implements IUserInfoService {
     }
 
     /**
-     * 查询用户详情列表
+     * 查询用户信息列表
      *
-     * @param bo 用户详情
-     * @return 用户详情
+     * @param bo 用户信息
+     * @return 用户信息
      */
     @Override
     public List<UserInfoVo> queryList(UserInfoBo bo) {
@@ -70,25 +70,28 @@ public class UserInfoServiceImpl implements IUserInfoService {
     private LambdaQueryWrapper<UserInfo> buildQueryWrapper(UserInfoBo bo) {
         Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<UserInfo> lqw = Wrappers.lambdaQuery();
-        lqw.eq(bo.getUserLoginId() != null, UserInfo::getUserLoginId, bo.getUserLoginId());
-        lqw.eq(StringUtils.isNotBlank(bo.getHeadUrl()), UserInfo::getHeadUrl, bo.getHeadUrl());
-        lqw.like(StringUtils.isNotBlank(bo.getNickName()), UserInfo::getNickName, bo.getNickName());
-        lqw.like(StringUtils.isNotBlank(bo.getRealName()), UserInfo::getRealName, bo.getRealName());
-        lqw.eq(StringUtils.isNotBlank(bo.getIdCardNo()), UserInfo::getIdCardNo, bo.getIdCardNo());
+        lqw.like(StringUtils.isNotBlank(bo.getName()), UserInfo::getName, bo.getName());
         lqw.eq(StringUtils.isNotBlank(bo.getPhone()), UserInfo::getPhone, bo.getPhone());
-        lqw.eq(StringUtils.isNotBlank(bo.getSchool()), UserInfo::getSchool, bo.getSchool());
-        lqw.eq(StringUtils.isNotBlank(bo.getCollege()), UserInfo::getCollege, bo.getCollege());
-        lqw.eq(StringUtils.isNotBlank(bo.getGrade()), UserInfo::getGrade, bo.getGrade());
-        lqw.eq(StringUtils.isNotBlank(bo.getMajor()), UserInfo::getMajor, bo.getMajor());
-        lqw.eq(StringUtils.isNotBlank(bo.getPersonalSignature()), UserInfo::getPersonalSignature, bo.getPersonalSignature());
+        lqw.eq(StringUtils.isNotBlank(bo.getAvatar()), UserInfo::getAvatar, bo.getAvatar());
+        lqw.eq(bo.getEffectCount() != null, UserInfo::getEffectCount, bo.getEffectCount());
+        lqw.eq(bo.getVisitorCount() != null, UserInfo::getVisitorCount, bo.getVisitorCount());
+        lqw.eq(StringUtils.isNotBlank(bo.getCompany()), UserInfo::getCompany, bo.getCompany());
+        lqw.eq(StringUtils.isNotBlank(bo.getPosition()), UserInfo::getPosition, bo.getPosition());
+        lqw.eq(StringUtils.isNotBlank(bo.getSelfIntroduction()), UserInfo::getSelfIntroduction, bo.getSelfIntroduction());
+        lqw.eq(StringUtils.isNotBlank(bo.getCareerDirection()), UserInfo::getCareerDirection, bo.getCareerDirection());
+        lqw.eq(StringUtils.isNotBlank(bo.getLocation()), UserInfo::getLocation, bo.getLocation());
         lqw.eq(StringUtils.isNotBlank(bo.getHometown()), UserInfo::getHometown, bo.getHometown());
+        lqw.eq(bo.getConstellation() != null, UserInfo::getConstellation, bo.getConstellation());
+        lqw.eq(StringUtils.isNotBlank(bo.getEmail()), UserInfo::getEmail, bo.getEmail());
+        lqw.eq(StringUtils.isNotBlank(bo.getSearchValue()), UserInfo::getSearchValue, bo.getSearchValue());
+        lqw.eq(bo.getDeleted() != null, UserInfo::getDeleted, bo.getDeleted());
         return lqw;
     }
 
     /**
-     * 新增用户详情
+     * 新增用户信息
      *
-     * @param bo 用户详情
+     * @param bo 用户信息
      * @return 结果
      */
     @Override
@@ -103,9 +106,9 @@ public class UserInfoServiceImpl implements IUserInfoService {
     }
 
     /**
-     * 修改用户详情
+     * 修改用户信息
      *
-     * @param bo 用户详情
+     * @param bo 用户信息
      * @return 结果
      */
     @Override
@@ -125,9 +128,9 @@ public class UserInfoServiceImpl implements IUserInfoService {
     }
 
     /**
-     * 批量删除用户详情
+     * 批量删除用户信息
      *
-     * @param ids 需要删除的用户详情主键
+     * @param ids 需要删除的用户信息主键
      * @return 结果
      */
     @Override

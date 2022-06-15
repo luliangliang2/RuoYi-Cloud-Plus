@@ -10,57 +10,57 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 用户详情Service接口
+ * 用户信息Service接口
  *
  * @author huan.li
- * @date 2022-06-10
+ * @date 2022-06-15
  */
 public interface IUserInfoService {
 
     /**
-     * 查询用户详情
+     * 查询用户信息
      *
-     * @param id 用户详情主键
-     * @return 用户详情
+     * @param id 用户信息主键
+     * @return 用户信息
      */
     UserInfoVo queryById(Long id);
 
     /**
-     * 查询用户详情列表
+     * 查询用户信息列表
      *
-     * @param userInfo 用户详情
-     * @return 用户详情集合
+     * @param userInfo 用户信息
+     * @return 用户信息集合
      */
     TableDataInfo<UserInfoVo> queryPageList(UserInfoBo bo, PageQuery pageQuery);
 
     /**
-     * 查询用户详情列表
+     * 查询用户信息列表
      *
-     * @param userInfo 用户详情
-     * @return 用户详情集合
+     * @param userInfo 用户信息
+     * @return 用户信息集合
      */
     List<UserInfoVo> queryList(UserInfoBo bo);
 
     /**
-     * 修改用户详情
+     * 修改用户信息
      *
-     * @param userInfo 用户详情
+     * @param userInfo 用户信息
      * @return 结果
      */
     Boolean insertByBo(UserInfoBo bo);
 
     /**
-     * 修改用户详情
+     * 修改用户信息
      *
-     * @param userInfo 用户详情
+     * @param userInfo 用户信息
      * @return 结果
      */
     Boolean updateByBo(UserInfoBo bo);
 
     /**
-     * 校验并批量删除用户详情信息
+     * 校验并批量删除用户信息信息
      *
-     * @param ids 需要删除的用户详情主键集合
+     * @param ids 需要删除的用户信息主键集合
      * @param isValid 是否校验,true-删除前校验,false-不校验
      * @return 结果
      */

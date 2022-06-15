@@ -6,21 +6,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <resultMap type="com.project.admin.domain.UserInfo" id="UserInfoResult">
     <result property="id" column="id"/>
-    <result property="userLoginId" column="user_login_id"/>
-    <result property="headUrl" column="head_url"/>
-    <result property="nickName" column="nick_name"/>
-    <result property="realName" column="real_name"/>
-    <result property="idCardNo" column="id_card_no"/>
+    <result property="name" column="name"/>
     <result property="phone" column="phone"/>
-    <result property="school" column="school"/>
-    <result property="college" column="college"/>
-    <result property="grade" column="grade"/>
-    <result property="major" column="major"/>
-    <result property="personalSignature" column="personal_signature"/>
+    <result property="avatar" column="avatar"/>
+    <result property="effectCount" column="effectCount"/>
+    <result property="visitorCount" column="visitorCount"/>
+    <result property="company" column="company"/>
+    <result property="position" column="position"/>
+    <result property="selfIntroduction" column="selfIntroduction"/>
+    <result property="careerDirection" column="careerDirection"/>
+    <result property="location" column="location"/>
     <result property="hometown" column="hometown"/>
+    <result property="constellation" column="constellation"/>
+    <result property="email" column="email"/>
+    <result property="searchValue" column="search_value"/>
     <result property="deleted" column="deleted"/>
     <result property="createTime" column="create_time"/>
+    <result property="createBy" column="create_by"/>
     <result property="updateTime" column="update_time"/>
+    <result property="updateBy" column="update_by"/>
     </resultMap>
 
 
