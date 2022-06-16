@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
  * 用户信息对象 user_info
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -20,7 +20,7 @@ public class UserInfo extends BaseEntity {
 private static final long serialVersionUID=1L;
 
     /**
-     * 用户ID
+     * 序号
      */
      @TableId(value = "id")
     private Long id;
@@ -28,6 +28,10 @@ private static final long serialVersionUID=1L;
      * 姓名
      */
     private String name;
+    /**
+     * 昵称
+     */
+    private String nick;
     /**
      * 手机号码
      */
@@ -81,7 +85,7 @@ private static final long serialVersionUID=1L;
      */
     private String searchValue;
     /**
-     * 逻辑删除
+     * 启用状态
      */
     private Integer deleted;
 

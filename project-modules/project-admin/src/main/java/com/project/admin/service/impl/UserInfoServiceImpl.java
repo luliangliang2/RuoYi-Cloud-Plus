@@ -23,7 +23,7 @@ import java.util.Collection;
  * 用户信息Service业务层处理
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @RequiredArgsConstructor
 @Service
@@ -71,18 +71,19 @@ public class UserInfoServiceImpl implements IUserInfoService {
         Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<UserInfo> lqw = Wrappers.lambdaQuery();
         lqw.like(StringUtils.isNotBlank(bo.getName()), UserInfo::getName, bo.getName());
+        lqw.like(StringUtils.isNotBlank(bo.getNick()), UserInfo::getNick, bo.getNick());
         lqw.eq(StringUtils.isNotBlank(bo.getPhone()), UserInfo::getPhone, bo.getPhone());
         lqw.eq(StringUtils.isNotBlank(bo.getAvatar()), UserInfo::getAvatar, bo.getAvatar());
         lqw.eq(bo.getEffectCount() != null, UserInfo::getEffectCount, bo.getEffectCount());
         lqw.eq(bo.getVisitorCount() != null, UserInfo::getVisitorCount, bo.getVisitorCount());
-        lqw.eq(StringUtils.isNotBlank(bo.getCompany()), UserInfo::getCompany, bo.getCompany());
+        lqw.like(StringUtils.isNotBlank(bo.getCompany()), UserInfo::getCompany, bo.getCompany());
         lqw.eq(StringUtils.isNotBlank(bo.getPosition()), UserInfo::getPosition, bo.getPosition());
         lqw.eq(StringUtils.isNotBlank(bo.getSelfIntroduction()), UserInfo::getSelfIntroduction, bo.getSelfIntroduction());
         lqw.eq(StringUtils.isNotBlank(bo.getCareerDirection()), UserInfo::getCareerDirection, bo.getCareerDirection());
         lqw.eq(StringUtils.isNotBlank(bo.getLocation()), UserInfo::getLocation, bo.getLocation());
         lqw.eq(StringUtils.isNotBlank(bo.getHometown()), UserInfo::getHometown, bo.getHometown());
         lqw.eq(bo.getConstellation() != null, UserInfo::getConstellation, bo.getConstellation());
-        lqw.eq(StringUtils.isNotBlank(bo.getEmail()), UserInfo::getEmail, bo.getEmail());
+        lqw.like(StringUtils.isNotBlank(bo.getEmail()), UserInfo::getEmail, bo.getEmail());
         lqw.eq(StringUtils.isNotBlank(bo.getSearchValue()), UserInfo::getSearchValue, bo.getSearchValue());
         lqw.eq(bo.getDeleted() != null, UserInfo::getDeleted, bo.getDeleted());
         return lqw;

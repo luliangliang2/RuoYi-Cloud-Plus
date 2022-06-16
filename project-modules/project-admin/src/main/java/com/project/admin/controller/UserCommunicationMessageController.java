@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
  * 沟通消息Controller
  * 前端访问路由地址为:/admin/user-communication-message
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Validated
 @Api(value = "沟通消息控制器", tags = {"沟通消息管理"})

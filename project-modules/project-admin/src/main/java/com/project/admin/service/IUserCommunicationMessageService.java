@@ -13,7 +13,7 @@ import java.util.List;
  * 沟通消息Service接口
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 public interface IUserCommunicationMessageService {
 

@@ -7,14 +7,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="com.project.admin.domain.UserInfo" id="UserInfoResult">
     <result property="id" column="id"/>
     <result property="name" column="name"/>
+    <result property="nick" column="nick"/>
     <result property="phone" column="phone"/>
     <result property="avatar" column="avatar"/>
-    <result property="effectCount" column="effectCount"/>
-    <result property="visitorCount" column="visitorCount"/>
+    <result property="effectCount" column="effect_count"/>
+    <result property="visitorCount" column="visitor_count"/>
     <result property="company" column="company"/>
     <result property="position" column="position"/>
-    <result property="selfIntroduction" column="selfIntroduction"/>
-    <result property="careerDirection" column="careerDirection"/>
+    <result property="selfIntroduction" column="self_introduction"/>
+    <result property="careerDirection" column="career_direction"/>
     <result property="location" column="location"/>
     <result property="hometown" column="hometown"/>
     <result property="constellation" column="constellation"/>

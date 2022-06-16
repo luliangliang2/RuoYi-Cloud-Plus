@@ -13,7 +13,7 @@ import lombok.Data;
  * 用户信息视图对象 user_info
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Data
 @ApiModel("用户信息视图对象")
@@ -23,10 +23,10 @@ public class UserInfoVo {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 用户ID
+     * 序号
      */
-    @ExcelProperty(value = "用户ID")
-    @ApiModelProperty("用户ID")
+    @ExcelProperty(value = "序号")
+    @ApiModelProperty("序号")
     private Long id;
 
     /**
@@ -37,18 +37,18 @@ public class UserInfoVo {
     private String name;
 
     /**
+     * 昵称
+     */
+    @ExcelProperty(value = "昵称")
+    @ApiModelProperty("昵称")
+    private String nick;
+
+    /**
      * 手机号码
      */
     @ExcelProperty(value = "手机号码")
     @ApiModelProperty("手机号码")
     private String phone;
-
-    /**
-     * 头像
-     */
-    @ExcelProperty(value = "头像")
-    @ApiModelProperty("头像")
-    private String avatar;
 
     /**
      * 影响力
@@ -129,11 +129,11 @@ public class UserInfoVo {
     private String searchValue;
 
     /**
-     * 逻辑删除
+     * 启用状态
      */
-    @ExcelProperty(value = "逻辑删除", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "启用状态", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "deleted")
-    @ApiModelProperty("逻辑删除")
+    @ApiModelProperty("启用状态")
     private Integer deleted;
 
 

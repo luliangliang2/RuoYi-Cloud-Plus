@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.admin.mapper.UserFriendRelationMapper">
+
+    <resultMap type="com.project.admin.domain.UserFriendRelation" id="UserFriendRelationResult">
+    <result property="id" column="id"/>
+    <result property="userInfoId" column="user_info_id"/>
+    <result property="friendInfoId" column="friend_info_id"/>
+    <result property="userFriendGroupId" column="user_friend_group_id"/>
+    <result property="userFriendRelationStatusId" column="user_friend_relation_status_id"/>
+    <result property="exchangePhoneStatus" column="exchange_phone_status"/>
+    <result property="searchValue" column="search_value"/>
+    <result property="deleted" column="deleted"/>
+    <result property="createTime" column="create_time"/>
+    <result property="createBy" column="create_by"/>
+    <result property="updateTime" column="update_time"/>
+    <result property="updateBy" column="update_by"/>
+    </resultMap>
+
+
+</mapper>

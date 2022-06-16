@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
  * 用户信息Controller
  * 前端访问路由地址为:/admin/user-info
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Validated
 @Api(value = "用户信息控制器", tags = {"用户信息管理"})

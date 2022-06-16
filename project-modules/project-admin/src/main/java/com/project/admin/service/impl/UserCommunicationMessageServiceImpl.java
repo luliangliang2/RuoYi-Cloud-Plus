@@ -23,7 +23,7 @@ import java.util.Collection;
  * 沟通消息Service业务层处理
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @RequiredArgsConstructor
 @Service
@@ -70,9 +70,9 @@ public class UserCommunicationMessageServiceImpl implements IUserCommunicationMe
     private LambdaQueryWrapper<UserCommunicationMessage> buildQueryWrapper(UserCommunicationMessageBo bo) {
         Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<UserCommunicationMessage> lqw = Wrappers.lambdaQuery();
-        lqw.eq(bo.getSendMessageId() != null, UserCommunicationMessage::getSendMessageId, bo.getSendMessageId());
+        lqw.eq(bo.getUserInfoId() != null, UserCommunicationMessage::getUserInfoId, bo.getUserInfoId());
         lqw.eq(StringUtils.isNotBlank(bo.getMessageContent()), UserCommunicationMessage::getMessageContent, bo.getMessageContent());
-        lqw.eq(bo.getSendFromMeStatus() != null, UserCommunicationMessage::getSendFromMeStatus, bo.getSendFromMeStatus());
+        lqw.eq(bo.getMessageStatus() != null, UserCommunicationMessage::getMessageStatus, bo.getMessageStatus());
         lqw.eq(StringUtils.isNotBlank(bo.getSearchValue()), UserCommunicationMessage::getSearchValue, bo.getSearchValue());
         lqw.eq(bo.getDeleted() != null, UserCommunicationMessage::getDeleted, bo.getDeleted());
         return lqw;

@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
  * 沟通消息对象 user_communication_message
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -20,28 +20,28 @@ public class UserCommunicationMessage extends BaseEntity {
 private static final long serialVersionUID=1L;
 
     /**
-     * ID
+     * 序号
      */
      @TableId(value = "id")
     private Long id;
     /**
-     * 发送消息用户
+     * 用户序号
      */
-    private Long sendMessageId;
+    private Long userInfoId;
     /**
      * 消息内容
      */
     private String messageContent;
     /**
-     * 是否由我发送
+     * 消息状态
      */
-    private Integer sendFromMeStatus;
+    private Integer messageStatus;
     /**
      * 搜索值
      */
     private String searchValue;
     /**
-     * 逻辑删除
+     * 启用状态
      */
     private Integer deleted;
 

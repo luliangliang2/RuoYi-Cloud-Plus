@@ -11,7 +11,7 @@ import java.util.Date;
  * 工作经历对象 user_work_experience
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -21,12 +21,12 @@ public class UserWorkExperience extends BaseEntity {
 private static final long serialVersionUID=1L;
 
     /**
-     * 工作经历ID
+     * 序号
      */
      @TableId(value = "id")
     private Long id;
     /**
-     * 代表当前用户;用户信息ID
+     * 用户序号
      */
     private Long userInfoId;
     /**
@@ -58,7 +58,7 @@ private static final long serialVersionUID=1L;
      */
     private String searchValue;
     /**
-     * 逻辑删除;0->启用，1->停用
+     * 启用状态
      */
     private Integer deleted;
 

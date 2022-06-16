@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="代表当前用户;用户信息ID" prop="userInfoId">
+      <el-form-item label="用户序号" prop="userInfoId">
         <el-input
           v-model="queryParams.userInfoId"
-          placeholder="请输入代表当前用户;用户信息ID"
+          placeholder="请输入用户序号"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -65,8 +65,8 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="逻辑删除;0->启用，1->停用" prop="deleted">
-        <el-select v-model="queryParams.deleted" placeholder="请选择逻辑删除;0->启用，1->停用" clearable>
+      <el-form-item label="启用状态" prop="deleted">
+        <el-select v-model="queryParams.deleted" placeholder="请选择启用状态" clearable>
           <el-option
             v-for="dict in dict.type.deleted"
             :key="dict.value"
@@ -129,8 +129,8 @@
 
     <el-table v-loading="loading" :data="userWorkExperienceList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="工作经历ID" align="center" prop="id" v-if="true"/>
-      <el-table-column label="代表当前用户;用户信息ID" align="center" prop="userInfoId" />
+      <el-table-column label="序号" align="center" prop="id" v-if="true"/>
+      <el-table-column label="用户序号" align="center" prop="userInfoId" />
       <el-table-column label="公司" align="center" prop="company" />
       <el-table-column label="职位" align="center" prop="position" />
       <el-table-column label="入职时间" align="center" prop="entryTime" width="180">
@@ -146,7 +146,7 @@
       <el-table-column label="就职时长" align="center" prop="lengthOfEmployment" />
       <el-table-column label="说明介绍" align="center" prop="introduction" />
       <el-table-column label="搜索值" align="center" prop="searchValue" />
-      <el-table-column label="逻辑删除;0->启用，1->停用" align="center" prop="deleted">
+      <el-table-column label="启用状态" align="center" prop="deleted">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.deleted" :value="scope.row.deleted"/>
         </template>
@@ -182,8 +182,8 @@
     <!-- 添加或修改工作经历对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="代表当前用户;用户信息ID" prop="userInfoId">
-          <el-input v-model="form.userInfoId" placeholder="请输入代表当前用户;用户信息ID" />
+        <el-form-item label="用户序号" prop="userInfoId">
+          <el-input v-model="form.userInfoId" placeholder="请输入用户序号" />
         </el-form-item>
         <el-form-item label="公司" prop="company">
           <el-input v-model="form.company" placeholder="请输入公司" />
@@ -216,14 +216,15 @@
         <el-form-item label="搜索值" prop="searchValue">
           <el-input v-model="form.searchValue" placeholder="请输入搜索值" />
         </el-form-item>
-        <el-form-item label="逻辑删除;0->启用，1->停用">
-          <el-radio-group v-model="form.deleted">
-            <el-radio
+        <el-form-item label="启用状态" prop="deleted">
+          <el-select v-model="form.deleted" placeholder="请选择启用状态">
+            <el-option
               v-for="dict in dict.type.deleted"
               :key="dict.value"
-:label="parseInt(dict.value)"
-            >{{dict.label}}</el-radio>
-          </el-radio-group>
+              :label="dict.label"
+:value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -281,10 +282,10 @@ export default {
       // 表单校验
       rules: {
         id: [
-          { required: true, message: "工作经历ID不能为空", trigger: "blur" }
+          { required: true, message: "序号不能为空", trigger: "blur" }
         ],
         userInfoId: [
-          { required: true, message: "代表当前用户;用户信息ID不能为空", trigger: "blur" }
+          { required: true, message: "用户序号不能为空", trigger: "blur" }
         ],
         company: [
           { required: true, message: "公司不能为空", trigger: "blur" }
@@ -308,7 +309,7 @@ export default {
           { required: true, message: "搜索值不能为空", trigger: "blur" }
         ],
         deleted: [
-          { required: true, message: "逻辑删除;0->启用，1->停用不能为空", trigger: "blur" }
+          { required: true, message: "启用状态不能为空", trigger: "change" }
         ],
         createTime: [
           { required: true, message: "创建时间不能为空", trigger: "blur" }
@@ -355,7 +356,7 @@ export default {
         lengthOfEmployment: undefined,
         introduction: undefined,
         searchValue: undefined,
-        deleted: 0,
+        deleted: undefined,
         createTime: undefined,
         createBy: undefined,
         updateTime: undefined,

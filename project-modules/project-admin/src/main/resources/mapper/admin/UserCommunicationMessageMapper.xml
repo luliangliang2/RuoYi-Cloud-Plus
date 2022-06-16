@@ -6,9 +6,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <resultMap type="com.project.admin.domain.UserCommunicationMessage" id="UserCommunicationMessageResult">
     <result property="id" column="id"/>
-    <result property="sendMessageId" column="send_message_id"/>
+    <result property="userInfoId" column="user_info_id"/>
     <result property="messageContent" column="message_content"/>
-    <result property="sendFromMeStatus" column="send_from_me_status"/>
+    <result property="messageStatus" column="message_status"/>
     <result property="searchValue" column="search_value"/>
     <result property="deleted" column="deleted"/>
     <result property="createTime" column="create_time"/>

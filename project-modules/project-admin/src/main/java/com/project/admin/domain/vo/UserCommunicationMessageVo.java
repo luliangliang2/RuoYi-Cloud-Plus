@@ -13,7 +13,7 @@ import lombok.Data;
  * 沟通消息视图对象 user_communication_message
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Data
 @ApiModel("沟通消息视图对象")
@@ -23,18 +23,18 @@ public class UserCommunicationMessageVo {
     private static final long serialVersionUID = 1L;
 
     /**
-     * ID
+     * 序号
      */
-    @ExcelProperty(value = "ID")
-    @ApiModelProperty("ID")
+    @ExcelProperty(value = "序号")
+    @ApiModelProperty("序号")
     private Long id;
 
     /**
-     * 发送消息用户
+     * 用户序号
      */
-    @ExcelProperty(value = "发送消息用户")
-    @ApiModelProperty("发送消息用户")
-    private Long sendMessageId;
+    @ExcelProperty(value = "用户序号")
+    @ApiModelProperty("用户序号")
+    private Long userInfoId;
 
     /**
      * 消息内容
@@ -44,19 +44,25 @@ public class UserCommunicationMessageVo {
     private String messageContent;
 
     /**
-     * 是否由我发送
+     * 消息状态
      */
-    @ExcelProperty(value = "是否由我发送", converter = ExcelDictConvert.class)
-    @ExcelDictFormat(dictType = "yes_or_no")
-    @ApiModelProperty("是否由我发送")
-    private Integer sendFromMeStatus;
+    @ExcelProperty(value = "消息状态")
+    @ApiModelProperty("消息状态")
+    private Integer messageStatus;
 
     /**
-     * 逻辑删除
+     * 搜索值
      */
-    @ExcelProperty(value = "逻辑删除", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "搜索值")
+    @ApiModelProperty("搜索值")
+    private String searchValue;
+
+    /**
+     * 启用状态
+     */
+    @ExcelProperty(value = "启用状态", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "deleted")
-    @ApiModelProperty("逻辑删除")
+    @ApiModelProperty("启用状态")
     private Integer deleted;
 
 

@@ -14,7 +14,7 @@ import javax.validation.constraints.*;
  * 沟通消息业务对象 user_communication_message
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 
 @Data
@@ -23,18 +23,18 @@ import javax.validation.constraints.*;
 public class UserCommunicationMessageBo extends BaseEntity {
 
     /**
-     * ID
+     * 序号
      */
-    @ApiModelProperty(value = "ID", required = true)
-    @NotNull(message = "ID不能为空", groups = { EditGroup.class })
+    @ApiModelProperty(value = "序号", required = true)
+    @NotNull(message = "序号不能为空", groups = { EditGroup.class })
     private Long id;
 
     /**
-     * 发送消息用户
+     * 用户序号
      */
-    @ApiModelProperty(value = "发送消息用户", required = true)
-    @NotNull(message = "发送消息用户不能为空", groups = { AddGroup.class, EditGroup.class })
-    private Long sendMessageId;
+    @ApiModelProperty(value = "用户序号", required = true)
+    @NotNull(message = "用户序号不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Long userInfoId;
 
     /**
      * 消息内容
@@ -44,11 +44,11 @@ public class UserCommunicationMessageBo extends BaseEntity {
     private String messageContent;
 
     /**
-     * 是否由我发送
+     * 消息状态
      */
-    @ApiModelProperty(value = "是否由我发送", required = true)
-    @NotNull(message = "是否由我发送不能为空", groups = { AddGroup.class, EditGroup.class })
-    private Integer sendFromMeStatus;
+    @ApiModelProperty(value = "消息状态", required = true)
+    @NotNull(message = "消息状态不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Integer messageStatus;
 
     /**
      * 搜索值
@@ -58,10 +58,10 @@ public class UserCommunicationMessageBo extends BaseEntity {
     private String searchValue;
 
     /**
-     * 逻辑删除
+     * 启用状态
      */
-    @ApiModelProperty(value = "逻辑删除", required = true)
-    @NotNull(message = "逻辑删除不能为空", groups = { AddGroup.class, EditGroup.class })
+    @ApiModelProperty(value = "启用状态", required = true)
+    @NotNull(message = "启用状态不能为空", groups = { AddGroup.class, EditGroup.class })
     private Integer deleted;
 
 

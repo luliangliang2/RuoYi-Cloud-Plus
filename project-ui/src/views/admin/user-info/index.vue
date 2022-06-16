@@ -9,18 +9,18 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="手机号码" prop="phone">
+      <el-form-item label="昵称" prop="nick">
         <el-input
-          v-model="queryParams.phone"
-          placeholder="请输入手机号码"
+          v-model="queryParams.nick"
+          placeholder="请输入昵称"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="头像" prop="avatar">
+      <el-form-item label="手机号码" prop="phone">
         <el-input
-          v-model="queryParams.avatar"
-          placeholder="请输入头像"
+          v-model="queryParams.phone"
+          placeholder="请输入手机号码"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -115,8 +115,8 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="逻辑删除" prop="deleted">
-        <el-select v-model="queryParams.deleted" placeholder="请选择逻辑删除" clearable>
+      <el-form-item label="启用状态" prop="deleted">
+        <el-select v-model="queryParams.deleted" placeholder="请选择启用状态" clearable>
           <el-option
             v-for="dict in dict.type.deleted"
             :key="dict.value"
@@ -179,10 +179,10 @@
 
     <el-table v-loading="loading" :data="userInfoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="用户ID" align="center" prop="id" v-if="true"/>
+      <el-table-column label="序号" align="center" prop="id" v-if="true"/>
       <el-table-column label="姓名" align="center" prop="name" />
+      <el-table-column label="昵称" align="center" prop="nick" />
       <el-table-column label="手机号码" align="center" prop="phone" />
-      <el-table-column label="头像" align="center" prop="avatar" />
       <el-table-column label="影响力" align="center" prop="effectCount" />
       <el-table-column label="访客数量" align="center" prop="visitorCount" />
       <el-table-column label="公司" align="center" prop="company" />
@@ -198,7 +198,7 @@
       </el-table-column>
       <el-table-column label="邮箱" align="center" prop="email" />
       <el-table-column label="搜索值" align="center" prop="searchValue" />
-      <el-table-column label="逻辑删除" align="center" prop="deleted">
+      <el-table-column label="启用状态" align="center" prop="deleted">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.deleted" :value="scope.row.deleted"/>
         </template>
@@ -237,11 +237,14 @@
         <el-form-item label="姓名" prop="name">
           <el-input v-model="form.name" placeholder="请输入姓名" />
         </el-form-item>
+        <el-form-item label="昵称" prop="nick">
+          <el-input v-model="form.nick" placeholder="请输入昵称" />
+        </el-form-item>
         <el-form-item label="手机号码" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号码" />
         </el-form-item>
-        <el-form-item label="头像" prop="avatar">
-          <el-input v-model="form.avatar" placeholder="请输入头像" />
+        <el-form-item label="头像">
+          <image-upload v-model="form.avatar"/>
         </el-form-item>
         <el-form-item label="影响力" prop="effectCount">
           <el-input v-model="form.effectCount" placeholder="请输入影响力" />
@@ -267,14 +270,15 @@
         <el-form-item label="家乡" prop="hometown">
           <el-input v-model="form.hometown" placeholder="请输入家乡" />
         </el-form-item>
-        <el-form-item label="星座">
-          <el-radio-group v-model="form.constellation">
-            <el-radio
+        <el-form-item label="星座" prop="constellation">
+          <el-select v-model="form.constellation" placeholder="请选择星座">
+            <el-option
               v-for="dict in dict.type.constellation"
               :key="dict.value"
-:label="parseInt(dict.value)"
-            >{{dict.label}}</el-radio>
-          </el-radio-group>
+              :label="dict.label"
+:value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="form.email" placeholder="请输入邮箱" />
@@ -282,14 +286,15 @@
         <el-form-item label="搜索值" prop="searchValue">
           <el-input v-model="form.searchValue" placeholder="请输入搜索值" />
         </el-form-item>
-        <el-form-item label="逻辑删除">
-          <el-radio-group v-model="form.deleted">
-            <el-radio
+        <el-form-item label="启用状态" prop="deleted">
+          <el-select v-model="form.deleted" placeholder="请选择启用状态">
+            <el-option
               v-for="dict in dict.type.deleted"
               :key="dict.value"
-:label="parseInt(dict.value)"
-            >{{dict.label}}</el-radio>
-          </el-radio-group>
+              :label="dict.label"
+:value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -333,6 +338,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         name: undefined,
+        nick: undefined,
         phone: undefined,
         avatar: undefined,
         effectCount: undefined,
@@ -353,10 +359,13 @@ export default {
       // 表单校验
       rules: {
         id: [
-          { required: true, message: "用户ID不能为空", trigger: "blur" }
+          { required: true, message: "序号不能为空", trigger: "blur" }
         ],
         name: [
           { required: true, message: "姓名不能为空", trigger: "blur" }
+        ],
+        nick: [
+          { required: true, message: "昵称不能为空", trigger: "blur" }
         ],
         phone: [
           { required: true, message: "手机号码不能为空", trigger: "blur" }
@@ -389,7 +398,7 @@ export default {
           { required: true, message: "家乡不能为空", trigger: "blur" }
         ],
         constellation: [
-          { required: true, message: "星座不能为空", trigger: "blur" }
+          { required: true, message: "星座不能为空", trigger: "change" }
         ],
         email: [
           { required: true, message: "邮箱不能为空", trigger: "blur" }
@@ -398,7 +407,7 @@ export default {
           { required: true, message: "搜索值不能为空", trigger: "blur" }
         ],
         deleted: [
-          { required: true, message: "逻辑删除不能为空", trigger: "blur" }
+          { required: true, message: "启用状态不能为空", trigger: "change" }
         ],
         createTime: [
           { required: true, message: "创建时间不能为空", trigger: "blur" }
@@ -438,6 +447,7 @@ export default {
       this.form = {
         id: undefined,
         name: undefined,
+        nick: undefined,
         phone: undefined,
         avatar: undefined,
         effectCount: undefined,
@@ -448,10 +458,10 @@ export default {
         careerDirection: undefined,
         location: undefined,
         hometown: undefined,
-        constellation: 0,
+        constellation: undefined,
         email: undefined,
         searchValue: undefined,
-        deleted: 0,
+        deleted: undefined,
         createTime: undefined,
         createBy: undefined,
         updateTime: undefined,

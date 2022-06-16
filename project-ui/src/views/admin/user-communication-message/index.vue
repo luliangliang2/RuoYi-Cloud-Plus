@@ -1,23 +1,13 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="发送消息用户" prop="sendMessageId">
+      <el-form-item label="用户序号" prop="userInfoId">
         <el-input
-          v-model="queryParams.sendMessageId"
-          placeholder="请输入发送消息用户"
+          v-model="queryParams.userInfoId"
+          placeholder="请输入用户序号"
           clearable
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
-      <el-form-item label="是否由我发送" prop="sendFromMeStatus">
-        <el-select v-model="queryParams.sendFromMeStatus" placeholder="请选择是否由我发送" clearable>
-          <el-option
-            v-for="dict in dict.type.yes_or_no"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
       </el-form-item>
       <el-form-item label="搜索值" prop="searchValue">
         <el-input
@@ -27,8 +17,8 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="逻辑删除" prop="deleted">
-        <el-select v-model="queryParams.deleted" placeholder="请选择逻辑删除" clearable>
+      <el-form-item label="启用状态" prop="deleted">
+        <el-select v-model="queryParams.deleted" placeholder="请选择启用状态" clearable>
           <el-option
             v-for="dict in dict.type.deleted"
             :key="dict.value"
@@ -91,15 +81,12 @@
 
     <el-table v-loading="loading" :data="userCommunicationMessageList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="id" v-if="true"/>
-      <el-table-column label="发送消息用户" align="center" prop="sendMessageId" />
+      <el-table-column label="序号" align="center" prop="id" v-if="true"/>
+      <el-table-column label="用户序号" align="center" prop="userInfoId" />
       <el-table-column label="消息内容" align="center" prop="messageContent" />
-      <el-table-column label="是否由我发送" align="center" prop="sendFromMeStatus">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.yes_or_no" :value="scope.row.sendFromMeStatus"/>
-        </template>
-      </el-table-column>
-      <el-table-column label="逻辑删除" align="center" prop="deleted">
+      <el-table-column label="消息状态" align="center" prop="messageStatus" />
+      <el-table-column label="搜索值" align="center" prop="searchValue" />
+      <el-table-column label="启用状态" align="center" prop="deleted">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.deleted" :value="scope.row.deleted"/>
         </template>
@@ -135,32 +122,24 @@
     <!-- 添加或修改沟通消息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="发送消息用户" prop="sendMessageId">
-          <el-input v-model="form.sendMessageId" placeholder="请输入发送消息用户" />
+        <el-form-item label="用户序号" prop="userInfoId">
+          <el-input v-model="form.userInfoId" placeholder="请输入用户序号" />
         </el-form-item>
         <el-form-item label="消息内容">
           <editor v-model="form.messageContent" :min-height="192"/>
         </el-form-item>
-        <el-form-item label="是否由我发送">
-          <el-radio-group v-model="form.sendFromMeStatus">
-            <el-radio
-              v-for="dict in dict.type.yes_or_no"
-              :key="dict.value"
-:label="parseInt(dict.value)"
-            >{{dict.label}}</el-radio>
-          </el-radio-group>
-        </el-form-item>
         <el-form-item label="搜索值" prop="searchValue">
           <el-input v-model="form.searchValue" placeholder="请输入搜索值" />
         </el-form-item>
-        <el-form-item label="逻辑删除">
-          <el-radio-group v-model="form.deleted">
-            <el-radio
+        <el-form-item label="启用状态" prop="deleted">
+          <el-select v-model="form.deleted" placeholder="请选择启用状态">
+            <el-option
               v-for="dict in dict.type.deleted"
               :key="dict.value"
-:label="parseInt(dict.value)"
-            >{{dict.label}}</el-radio>
-          </el-radio-group>
+              :label="dict.label"
+:value="parseInt(dict.value)"
+            ></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -176,7 +155,7 @@ import { listUserCommunicationMessage, getUserCommunicationMessage, delUserCommu
 
 export default {
   name: "UserCommunicationMessage",
-  dicts: ['yes_or_no', 'deleted'],
+  dicts: ['deleted'],
   data() {
     return {
       // 按钮loading
@@ -203,9 +182,9 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        sendMessageId: undefined,
+        userInfoId: undefined,
         messageContent: undefined,
-        sendFromMeStatus: undefined,
+        messageStatus: undefined,
         searchValue: undefined,
         deleted: undefined,
       },
@@ -214,22 +193,22 @@ export default {
       // 表单校验
       rules: {
         id: [
-          { required: true, message: "ID不能为空", trigger: "blur" }
+          { required: true, message: "序号不能为空", trigger: "blur" }
         ],
-        sendMessageId: [
-          { required: true, message: "发送消息用户不能为空", trigger: "blur" }
+        userInfoId: [
+          { required: true, message: "用户序号不能为空", trigger: "blur" }
         ],
         messageContent: [
           { required: true, message: "消息内容不能为空", trigger: "blur" }
         ],
-        sendFromMeStatus: [
-          { required: true, message: "是否由我发送不能为空", trigger: "blur" }
+        messageStatus: [
+          { required: true, message: "消息状态不能为空", trigger: "blur" }
         ],
         searchValue: [
           { required: true, message: "搜索值不能为空", trigger: "blur" }
         ],
         deleted: [
-          { required: true, message: "逻辑删除不能为空", trigger: "blur" }
+          { required: true, message: "启用状态不能为空", trigger: "change" }
         ],
         createTime: [
           { required: true, message: "创建时间不能为空", trigger: "blur" }
@@ -268,11 +247,11 @@ export default {
     reset() {
       this.form = {
         id: undefined,
-        sendMessageId: undefined,
+        userInfoId: undefined,
         messageContent: undefined,
-        sendFromMeStatus: 0,
+        messageStatus: 0,
         searchValue: undefined,
-        deleted: 0,
+        deleted: undefined,
         createTime: undefined,
         createBy: undefined,
         updateTime: undefined,

@@ -14,7 +14,7 @@ import lombok.Data;
  * 工作经历视图对象 user_work_experience
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @Data
 @ApiModel("工作经历视图对象")
@@ -24,17 +24,17 @@ public class UserWorkExperienceVo {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 工作经历ID
+     * 序号
      */
-    @ExcelProperty(value = "工作经历ID")
-    @ApiModelProperty("工作经历ID")
+    @ExcelProperty(value = "序号")
+    @ApiModelProperty("序号")
     private Long id;
 
     /**
-     * 代表当前用户;用户信息ID
+     * 用户序号
      */
-    @ExcelProperty(value = "代表当前用户;用户信息ID")
-    @ApiModelProperty("代表当前用户;用户信息ID")
+    @ExcelProperty(value = "用户序号")
+    @ApiModelProperty("用户序号")
     private Long userInfoId;
 
     /**
@@ -87,11 +87,11 @@ public class UserWorkExperienceVo {
     private String searchValue;
 
     /**
-     * 逻辑删除;0->启用，1->停用
+     * 启用状态
      */
-    @ExcelProperty(value = "逻辑删除;0->启用，1->停用", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "启用状态", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "deleted")
-    @ApiModelProperty("逻辑删除;0->启用，1->停用")
+    @ApiModelProperty("启用状态")
     private Integer deleted;
 
 

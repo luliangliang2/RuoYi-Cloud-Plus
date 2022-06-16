@@ -23,7 +23,7 @@ import java.util.Collection;
  * 工作经历Service业务层处理
  *
  * @author huan.li
- * @date 2022-06-15
+ * @date 2022-06-16
  */
 @RequiredArgsConstructor
 @Service
@@ -71,11 +71,12 @@ public class UserWorkExperienceServiceImpl implements IUserWorkExperienceService
         Map<String, Object> params = bo.getParams();
         LambdaQueryWrapper<UserWorkExperience> lqw = Wrappers.lambdaQuery();
         lqw.eq(bo.getUserInfoId() != null, UserWorkExperience::getUserInfoId, bo.getUserInfoId());
-        lqw.eq(StringUtils.isNotBlank(bo.getCompany()), UserWorkExperience::getCompany, bo.getCompany());
+        lqw.like(StringUtils.isNotBlank(bo.getCompany()), UserWorkExperience::getCompany, bo.getCompany());
         lqw.eq(StringUtils.isNotBlank(bo.getPosition()), UserWorkExperience::getPosition, bo.getPosition());
         lqw.eq(bo.getEntryTime() != null, UserWorkExperience::getEntryTime, bo.getEntryTime());
         lqw.eq(bo.getDepartureTime() != null, UserWorkExperience::getDepartureTime, bo.getDepartureTime());
-        lqw.eq(bo.getLengthOfEmployment() != null, UserWorkExperience::getLengthOfEmployment, bo.getLengthOfEmployment());
+        lqw.between(params.get("beginLengthOfEmployment") != null && params.get("endLengthOfEmployment") != null,
+            UserWorkExperience::getLengthOfEmployment ,params.get("beginLengthOfEmployment"), params.get("endLengthOfEmployment"));
         lqw.eq(StringUtils.isNotBlank(bo.getIntroduction()), UserWorkExperience::getIntroduction, bo.getIntroduction());
         lqw.eq(StringUtils.isNotBlank(bo.getSearchValue()), UserWorkExperience::getSearchValue, bo.getSearchValue());
         lqw.eq(bo.getDeleted() != null, UserWorkExperience::getDeleted, bo.getDeleted());
