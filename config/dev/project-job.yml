@@ -16,7 +16,7 @@ xxl:
     # 执行器开关
     enabled: true
     # 调度中心地址：如调度中心集群部署存在多个地址则用逗号分隔。
-    admin-addresses: http://43.138.100.4:9900
+    admin-addresses: http://127.0.0.1:9900
     # 执行器通讯TOKEN：非空时启用
     access-token: xxl-job
     # 执行器配置

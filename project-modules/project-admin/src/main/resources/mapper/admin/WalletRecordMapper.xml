@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.admin.mapper.WalletRecordMapper">
+
+    <resultMap type="com.project.admin.domain.WalletRecord" id="WalletRecordResult">
+    <result property="id" column="id"/>
+    <result property="number" column="number"/>
+    <result property="fromId" column="from_id"/>
+    <result property="toId" column="to_id"/>
+    <result property="type" column="type"/>
+    <result property="money" column="money"/>
+    <result property="payType" column="pay_type"/>
+    <result property="remark" column="remark"/>
+    <result property="payStatus" column="pay_status"/>
+    <result property="payTime" column="pay_time"/>
+    <result property="fetchStatus" column="fetch_status"/>
+    <result property="fetchTime" column="fetch_time"/>
+    <result property="checkStatus" column="check_status"/>
+    <result property="checkTime" column="check_time"/>
+    <result property="createTime" column="create_time"/>
+    <result property="createBy" column="create_by"/>
+    <result property="updateTime" column="update_time"/>
+    <result property="updateBy" column="update_by"/>
+    <result property="deleted" column="deleted"/>
+    <result property="searchValue" column="search_value"/>
+    </resultMap>
+
+
+</mapper>
