@@ -24,9 +24,4 @@ public class SysSms implements Serializable {
      */
     private String message;
 
-    /**
-     * 实际响应体
-     */
-    private Object response;
-
 }
