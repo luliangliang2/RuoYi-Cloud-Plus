@@ -90,11 +90,43 @@ spring:
     sentinel:
       # nacos配置持久化
       datasource:
-        ds1:
+        flow:
           nacos:
             server-addr: ${spring.cloud.nacos.server-addr}
-            dataId: sentinel-${spring.application.name}.json
+            dataId: ${spring.application.name}-flow-rules
             groupId: ${spring.cloud.nacos.config.group}
             namespace: ${spring.profiles.active}
             data-type: json
             rule-type: flow
+        degrade:
+          nacos:
+            server-addr: ${spring.cloud.nacos.server-addr}
+            dataId: sentinel-${spring.application.name}-degrade-rules
+            groupId: ${spring.cloud.nacos.config.group}
+            namespace: ${spring.profiles.active}
+            data-type: json
+            rule-type: degrade
+        system:
+          nacos:
+            server-addr: ${spring.cloud.nacos.server-addr}
+            dataId: ${spring.application.name}-system-rules
+            groupId: ${spring.cloud.nacos.config.group}
+            namespace: ${spring.profiles.active}
+            data-type: json
+            rule-type: system
+        authority:
+          nacos:
+            server-addr: ${spring.cloud.nacos.server-addr}
+            dataId: ${spring.application.name}-authority-rules
+            groupId: ${spring.cloud.nacos.config.group}
+            namespace: ${spring.profiles.active}
+            data-type: json
+            rule-type: authority
+        param-flow:
+          nacos:
+            server-addr: ${spring.cloud.nacos.server-addr}
+            dataId: ${spring.application.name}-param-rules
+            groupId: ${spring.cloud.nacos.config.group}
+            namespace: ${spring.profiles.active}
+            data-type: json
+            rule-type: param-flow
