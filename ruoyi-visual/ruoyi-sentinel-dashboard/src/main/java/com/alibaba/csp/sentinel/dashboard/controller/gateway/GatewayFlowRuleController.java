@@ -15,22 +15,22 @@
  */
 package com.alibaba.csp.sentinel.dashboard.controller.gateway;
 
-
 import com.alibaba.csp.sentinel.dashboard.auth.AuthAction;
 import com.alibaba.csp.sentinel.dashboard.auth.AuthService;
-import com.alibaba.csp.sentinel.dashboard.client.SentinelApiClient;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity;
 import com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayParamFlowItemEntity;
-import com.alibaba.csp.sentinel.dashboard.discovery.MachineInfo;
 import com.alibaba.csp.sentinel.dashboard.domain.Result;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.AddFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.GatewayParamFlowItemVo;
 import com.alibaba.csp.sentinel.dashboard.domain.vo.gateway.rule.UpdateFlowRuleReqVo;
 import com.alibaba.csp.sentinel.dashboard.repository.gateway.InMemGatewayFlowRuleStore;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRuleProvider;
+import com.alibaba.csp.sentinel.dashboard.rule.DynamicRulePublisher;
 import com.alibaba.csp.sentinel.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -42,14 +42,14 @@ import static com.alibaba.csp.sentinel.adapter.gateway.common.SentinelGatewayCon
 import static com.alibaba.csp.sentinel.dashboard.datasource.entity.gateway.GatewayFlowRuleEntity.*;
 
 /**
- * Gateway flow rule Controller for manage gateway flow rules.
+ * 网关限流规则控制器
  *
- * @author cdfive
- * @since 1.7.0
+ * @author zyf
+ * @date 2022-04-13
  */
 @RestController
 @RequestMapping(value = "/gateway/flow")
-public class GatewayFlowRuleController {
+public class GatewayFlowRuleController{
 
     private final Logger logger = LoggerFactory.getLogger(GatewayFlowRuleController.class);
 
@@ -57,7 +57,12 @@ public class GatewayFlowRuleController {
     private InMemGatewayFlowRuleStore repository;
 
     @Autowired
-    private SentinelApiClient sentinelApiClient;
+    @Qualifier("gateWayFlowRulesNacosProvider")
+    private DynamicRuleProvider<List<GatewayFlowRuleEntity>> ruleProvider;
+
+    @Autowired
+    @Qualifier("gateWayFlowRulesNacosPublisher")
+    private DynamicRulePublisher<List<GatewayFlowRuleEntity>> rulePublisher;
 
     @GetMapping("/list.json")
     @AuthAction(AuthService.PrivilegeType.READ_RULE)
@@ -74,7 +79,7 @@ public class GatewayFlowRuleController {
         }
 
         try {
-            List<GatewayFlowRuleEntity> rules = sentinelApiClient.fetchGatewayFlowRules(app, ip, port).get();
+            List<GatewayFlowRuleEntity> rules = ruleProvider.getRules(app);
             repository.saveAll(rules);
             return Result.ofSuccess(rules);
         } catch (Throwable throwable) {
@@ -133,7 +138,7 @@ public class GatewayFlowRuleController {
             // 参数属性 0-ClientIP 1-Remote Host 2-Header 3-URL参数 4-Cookie
             Integer parseStrategy = paramItem.getParseStrategy();
             if (!Arrays.asList(PARAM_PARSE_STRATEGY_CLIENT_IP, PARAM_PARSE_STRATEGY_HOST, PARAM_PARSE_STRATEGY_HEADER
-                    , PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
+                , PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
                 return Result.ofFail(-1, "invalid parseStrategy: " + parseStrategy);
             }
             itemEntity.setParseStrategy(paramItem.getParseStrategy());
@@ -278,7 +283,7 @@ public class GatewayFlowRuleController {
             // 参数属性 0-ClientIP 1-Remote Host 2-Header 3-URL参数 4-Cookie
             Integer parseStrategy = paramItem.getParseStrategy();
             if (!Arrays.asList(PARAM_PARSE_STRATEGY_CLIENT_IP, PARAM_PARSE_STRATEGY_HOST, PARAM_PARSE_STRATEGY_HEADER
-                    , PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
+                , PARAM_PARSE_STRATEGY_URL_PARAM, PARAM_PARSE_STRATEGY_COOKIE).contains(parseStrategy)) {
                 return Result.ofFail(-1, "invalid parseStrategy: " + parseStrategy);
             }
             itemEntity.setParseStrategy(paramItem.getParseStrategy());
@@ -425,7 +430,15 @@ public class GatewayFlowRuleController {
     }
 
     private boolean publishRules(String app, String ip, Integer port) {
-        List<GatewayFlowRuleEntity> rules = repository.findAllByMachine(MachineInfo.of(app, ip, port));
-        return sentinelApiClient.modifyGatewayFlowRules(app, ip, port, rules);
+        List<GatewayFlowRuleEntity> rules = repository.findAllByApp(app);
+        try {
+            rulePublisher.publish(app, rules);
+            //延迟加载
+            return true;
+        } catch (Exception e) {
+            logger.error("publish rules error!");
+            e.printStackTrace();
+            return false;
+        }
     }
 }
