@@ -1,6 +1,7 @@
 package com.ruoyi.common.core.utils;
 
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.http.HttpStatus;
 import com.ruoyi.common.core.constant.Constants;
@@ -205,6 +206,22 @@ public class ServletUtils extends ServletUtil {
         } catch (UnsupportedEncodingException e) {
             return StringUtils.EMPTY;
         }
+    }
+
+    /**
+     * 返回附件
+     *
+     * @param response 响应
+     * @param filename 文件名
+     * @param content  附件内容
+     * @throws IOException IO异常
+     */
+    public static void writeAttachment(HttpServletResponse response, String filename, byte[] content) throws IOException {
+        // 设置 header 和 contentType
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        // 输出附件
+        IoUtil.write(response.getOutputStream(), false, content);
     }
 
 }

@@ -42,6 +42,9 @@
         <easy-es.version>1.0.0</easy-es.version>
         <elasticsearch.version>7.14.0</elasticsearch.version>
 
+        <!-- 数据库文档 -->
+        <screw.version>1.0.5</screw.version>
+
         <!-- 统一 guava 版本 解决隐式漏洞问题 -->
         <guava.version>31.1-jre</guava.version>
 
@@ -309,6 +312,25 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson.version}</version>
+            </dependency>
+
+            <!-- 数据库文档 -->
+            <dependency>
+                <groupId>cn.smallbun.screw</groupId>
+                <artifactId>screw-core</artifactId>
+                <version>${screw.version}</version>
+                <exclusions>
+                    <!-- 移除 Freemarker 依赖，采用 Velocity 作为模板引擎 -->
+                    <exclusion>
+                        <groupId>org.freemarker</groupId>
+                        <artifactId>freemarker</artifactId>
+                    </exclusion>
+                    <!-- 最新版screw-core1.0.5依赖fastjson1.2.73存在漏洞，移除。 -->
+                    <exclusion>
+                        <groupId>com.alibaba</groupId>
+                        <artifactId>fastjson</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
         </dependencies>
