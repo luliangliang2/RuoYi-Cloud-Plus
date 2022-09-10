@@ -21,7 +21,7 @@ CREATE TABLE `sys_database_config`
 
 
 -- 数据库文档菜单 SQL
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (116, '数据库文档', 3, 4, 'database-doc', 'database/doc/index.vue', '', 1, 0, 'C', '0', '0',
@@ -29,7 +29,7 @@ VALUES (116, '数据库文档', 3, 4, 'database-doc', 'database/doc/index.vue', 
         '系统接口菜单');
 
 -- 数据库配置菜单 SQL
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1564169687974174720, '数据库配置', 3, 3, 'database-config', 'database/config/index', NULL, 1, 0, 'C', '0', '0',
@@ -37,27 +37,27 @@ VALUES (1564169687974174720, '数据库配置', 3, 3, 'database-config', 'databa
         '数据库配置菜单');
 
 -- 数据库配置按钮 SQL
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1564169687974174721, '数据库配置查询', 1564169687974174720, 1, '#', '', NULL, 1, 0, 'F', '0', '0',
         'database:config:query', '#', 'admin', '2022-08-29 17:54:10', '', NULL, '');
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1564169687974174722, '数据库配置新增', 1564169687974174720, 2, '#', '', NULL, 1, 0, 'F', '0', '0',
         'database:config:add', '#', 'admin', '2022-08-29 17:54:10', '', NULL, '');
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1564169687974174723, '数据库配置修改', 1564169687974174720, 3, '#', '', NULL, 1, 0, 'F', '0', '0',
         'database:config:edit', '#', 'admin', '2022-08-29 17:54:10', '', NULL, '');
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1564169687974174724, '数据库配置删除', 1564169687974174720, 4, '#', '', NULL, 1, 0, 'F', '0', '0',
         'database:config:remove', '#', 'admin', '2022-08-29 17:54:10', '', NULL, '');
-INSERT INTO `ry-dev`.`sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
+INSERT INTO `sys_menu` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `path`, `component`, `query_param`,
                                  `is_frame`, `is_cache`, `menu_type`, `visible`, `status`, `perms`, `icon`, `create_by`,
                                  `create_time`, `update_by`, `update_time`, `remark`)
 VALUES (1564169687974174725, '数据库配置导出', 1564169687974174720, 5, '#', '', NULL, 1, 0, 'F', '0', '0',
