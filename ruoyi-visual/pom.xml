@@ -9,6 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <modules>
+        <module>ruoyi-database</module>
         <module>ruoyi-monitor</module>
         <module>ruoyi-xxl-job-admin</module>
         <module>ruoyi-sentinel-dashboard</module>

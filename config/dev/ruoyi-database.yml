@@ -1,0 +1,34 @@
+spring:
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${datasource.system-master.url}
+    username: ${datasource.system-master.username}
+    password: ${datasource.system-master.password}
+    hikari:
+      auto-commit: true
+      connection-test-query: SELECT 1
+      connection-timeout: 10000
+      idle-timeout: 30000
+      max-lifetime: 900000
+      maximum-pool-size: 30
+      minimum-idle: 10
+      pool-name: HikariCP
+      validation-timeout: 1000
+    dynamic:
+      # 设置默认的数据源或者数据源组,默认值即为 master
+      primary: master
+      datasource:
+        # 主库数据源
+        master:
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: ${datasource.system-master.url}
+          username: ${datasource.system-master.username}
+          password: ${datasource.system-master.password}
+        # 从库数据源
+#        slave:
+#          driver-class-name: com.mysql.cj.jdbc.Driver
+#          url: ${datasource.system-slave.url}
+#          username: ${datasource.system-slave.username}
+#          password: ${datasource.system-slave.password}
+

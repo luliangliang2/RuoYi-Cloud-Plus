@@ -1,0 +1,60 @@
+pipeline {
+  agent {
+    node {
+      label 'maven'
+    }
+
+  }
+  stages {
+    stage('拉取代码') {
+      agent none
+      steps {
+        container('base') {
+          git(url: 'https://gitee.com/lishuyanla/RuoYi-Cloud-Plus.git', credentialsId: 'gitee-id', branch: 'feature/traceability', changelog: true, poll: false)
+        }
+
+      }
+    }
+
+    stage('编译构建 & 打包镜像 & 推送镜像') {
+      agent none
+      steps {
+        container('maven') {
+          sh 'mvn clean package -P prod -DskipTests=true -Dmaven.test.failure.ignore=true  -U -pl $JAR_NAME -am'
+          sh 'docker build -t $REGISTRY/$HARBOR_NAMESPACE/$APP_NAME:v$BUILD_NUMBER -f $JAR_NAME/Dockerfile $JAR_NAME/'
+          withCredentials([usernamePassword(credentialsId : 'harbor' ,passwordVariable : 'HARBOR_PASSWORD' ,usernameVariable : 'HARBOR_USERNAME' ,)]) {
+            sh 'echo "$HARBOR_PASSWORD" | docker login $REGISTRY -u "$HARBOR_USERNAME" --password-stdin'
+            sh 'docker push $REGISTRY/$HARBOR_NAMESPACE/$APP_NAME:v$BUILD_NUMBER'
+          }
+
+        }
+
+      }
+    }
+
+    stage('部署') {
+      agent none
+      steps {
+        container('maven') {
+          withCredentials([kubeconfigFile(credentialsId : 'trace-kubeconfig' ,variable : 'KUBECONFIG' ,)]) {
+            sh 'envsubst < deploy/deploy.yaml | kubectl apply -f -'
+          }
+
+        }
+
+      }
+    }
+
+  }
+  environment {
+    REGISTRY = '192.168.7.12:30002'
+    HARBOR_NAMESPACE = 'trace'
+    PORT = '9205'
+    JAR_NAME = 'ruoyi-visual/ruoyi-database'
+    APP_NAME = 'ruoyi-database'
+    KUBECONFIG = 'trace-kubeconfig'
+  }
+  parameters {
+    string(name: 'TAG_NAME', defaultValue: '', description: '')
+  }
+}
