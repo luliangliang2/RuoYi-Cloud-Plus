@@ -9,7 +9,6 @@ spring:
     active: @profiles.active@
 
 logging:
-  config: classpath:logback-spring.xml
   file:
     path: ./logs/seata
 #  extend:
