@@ -4,10 +4,10 @@ import cn.hutool.http.HttpUtil;
 import com.ruoyi.common.core.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.http.MediaType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.file.Files;
@@ -73,14 +73,13 @@ public class ZipUtils {
      * @author Bleachtred
      */
     public static void zipFilePip(String downloadFilename, List<String> files, HttpServletResponse response) {
+        //转换中文否则可能会产生乱码
         try {
-            //转换中文否则可能会产生乱码
-            downloadFilename = URLEncoder.encode(downloadFilename, "UTF-8");
+            FileUtils.setAttachmentResponseHeader(response, downloadFilename);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        response.setContentType("application/octet-stream");
-        response.setHeader("Content-Disposition", "attachment;filename=" + downloadFilename);
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE + "; charset=UTF-8");
         zipFilePip(files, response);
     }
 
@@ -97,12 +96,13 @@ public class ZipUtils {
             CompletableFuture.runAsync(() -> runTask(pipe, files));
 
             //获取读通道
-            ReadableByteChannel readableByteChannel = pipe.source();
-            ByteBuffer buffer = ByteBuffer.allocate(TEMP_SIZE);
-            while (readableByteChannel.read(buffer)>= 0) {
-                buffer.flip();
-                out.write(buffer);
-                buffer.clear();
+            try (ReadableByteChannel readableByteChannel = pipe.source()) {
+                ByteBuffer buffer = ByteBuffer.allocate(TEMP_SIZE);
+                while (readableByteChannel.read(buffer) >= 0) {
+                    buffer.flip();
+                    out.write(buffer);
+                    buffer.clear();
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -123,12 +123,13 @@ public class ZipUtils {
             CompletableFuture.runAsync(() -> runLocalTask(pipe,files));
 
             //获取读通道
-            ReadableByteChannel readableByteChannel = pipe.source();
-            ByteBuffer buffer = ByteBuffer.allocate(TEMP_SIZE);
-            while (readableByteChannel.read(buffer)>= 0) {
-                buffer.flip();
-                out.write(buffer);
-                buffer.clear();
+            try (ReadableByteChannel readableByteChannel = pipe.source()) {
+                ByteBuffer buffer = ByteBuffer.allocate(TEMP_SIZE);
+                while (readableByteChannel.read(buffer) >= 0) {
+                    buffer.flip();
+                    out.write(buffer);
+                    buffer.clear();
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
