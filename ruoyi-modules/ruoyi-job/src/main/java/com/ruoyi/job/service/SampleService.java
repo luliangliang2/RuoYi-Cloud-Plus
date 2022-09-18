@@ -213,12 +213,10 @@ public class SampleService {
 
             XxlJobHelper.log(responseMsg);
 
-            return;
         } catch (Exception e) {
             XxlJobHelper.log(e);
 
             XxlJobHelper.handleFail();
-            return;
         } finally {
             try {
                 if (bufferedReader != null) {

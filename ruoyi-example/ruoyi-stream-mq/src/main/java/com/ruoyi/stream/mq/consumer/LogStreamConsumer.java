@@ -14,9 +14,7 @@ public class LogStreamConsumer {
     @Bean
     Consumer<TestMessaging> log() {
         log.info("初始化订阅");
-        return msg -> {
-            log.info("通过stream消费到消息 => {}", msg.toString());
-        };
+        return msg -> log.info("通过stream消费到消息 => {}", msg.toString());
     }
 
 }

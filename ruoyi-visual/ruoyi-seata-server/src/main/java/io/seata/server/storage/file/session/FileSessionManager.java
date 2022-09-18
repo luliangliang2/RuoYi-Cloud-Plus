@@ -193,30 +193,28 @@ public class FileSessionManager extends AbstractSessionManager implements Reload
         restoreSessions(false, removedGlobalBuffer, unhandledBranchBuffer);
 
         if (!unhandledBranchBuffer.isEmpty()) {
-            unhandledBranchBuffer.values().forEach(unhandledBranchSessions -> {
-                unhandledBranchSessions.values().forEach(branchSession -> {
-                    String xid = branchSession.getXid();
-                    if (removedGlobalBuffer.contains(xid)) {
-                        return;
-                    }
+            unhandledBranchBuffer.values().forEach(unhandledBranchSessions -> unhandledBranchSessions.values().forEach(branchSession -> {
+                String xid = branchSession.getXid();
+                if (removedGlobalBuffer.contains(xid)) {
+                    return;
+                }
 
-                    long bid = branchSession.getBranchId();
-                    GlobalSession found = sessionMap.get(xid);
-                    if (found == null) {
-                        // Ignore
-                        if (LOGGER.isInfoEnabled()) {
-                            LOGGER.info("GlobalSession Does Not Exists For BranchSession [" + bid + "/" + xid + "]");
-                        }
-                    } else {
-                        BranchSession existingBranch = found.getBranch(branchSession.getBranchId());
-                        if (existingBranch == null) {
-                            found.add(branchSession);
-                        } else {
-                            existingBranch.setStatus(branchSession.getStatus());
-                        }
+                long bid = branchSession.getBranchId();
+                GlobalSession found = sessionMap.get(xid);
+                if (found == null) {
+                    // Ignore
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("GlobalSession Does Not Exists For BranchSession [" + bid + "/" + xid + "]");
                     }
-                });
-            });
+                } else {
+                    BranchSession existingBranch = found.getBranch(branchSession.getBranchId());
+                    if (existingBranch == null) {
+                        found.add(branchSession);
+                    } else {
+                        existingBranch.setStatus(branchSession.getStatus());
+                    }
+                }
+            }));
         }
     }
 

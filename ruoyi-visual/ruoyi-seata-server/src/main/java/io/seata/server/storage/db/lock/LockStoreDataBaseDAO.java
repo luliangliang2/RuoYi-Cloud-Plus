@@ -186,7 +186,7 @@ public class LockStoreDataBaseDAO implements LockStore {
                 if (!doAcquireLocks(conn, unrepeatedLockDOs)) {
                     if (LOGGER.isInfoEnabled()) {
                         LOGGER.info("Global lock batch acquire failed, xid {} branchId {} pks {}", unrepeatedLockDOs.get(0).getXid(),
-                            unrepeatedLockDOs.get(0).getBranchId(), unrepeatedLockDOs.stream().map(lockDO -> lockDO.getPk()).collect(Collectors.toList()));
+                            unrepeatedLockDOs.get(0).getBranchId(), unrepeatedLockDOs.stream().map(LockDO::getPk).collect(Collectors.toList()));
                     }
                     conn.rollback();
                     return false;
@@ -286,10 +286,7 @@ public class LockStoreDataBaseDAO implements LockStore {
         try {
             conn = lockStoreDataSource.getConnection();
             conn.setAutoCommit(true);
-            if (!checkLockable(conn, lockDOs)) {
-                return false;
-            }
-            return true;
+            return checkLockable(conn, lockDOs);
         } catch (SQLException e) {
             throw new DataAccessException(e);
         } finally {

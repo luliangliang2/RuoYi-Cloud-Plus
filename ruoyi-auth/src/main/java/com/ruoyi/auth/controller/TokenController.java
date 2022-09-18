@@ -38,7 +38,7 @@ public class TokenController {
         String accessToken = sysLoginService.login(form.getUsername(), form.getPassword());
 
         // 接口返回信息
-        Map<String, Object> rspMap = new HashMap<String, Object>();
+        Map<String, Object> rspMap = new HashMap<>();
         rspMap.put("access_token", accessToken);
         return R.ok(rspMap);
     }

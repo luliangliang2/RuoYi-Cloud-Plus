@@ -247,11 +247,8 @@ public class GlobalSession implements SessionLifecycle, SessionStorable {
     }
 
     public boolean isSuccessEnd() {
-        if (status == GlobalStatus.Committed || status == GlobalStatus.Rollbacked
-            || status == GlobalStatus.TimeoutRollbacked) {
-            return true;
-        }
-        return false;
+        return status == GlobalStatus.Committed || status == GlobalStatus.Rollbacked
+            || status == GlobalStatus.TimeoutRollbacked;
     }
 
     public void clean() throws TransactionException {

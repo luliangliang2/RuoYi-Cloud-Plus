@@ -85,8 +85,8 @@ public class SystemController {
 
     private int countNotNullAndNotNegative(Number... values) {
         int notNullCount = 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i] != null && values[i].doubleValue() >= 0) {
+        for (Number value : values) {
+            if (value != null && value.doubleValue() >= 0) {
                 notNullCount++;
             }
         }
