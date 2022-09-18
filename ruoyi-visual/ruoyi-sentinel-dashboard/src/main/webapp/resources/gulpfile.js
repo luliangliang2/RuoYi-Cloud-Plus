@@ -71,7 +71,7 @@ gulp.task('lib', function () {
 
 /*
 * css任务
-* 在src下创建style文件夹，里面存放less文件。 
+* 在src下创建style文件夹，里面存放less文件。
 */
 gulp.task('css', function () {
   gulp.src(CSS_APP)
@@ -105,7 +105,7 @@ gulp.task('jshint', function () {
     .pipe(plugins.jshint.reporter());
 });
 
-// 每次发布的时候，可能需要把之前目录内的内容清除，避免旧的文件对新的容有所影响。 需要在每次发布前删除dist和build目录
+// 每次发布的时候，可能需要把之前目录内的内容清除，避免旧的文件对新的内容有所影响。 需要在每次发布前删除dist和build目录
 gulp.task('clean', function () {
   gulp.src([app.devPath, app.prdPath])
     .pipe(plugins.clean());
