@@ -57,7 +57,7 @@ public class XssFilter implements GlobalFilter, Ordered {
     }
 
     private ServerHttpRequestDecorator requestDecorator(ServerWebExchange exchange) {
-        ServerHttpRequestDecorator serverHttpRequestDecorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
+        return new ServerHttpRequestDecorator(exchange.getRequest()) {
             @Override
             public Flux<DataBuffer> getBody() {
                 Flux<DataBuffer> body = super.getBody();
@@ -90,7 +90,6 @@ public class XssFilter implements GlobalFilter, Ordered {
             }
 
         };
-        return serverHttpRequestDecorator;
     }
 
     /**
