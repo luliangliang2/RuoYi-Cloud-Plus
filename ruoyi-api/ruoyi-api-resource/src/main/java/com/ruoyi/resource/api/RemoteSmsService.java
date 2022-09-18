@@ -1,7 +1,6 @@
 package com.ruoyi.resource.api;
 
 import com.ruoyi.common.core.exception.ServiceException;
-import com.ruoyi.resource.api.domain.SysFile;
 import com.ruoyi.resource.api.domain.SysSms;
 
 import java.util.Map;
