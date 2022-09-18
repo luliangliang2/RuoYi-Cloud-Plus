@@ -30,7 +30,7 @@ public class JobAlarmer implements ApplicationContextAware, InitializingBean {
     public void afterPropertiesSet() throws Exception {
         Map<String, JobAlarm> serviceBeanMap = applicationContext.getBeansOfType(JobAlarm.class);
         if (serviceBeanMap != null && serviceBeanMap.size() > 0) {
-            jobAlarmList = new ArrayList<JobAlarm>(serviceBeanMap.values());
+            jobAlarmList = new ArrayList<>(serviceBeanMap.values());
         }
     }
 

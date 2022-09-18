@@ -141,7 +141,7 @@ public class GatewayApiController {
 
         // 检查API名称不能重复
         List<ApiDefinitionEntity> allApis = repository.findAllByMachine(MachineInfo.of(app.trim(), ip.trim(), port));
-        if (allApis.stream().map(o -> o.getApiName()).anyMatch(o -> o.equals(apiName.trim()))) {
+        if (allApis.stream().map(ApiDefinitionEntity::getApiName).anyMatch(o -> o.equals(apiName.trim()))) {
             return Result.ofFail(-1, "apiName exists: " + apiName);
         }
 

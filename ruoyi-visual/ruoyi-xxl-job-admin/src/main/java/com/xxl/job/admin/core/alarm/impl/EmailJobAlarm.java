@@ -58,7 +58,7 @@ public class EmailJobAlarm implements JobAlarm {
                 info.getJobDesc(),
                 alarmContent);
 
-            Set<String> emailSet = new HashSet<String>(Arrays.asList(info.getAlarmEmail().split(",")));
+            Set<String> emailSet = new HashSet<>(Arrays.asList(info.getAlarmEmail().split(",")));
             for (String email : emailSet) {
 
                 // make mail

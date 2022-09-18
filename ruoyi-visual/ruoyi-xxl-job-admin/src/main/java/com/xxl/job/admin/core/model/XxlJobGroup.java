@@ -22,7 +22,7 @@ public class XxlJobGroup {
 
     public List<String> getRegistryList() {
         if (addressList != null && addressList.trim().length() > 0) {
-            registryList = new ArrayList<String>(Arrays.asList(addressList.split(",")));
+            registryList = new ArrayList<>(Arrays.asList(addressList.split(",")));
         }
         return registryList;
     }

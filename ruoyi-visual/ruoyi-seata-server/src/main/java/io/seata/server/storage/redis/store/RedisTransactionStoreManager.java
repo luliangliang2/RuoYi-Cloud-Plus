@@ -576,7 +576,7 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
         List<String> branchKeys = lRange(jedis, branchListKey);
         if (CollectionUtils.isNotEmpty(branchKeys)) {
             try (Pipeline pipeline = jedis.pipelined()) {
-                branchKeys.stream().forEach(branchKey -> pipeline.hgetAll(branchKey));
+                branchKeys.stream().forEach(pipeline::hgetAll);
                 List<Object> branchInfos = pipeline.syncAndReturnAll();
                 for (Object branchInfo : branchInfos) {
                     if (branchInfo != null) {
@@ -660,7 +660,7 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
         Map<String, Integer> resultMap = Collections.synchronizedMap(new LinkedHashMap<>());
         Map<String, Integer> keysMap = new HashMap<>(statusKeys.size());
         try (Jedis jedis = JedisPooledFactory.getJedisInstance(); Pipeline pipelined = jedis.pipelined()) {
-            statusKeys.forEach(key -> pipelined.llen(key));
+            statusKeys.forEach(pipelined::llen);
             List<Long> counts = (List) pipelined.syncAndReturnAll();
             for (int i = 0; i < counts.size(); i++) {
                 if (counts.get(i) > 0) {
@@ -690,7 +690,7 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
             statusKeys.add(buildGlobalStatus(status.getCode()));
         }
         try (Jedis jedis = JedisPooledFactory.getJedisInstance(); Pipeline pipelined = jedis.pipelined()) {
-            statusKeys.stream().forEach(statusKey -> pipelined.llen(statusKey));
+            statusKeys.stream().forEach(pipelined::llen);
             List<Long> list = (List<Long>)(List)pipelined.syncAndReturnAll();
             if (list.size() > 0) {
                 total = list.stream().mapToLong(value -> value).sum();
@@ -701,8 +701,8 @@ public class RedisTransactionStoreManager extends AbstractTransactionStoreManage
 
     private List<String> convertStatusKeys(GlobalStatus[] statuses) {
         List<String> statusKeys = new ArrayList<>();
-        for (int i = 0; i < statuses.length; i++) {
-            statusKeys.add(buildGlobalStatus(statuses[i].getCode()));
+        for (GlobalStatus status : statuses) {
+            statusKeys.add(buildGlobalStatus(status.getCode()));
         }
         return statusKeys;
     }

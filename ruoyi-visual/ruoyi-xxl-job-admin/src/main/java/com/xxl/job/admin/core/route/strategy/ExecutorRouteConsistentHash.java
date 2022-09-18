@@ -61,7 +61,7 @@ public class ExecutorRouteConsistentHash extends ExecutorRouter {
 
         // ------A1------A2-------A3------
         // -----------J1------------------
-        TreeMap<Long, String> addressRing = new TreeMap<Long, String>();
+        TreeMap<Long, String> addressRing = new TreeMap<>();
         for (String address : addressList) {
             for (int i = 0; i < VIRTUAL_NODE_NUM; i++) {
                 long addressHash = hash("SHARD-" + address + "-NODE-" + i);
@@ -80,7 +80,7 @@ public class ExecutorRouteConsistentHash extends ExecutorRouter {
     @Override
     public ReturnT<String> route(TriggerParam triggerParam, List<String> addressList) {
         String address = hashJob(triggerParam.getJobId(), addressList);
-        return new ReturnT<String>(address);
+        return new ReturnT<>(address);
     }
 
 }

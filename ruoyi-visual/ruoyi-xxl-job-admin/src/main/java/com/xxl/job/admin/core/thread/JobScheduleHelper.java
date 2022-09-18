@@ -288,7 +288,7 @@ public class JobScheduleHelper {
         // push async ring
         List<Integer> ringItemData = ringData.get(ringSecond);
         if (ringItemData == null) {
-            ringItemData = new ArrayList<Integer>();
+            ringItemData = new ArrayList<>();
             ringData.put(ringSecond, ringItemData);
         }
         ringItemData.add(jobId);

@@ -42,7 +42,7 @@ public class JobCompleteHelper {
             20,
             30L,
             TimeUnit.SECONDS,
-            new LinkedBlockingQueue<Runnable>(3000),
+            new LinkedBlockingQueue<>(3000),
             new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
@@ -157,10 +157,10 @@ public class JobCompleteHelper {
         // valid log item
         XxlJobLog log = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().load(handleCallbackParam.getLogId());
         if (log == null) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, "log item not found.");
+            return new ReturnT<>(ReturnT.FAIL_CODE, "log item not found.");
         }
         if (log.getHandleCode() > 0) {
-            return new ReturnT<String>(ReturnT.FAIL_CODE, "log repeate callback.");     // avoid repeat callback, trigger child job etc
+            return new ReturnT<>(ReturnT.FAIL_CODE, "log repeate callback.");     // avoid repeat callback, trigger child job etc
         }
 
         // handle msg

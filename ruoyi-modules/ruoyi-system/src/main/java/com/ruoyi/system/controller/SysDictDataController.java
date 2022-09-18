@@ -74,7 +74,7 @@ public class SysDictDataController extends BaseController {
     public R<List<SysDictData>> dictType(@PathVariable String dictType) {
         List<SysDictData> data = dictTypeService.selectDictDataByType(dictType);
         if (ObjectUtil.isNull(data)) {
-            data = new ArrayList<SysDictData>();
+            data = new ArrayList<>();
         }
         return R.ok(data);
     }

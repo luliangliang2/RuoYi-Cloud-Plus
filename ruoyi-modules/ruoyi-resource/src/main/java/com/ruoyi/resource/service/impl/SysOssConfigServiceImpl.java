@@ -174,9 +174,7 @@ public class SysOssConfigServiceImpl implements ISysOssConfigService {
     private boolean setConfigCache(boolean flag, SysOssConfig config) {
         if (flag) {
             CacheUtils.put(CacheNames.SYS_OSS_CONFIG, config.getConfigKey(), JsonUtils.toJsonString(config));
-            RedisUtils.publish(OssConstant.DEFAULT_CONFIG_KEY, config.getConfigKey(), msg -> {
-                log.info("发布刷新OSS配置 => " + msg);
-            });
+            RedisUtils.publish(OssConstant.DEFAULT_CONFIG_KEY, config.getConfigKey(), msg -> log.info("发布刷新OSS配置 => " + msg));
         }
         return flag;
     }
