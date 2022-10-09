@@ -30,7 +30,7 @@ public class ValidateCodeHandler implements HandlerFunction<ServerResponse> {
         R<Map<String, Object>> ajax;
         try {
             ajax = validateCodeService.createCaptcha();
-        } catch (CaptchaException | IOException e) {
+        } catch (CaptchaException e) {
             return Mono.error(e);
         }
         return ServerResponse.status(HttpStatus.OK).body(BodyInserters.fromValue(ajax));
