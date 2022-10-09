@@ -15,7 +15,7 @@ public interface ValidateCodeService {
     /**
      * 生成验证码
      */
-    R<Map<String, Object>> createCaptcha() throws IOException, CaptchaException;
+    R<Map<String, Object>> createCaptcha() throws CaptchaException;
 
     /**
      * 校验验证码

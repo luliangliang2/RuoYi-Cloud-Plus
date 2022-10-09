@@ -38,7 +38,7 @@ public class ValidateCodeServiceImpl implements ValidateCodeService {
      * 生成验证码
      */
     @Override
-    public R<Map<String, Object>> createCaptcha() throws IOException, CaptchaException {
+    public R<Map<String, Object>> createCaptcha() throws CaptchaException {
         Map<String, Object> ajax = new HashMap<>();
         boolean captchaEnabled = captchaProperties.getEnabled();
         ajax.put("captchaEnabled", captchaEnabled);
@@ -51,35 +51,23 @@ public class ValidateCodeServiceImpl implements ValidateCodeService {
         String verifyKey = CacheConstants.CAPTCHA_CODE_KEY + uuid;
         // 生成验证码
         CaptchaType captchaType = captchaProperties.getType();
-        boolean isMath = CaptchaType.MATH == captchaType;
-        Integer length = isMath ? captchaProperties.getNumberLength() : captchaProperties.getCharLength();
+        Integer length = CaptchaType.MATH == captchaType ? captchaProperties.getNumberLength() : captchaProperties.getCharLength();
+
+        // 获取生成器
         CodeGenerator codeGenerator = ReflectUtils.newInstance(captchaType.getClazz(), length);
         AbstractCaptcha captcha = SpringUtils.getBean(captchaProperties.getCategory().getClazz());
         captcha.setGenerator(codeGenerator);
         captcha.createCode();
-        String code = isMath ? getCodeResult(captcha.getCode()) : captcha.getCode();
+
+        // 获取验证码
+        String code = captcha.getCode();
         RedisUtils.setCacheObject(verifyKey, code, Duration.ofMinutes(Constants.CAPTCHA_EXPIRATION));
+
         ajax.put("uuid", uuid);
         ajax.put("img", captcha.getImageBase64());
         return R.ok(ajax);
     }
 
-    private String getCodeResult(String capStr) {
-        int numberLength = captchaProperties.getNumberLength();
-        int a = Convert.toInt(StringUtils.substring(capStr, 0, numberLength).trim());
-        char operator = capStr.charAt(numberLength);
-        int b = Convert.toInt(StringUtils.substring(capStr, numberLength + 1, numberLength + 1 + numberLength).trim());
-        switch (operator) {
-            case '*':
-                return Convert.toStr(a * b);
-            case '+':
-                return Convert.toStr(a + b);
-            case '-':
-                return Convert.toStr(a - b);
-            default:
-                return StringUtils.EMPTY;
-        }
-    }
 
     /**
      * 校验验证码
@@ -96,7 +84,9 @@ public class ValidateCodeServiceImpl implements ValidateCodeService {
         String captcha = RedisUtils.getCacheObject(verifyKey);
         RedisUtils.deleteObject(verifyKey);
 
-        if (!code.equalsIgnoreCase(captcha)) {
+        CaptchaType captchaType = captchaProperties.getType();
+        CodeGenerator codeGenerator = ReflectUtils.newInstance(captchaType.getClazz());
+        if (!codeGenerator.verify(captcha, code)) {
             throw new CaptchaException();
         }
     }
