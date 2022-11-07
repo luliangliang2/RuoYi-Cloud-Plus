@@ -4,6 +4,7 @@ import com.ruoyi.common.core.exception.ServiceException;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.common.oss.core.OssClient;
 import com.ruoyi.common.oss.entity.UploadResult;
+import com.ruoyi.common.oss.enumd.AccessPolicyType;
 import com.ruoyi.common.oss.factory.OssFactory;
 import com.ruoyi.resource.api.RemoteFileService;
 import com.ruoyi.resource.api.domain.SysFile;
@@ -55,6 +56,22 @@ public class RemoteFileServiceImpl implements RemoteFileService {
             log.error("上传文件失败", e);
             throw new ServiceException("上传文件失败");
         }
+    }
+
+    /**
+     * 文件更新URL
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public String updateFileUrl(String url) {
+        OssClient storage = OssFactory.instance();
+        /**
+         * 仅修改桶类型为 private 的URL，临时URL时长为100s
+         */
+        if (AccessPolicyType.PRIVATE == storage.getAccessPolicy()) {
+            return storage.getPrivateUrl(url.replace(storage.getUrl() + "/", ""), 100);
+        }
+        return url;
     }
 
 }
