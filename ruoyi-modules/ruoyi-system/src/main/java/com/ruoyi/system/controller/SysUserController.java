@@ -17,6 +17,8 @@ import com.ruoyi.common.log.enums.BusinessType;
 import com.ruoyi.common.mybatis.core.page.PageQuery;
 import com.ruoyi.common.mybatis.core.page.TableDataInfo;
 import com.ruoyi.common.satoken.utils.LoginHelper;
+import com.ruoyi.resource.api.RemoteFileService;
+import com.ruoyi.resource.api.domain.SysFile;
 import com.ruoyi.system.api.domain.SysDept;
 import com.ruoyi.system.api.domain.SysRole;
 import com.ruoyi.system.api.domain.SysUser;
@@ -27,6 +29,7 @@ import com.ruoyi.system.listener.SysUserImportListener;
 import com.ruoyi.system.service.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +55,9 @@ public class SysUserController extends BaseController {
     private final ISysPostService postService;
     private final ISysPermissionService permissionService;
     private final ISysDeptService deptService;
+
+    @DubboReference
+    private RemoteFileService remoteFileService;
 
     /**
      * 获取用户列表
@@ -113,6 +119,7 @@ public class SysUserController extends BaseController {
     public R<Map<String, Object>> getInfo() {
         LoginUser loginUser = LoginHelper.getLoginUser();
         SysUser user = userService.selectUserById(loginUser.getUserId());
+        user.setAvatar(remoteFileService.updateFileUrl(user.getAvatar()));
         Map<String, Object> ajax = new HashMap<>();
         ajax.put("user", user);
         ajax.put("roles", loginUser.getRolePermission());

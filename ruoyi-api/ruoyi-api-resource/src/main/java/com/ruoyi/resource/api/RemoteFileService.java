@@ -17,4 +17,12 @@ public interface RemoteFileService {
      * @return 结果
      */
     SysFile upload(String name, String originalFilename, String contentType, byte[] file) throws ServiceException;
+
+    /**
+     * 若使用私有桶，则使用此方法更新文件URL
+     *
+     * @param url 文件url
+     * @return 结果
+     */
+    String updateFileUrl(String url);
 }

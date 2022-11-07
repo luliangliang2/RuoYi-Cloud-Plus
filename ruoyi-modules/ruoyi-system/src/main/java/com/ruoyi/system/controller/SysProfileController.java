@@ -126,7 +126,7 @@ public class SysProfileController extends BaseController {
             String url = sysFile.getUrl();
             if (userService.updateUserAvatar(LoginHelper.getUsername(), url)) {
                 Map<String, Object> ajax = new HashMap<>();
-                ajax.put("imgUrl", url);
+                ajax.put("imgUrl", remoteFileService.updateFileUrl(sysFile.getUrl()));
                 return R.ok(ajax);
             }
         }
