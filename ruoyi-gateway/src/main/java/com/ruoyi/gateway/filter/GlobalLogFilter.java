@@ -4,14 +4,17 @@ import cn.hutool.core.map.MapUtil;
 import com.ruoyi.common.core.utils.JsonUtils;
 import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.gateway.config.properties.CustomGatewayProperties;
+import io.netty.buffer.ByteBufAllocator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
@@ -22,6 +25,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ORIGINAL_REQUEST_URL_ATTR;
 
@@ -45,11 +49,12 @@ public class GlobalLogFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = getOriginalRequestUrl(exchange);
-        String url = request.getMethod().name() + " " + path;
+        String url = Objects.requireNonNull(request.getMethod()).name() + " " + path;
 
         if (!customGatewayProperties.getRequestLog()) {
             return chain.filter(exchange);
         }
+        ServerHttpRequest mutatedRequest = request;
         // 打印请求参数
         if (isJsonRequest(request)) {
             String jsonParam = resolveBodyFromRequest(request);
@@ -65,7 +70,7 @@ public class GlobalLogFilter implements GlobalFilter, Ordered {
         }
 
         exchange.getAttributes().put(START_TIME, System.currentTimeMillis());
-        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+        return chain.filter(exchange.mutate().request(mutatedRequest).build()).then(Mono.fromRunnable(() -> {
             Long startTime = exchange.getAttribute(START_TIME);
             if (startTime != null) {
                 long executeTime = (System.currentTimeMillis() - startTime);
@@ -104,6 +109,28 @@ public class GlobalLogFilter implements GlobalFilter, Ordered {
             sb.append(bodyString);
         });
         return sb.toString();
+    }
+
+    private DataBuffer stringBuffer(String value) {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+
+        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+        DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(bytes.length);
+        buffer.write(bytes);
+        return buffer;
+    }
+
+    private ServerHttpRequest requestDecorator(String body, ServerHttpRequest request) {
+        DataBuffer bodyDataBuffer = stringBuffer(body);
+        Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
+
+        request = new ServerHttpRequestDecorator(request) {
+            @Override
+            public Flux<DataBuffer> getBody() {
+                return bodyFlux;
+            }
+        };
+        return request;
     }
 
     public static String getOriginalRequestUrl(ServerWebExchange exchange) {
