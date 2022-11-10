@@ -6,12 +6,15 @@ import com.ruoyi.common.core.utils.StringUtils;
 import com.ruoyi.gateway.config.properties.CaptchaProperties;
 import com.ruoyi.gateway.service.ValidateCodeService;
 import com.ruoyi.gateway.utils.WebFluxUtils;
+import io.netty.buffer.ByteBufAllocator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -47,15 +50,16 @@ public class ValidateCodeFilter extends AbstractGatewayFilterFactory<Object> {
             if (!StringUtils.equalsAnyIgnoreCase(request.getURI().getPath(), VALIDATE_URL) || !captchaProperties.getEnabled()) {
                 return chain.filter(exchange);
             }
-
+            ServerHttpRequest mutatedRequest;
             try {
                 String rspStr = resolveBodyFromRequest(request);
+                mutatedRequest = requestDecorator(rspStr, request);
                 Dict obj = JsonUtils.parseMap(rspStr);
                 validateCodeService.checkCaptcha(obj.getStr(CODE), obj.getStr(UUID));
             } catch (Exception e) {
                 return WebFluxUtils.webFluxResponseWriter(exchange.getResponse(), e.getMessage());
             }
-            return chain.filter(exchange);
+            return chain.filter(exchange.mutate().request(mutatedRequest).build());
         };
     }
 
@@ -69,5 +73,27 @@ public class ValidateCodeFilter extends AbstractGatewayFilterFactory<Object> {
             bodyRef.set(charBuffer.toString());
         });
         return bodyRef.get();
+    }
+
+    private DataBuffer stringBuffer(String value) {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+
+        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+        DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(bytes.length);
+        buffer.write(bytes);
+        return buffer;
+    }
+
+    private ServerHttpRequest requestDecorator(String body, ServerHttpRequest request) {
+        DataBuffer bodyDataBuffer = stringBuffer(body);
+        Flux<DataBuffer> bodyFlux = Flux.just(bodyDataBuffer);
+
+        request = new ServerHttpRequestDecorator(request) {
+            @Override
+            public Flux<DataBuffer> getBody() {
+                return bodyFlux;
+            }
+        };
+        return request;
     }
 }
