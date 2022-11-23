@@ -4,6 +4,8 @@ import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.utils.SpringUtils;
 import com.ruoyi.common.sms.config.properties.SmsProperties;
 import com.ruoyi.common.sms.core.SmsTemplate;
+import com.ruoyi.common.sms.core.TencentSmsTemplate;
+import com.ruoyi.common.sms.core.AliyunSmsTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +46,7 @@ public class SmsController {
         if (!SpringUtils.containsBean("aliyunSmsTemplate")) {
             return R.fail("阿里云依赖未引入！");
         }
-        SmsTemplate smsTemplate = SpringUtils.getBean(SmsTemplate.class);
+        SmsTemplate smsTemplate = SpringUtils.getBean(AliyunSmsTemplate.class);
         Map<String, String> map = new HashMap<>(1);
         map.put("code", "1234");
         Object send = smsTemplate.send(phones, templateId, map);
@@ -65,7 +67,7 @@ public class SmsController {
         if (!SpringUtils.containsBean("tencentSmsTemplate")) {
             return R.fail("腾讯云依赖未引入！");
         }
-        SmsTemplate smsTemplate = SpringUtils.getBean(SmsTemplate.class);
+        SmsTemplate smsTemplate = SpringUtils.getBean(TencentSmsTemplate.class);
         Map<String, String> map = new HashMap<>(1);
 //        map.put("2", "测试测试");
         map.put("1", "1234");
