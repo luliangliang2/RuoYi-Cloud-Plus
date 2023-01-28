@@ -30,6 +30,10 @@ public class SysOssVo {
     private String originalName;
 
     /**
+     * 文件大小
+     */
+    private Long fileSize;
+    /**
      * 文件后缀名
      */
     private String fileSuffix;
