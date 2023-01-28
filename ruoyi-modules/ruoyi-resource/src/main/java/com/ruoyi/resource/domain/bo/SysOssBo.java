@@ -21,6 +21,11 @@ public class SysOssBo extends BaseEntity {
      * 原名
      */
     private String originalName;
+
+    /**
+     * 文件大小
+     */
+    private Long fileSize;
     /**
      * 文件后缀名
      */

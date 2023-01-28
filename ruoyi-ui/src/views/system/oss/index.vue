@@ -127,6 +127,11 @@
       <el-table-column label="文件名" align="center" prop="fileName" />
       <el-table-column label="原名" align="center" prop="originalName" />
       <el-table-column label="文件后缀" align="center" prop="fileSuffix" />
+      <el-table-column label="文件大小" align="center" prop="fileSize" >
+        <template slot-scope="scope">
+          {{ calculateFileSize(scope.row.fileSize) }}
+        </template>
+      </el-table-column>
       <el-table-column label="文件展示" align="center" prop="url">
         <template slot-scope="scope">
           <el-image

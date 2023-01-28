@@ -6,6 +6,7 @@
         <result property="ossId" column="oss_id"/>
         <result property="fileName" column="file_name"/>
         <result property="fileSuffix" column="file_suffix"/>
+        <result property="fileSize" column="file_size"/>
         <result property="url" column="url"/>
         <result property="createTime" column="create_time"/>
         <result property="createBy" column="create_by"/>

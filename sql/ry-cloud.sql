@@ -585,6 +585,7 @@ create table sys_oss (
   oss_id          bigint(20)        not null                   comment '对象存储主键',
   file_name       varchar(255)      not null default ''        comment '文件名',
   original_name   varchar(255)      not null default ''        comment '原名',
+  file_size        bigint(20)       default null               comment '文件大小',
   file_suffix     varchar(10)       not null default ''        comment '文件后缀名',
   url              varchar(500)     not null                   comment 'URL地址',
   create_time     datetime          default null               comment '创建时间',
