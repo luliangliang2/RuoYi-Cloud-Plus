@@ -1,5 +1,6 @@
 package com.ruoyi.common.redis.utils;
 
+import cn.hutool.core.collection.CollUtil;
 import com.ruoyi.common.core.utils.SpringUtils;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,7 @@ import org.redisson.api.RMap;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -29,6 +31,21 @@ public class CacheUtils {
     public static Set<Object> keys(String cacheNames) {
         RMap<Object, Object> rmap = (RMap<Object, Object>) CACHE_MANAGER.getCache(cacheNames).getNativeCache();
         return rmap.keySet();
+    }
+
+    /**
+     * 获取缓存组内所有的Value
+     *
+     * @param cacheNames 缓存组名称
+     */
+    public static <T> List<T> values(String cacheNames) {
+        Set<Object> keys = keys(cacheNames);
+        if (CollUtil.isEmpty(keys)){
+            return null;
+        }
+        List<T> list = new ArrayList<>();
+        keys.forEach(key -> list.add(get(cacheNames, key)));
+        return list;
     }
 
     /**
