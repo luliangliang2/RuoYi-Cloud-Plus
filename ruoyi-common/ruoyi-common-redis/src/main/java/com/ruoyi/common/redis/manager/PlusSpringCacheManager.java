@@ -26,9 +26,11 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.transaction.TransactionAwareCacheDecorator;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -118,68 +120,39 @@ public class PlusSpringCacheManager implements CacheManager {
 
     @Override
     public Cache getCache(String name) {
-        Cache cache = instanceMap.get(name);
-        if (cache != null) {
-            return cache;
-        }
-        if (!dynamic) {
-            return cache;
-        }
+        return Optional.ofNullable(instanceMap.get(name))
+            .orElseGet(() -> dynamic ? createCache(name) : null);
+    }
 
-        CacheConfig config = configMap.get(name);
-        if (config == null) {
-            config = createDefaultConfig();
-            configMap.put(name, config);
-        }
-
-        // 重写 cacheName 支持多参数
+    private Cache createCache(String name) {
+        CacheConfig config = configMap.computeIfAbsent(name, k -> createDefaultConfig());
         String[] array = StringUtils.delimitedListToStringArray(name, "#");
         name = array[0];
-        if (array.length > 1) {
-            config.setTTL(DurationStyle.detectAndParse(array[1]).toMillis());
+        config.setTTL(parseDuration(array, 1).toMillis());
+        config.setMaxIdleTime(parseDuration(array, 2).toMillis());
+        config.setMaxSize(parseInteger(array));
+        RMapCache<Object, Object> mapCache = RedisUtils.getClient().getMapCache(name);
+        if (config.getMaxSize() > 0) {
+            mapCache.setMaxSize(config.getMaxSize());
         }
-        if (array.length > 2) {
-            config.setMaxIdleTime(DurationStyle.detectAndParse(array[2]).toMillis());
-        }
-        if (array.length > 3) {
-            config.setMaxSize(Integer.parseInt(array[3]));
-        }
-
-        if (config.getMaxIdleTime() == 0 && config.getTTL() == 0 && config.getMaxSize() == 0) {
-            return createMap(name, config);
-        }
-
-        return createMapCache(name, config);
-    }
-
-    private Cache createMap(String name, CacheConfig config) {
-        RMap<Object, Object> map = RedisUtils.getClient().getMap(name);
-
-        Cache cache = new RedissonCache(map, allowNullValues);
+        Cache cache = new RedissonCache(mapCache, config, allowNullValues);
         if (transactionAware) {
             cache = new TransactionAwareCacheDecorator(cache);
         }
-        Cache oldCache = instanceMap.putIfAbsent(name, cache);
-        if (oldCache != null) {
-            cache = oldCache;
-        }
-        return cache;
+        Cache finalCache = cache;
+        return instanceMap.computeIfAbsent(name, k -> finalCache);
     }
 
-    private Cache createMapCache(String name, CacheConfig config) {
-        RMapCache<Object, Object> map = RedisUtils.getClient().getMapCache(name);
+    private Duration parseDuration(String[] array, int index) {
+        return Optional.ofNullable(index < array.length ? array[index] : null)
+            .map(DurationStyle::detectAndParse)
+            .orElse(Duration.ZERO);
+    }
 
-        Cache cache = new RedissonCache(map, config, allowNullValues);
-        if (transactionAware) {
-            cache = new TransactionAwareCacheDecorator(cache);
-        }
-        Cache oldCache = instanceMap.putIfAbsent(name, cache);
-        if (oldCache != null) {
-            cache = oldCache;
-        } else {
-            map.setMaxSize(config.getMaxSize());
-        }
-        return cache;
+    private int parseInteger(String[] array) {
+        return Optional.ofNullable(3 < array.length ? array[3] : null)
+            .map(Integer::parseInt)
+            .orElse(0);
     }
 
     @Override
