@@ -8,6 +8,6 @@ import com.ruoyi.system.api.domain.SysDictType;
  *
  * @author Lion Li
  */
-public interface SysDictTypeMapper extends BaseMapperPlus<SysDictTypeMapper, SysDictType, SysDictType> {
+public interface SysDictTypeMapper extends BaseMapperPlus<SysDictType, SysDictType> {
 
 }
