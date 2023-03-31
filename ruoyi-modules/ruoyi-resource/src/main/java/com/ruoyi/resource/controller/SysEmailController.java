@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.ruoyi.common.core.constant.CacheConstants;
 import com.ruoyi.common.core.constant.Constants;
 import com.ruoyi.common.core.domain.R;
+import com.ruoyi.common.core.utils.SpringUtils;
 import com.ruoyi.common.core.web.controller.BaseController;
 import com.ruoyi.common.mail.config.properties.MailProperties;
 import com.ruoyi.common.mail.utils.MailUtils;
@@ -31,7 +32,7 @@ import java.time.Duration;
 @RequestMapping("/email")
 public class SysEmailController extends BaseController {
 
-    private final MailProperties mailProperties;
+//    private final MailProperties mailProperties;
 
     /**
      * 邮箱验证码
@@ -40,6 +41,7 @@ public class SysEmailController extends BaseController {
      */
     @GetMapping("/code")
     public R<Void> emailCode(@NotBlank(message = "{user.email.not.blank}") String email) {
+        MailProperties mailProperties = SpringUtils.getBean(MailProperties.class);
         if (!mailProperties.getEnabled()) {
             return R.fail("当前系统没有开启邮箱功能！");
         }
