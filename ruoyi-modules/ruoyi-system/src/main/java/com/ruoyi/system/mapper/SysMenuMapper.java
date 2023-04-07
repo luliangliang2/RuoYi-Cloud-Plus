@@ -62,6 +62,8 @@ public interface SysMenuMapper extends BaseMapperPlus<SysMenuMapper, SysMenu, Sy
         return this.selectList(lqw);
     }
 
+    List<SysMenu> selectMenuTreeAllByModuleType(String moduleType);
+
     /**
      * 根据用户ID查询菜单
      *
@@ -79,4 +81,9 @@ public interface SysMenuMapper extends BaseMapperPlus<SysMenuMapper, SysMenu, Sy
      */
     List<Long> selectMenuListByRoleId(@Param("roleId") Long roleId, @Param("menuCheckStrictly") boolean menuCheckStrictly);
 
+    List<SysMenu> selectMenuTreeByUserIdAndModuleType(@Param("userId") Long userId, @Param("moduleType") String moduleType);
+
+    String selectModuleTypeByPath(String path);
 }
+
+

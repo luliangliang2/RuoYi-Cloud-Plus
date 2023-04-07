@@ -103,4 +103,6 @@ public class SysMenu extends TreeEntity<SysMenu> {
      */
     private String remark;
 
+    private Integer moduleType;
+
 }

@@ -1,6 +1,7 @@
 package com.ruoyi.system.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.context.SaHolder;
 import cn.hutool.core.lang.tree.Tree;
 import com.ruoyi.common.core.constant.UserConstants;
 import com.ruoyi.common.core.domain.R;
@@ -139,6 +140,19 @@ public class SysMenuController extends BaseController {
     public R<List<RouterVo>> getRouters() {
         Long userId = LoginHelper.getUserId();
         List<SysMenu> menus = menuService.selectMenuTreeByUserId(userId);
+        return R.ok(menuService.buildMenus(menus));
+    }
+
+    /**
+     * 分模块获取路由信息
+     * @return 路由信息
+     */
+    @GetMapping("getRoutersByModuleType")
+    public R<List<RouterVo>> getRoutersByModuleType(@RequestParam(value = "moduleType",defaultValue = "") String moduleType,
+                                                    @RequestParam("modulePath")String modulePath) {
+        Long userId = LoginHelper.getUserId();
+//        System.out.println(modulePath);
+        List<SysMenu> menus = menuService.selectMenuTreeByUserIdAndModuleType(userId,moduleType,modulePath);
         return R.ok(menuService.buildMenus(menus));
     }
 }

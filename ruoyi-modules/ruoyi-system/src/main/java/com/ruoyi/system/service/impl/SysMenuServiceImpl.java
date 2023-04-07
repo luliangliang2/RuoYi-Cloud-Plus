@@ -124,11 +124,42 @@ public class SysMenuServiceImpl implements ISysMenuService {
      */
     @Override
     public List<SysMenu> selectMenuTreeByUserId(Long userId) {
+
         List<SysMenu> menus = null;
         if (LoginHelper.isAdmin(userId)) {
             menus = baseMapper.selectMenuTreeAll();
         } else {
             menus = baseMapper.selectMenuTreeByUserId(userId);
+        }
+        return getChildPerms(menus, 0);
+    }
+    /**
+     * 按模块授权
+     * @param userId userId
+     * @param moduleType moduleType
+     * @return
+     */
+    @Override
+    public List<SysMenu> selectMenuTreeByUserIdAndModuleType(Long userId, String moduleType,String path) {
+        //todo 新增按模块查询路由
+        List<SysMenu> menus = null;
+        if (null == moduleType || "".equals(moduleType)) {
+            moduleType = baseMapper.selectModuleTypeByPath(path);
+        }
+
+
+        if (LoginHelper.isAdmin(userId)) {
+            if (null == moduleType || "".equals(moduleType)) {
+                menus = baseMapper.selectMenuTreeAll();
+            }else {
+                menus = baseMapper.selectMenuTreeAllByModuleType(moduleType);
+            }
+        } else {
+            if (null == moduleType || "".equals(moduleType)) {
+                menus = baseMapper.selectMenuTreeByUserId(userId);
+            }else {
+                menus = baseMapper.selectMenuTreeByUserIdAndModuleType(userId, moduleType);
+            }
         }
         return getChildPerms(menus, 0);
     }
@@ -295,6 +326,10 @@ public class SysMenuServiceImpl implements ISysMenuService {
             .ne(ObjectUtil.isNotNull(menu.getMenuId()), SysMenu::getMenuId, menu.getMenuId()));
         return !exist;
     }
+
+
+
+
 
     /**
      * 获取路由名称
