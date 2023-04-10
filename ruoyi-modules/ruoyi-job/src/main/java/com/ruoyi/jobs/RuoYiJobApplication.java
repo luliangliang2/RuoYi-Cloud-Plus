@@ -1,4 +1,4 @@
-package com.ruoyi.job;
+package com.ruoyi.jobs;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;

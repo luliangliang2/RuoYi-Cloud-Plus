@@ -33,11 +33,6 @@
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-common-sentinel</artifactId>
-        </dependency>
-
         <!-- RuoYi Common Log -->
         <dependency>
             <groupId>com.ruoyi</groupId>
@@ -51,17 +46,7 @@
 
         <dependency>
             <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-common-doc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-common-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-common-mybatis</artifactId>
         </dependency>
 
         <dependency>
@@ -71,18 +56,17 @@
 
         <dependency>
             <groupId>com.ruoyi</groupId>
+            <artifactId>ruoyi-common-mybatis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ruoyi</groupId>
             <artifactId>ruoyi-common-seata</artifactId>
         </dependency>
 
-        <!-- RuoYi Api System -->
         <dependency>
             <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-api-system</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.ruoyi</groupId>
-            <artifactId>ruoyi-api-resource</artifactId>
+            <artifactId>ruoyi-common-job</artifactId>
         </dependency>
 
     </dependencies>

@@ -164,6 +164,16 @@ public class SysMenuServiceImpl implements ISysMenuService {
         return getChildPerms(menus, 0);
     }
 
+    @Override
+    public Boolean checkModulePermission(Long userId,String path) {
+        if (LoginHelper.isAdmin(userId)){
+            return true;
+        }
+        String moduleType = baseMapper.selectModuleTypeByPath(path);
+        List<SysMenu> menus = baseMapper.selectMenuTreeByUserIdAndModuleType(userId, moduleType);
+        return !menus.isEmpty();
+    }
+
     /**
      * 根据角色ID查询菜单树信息
      *

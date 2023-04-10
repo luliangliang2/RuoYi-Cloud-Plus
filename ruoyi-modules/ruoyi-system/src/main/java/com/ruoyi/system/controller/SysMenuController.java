@@ -155,4 +155,9 @@ public class SysMenuController extends BaseController {
         List<SysMenu> menus = menuService.selectMenuTreeByUserIdAndModuleType(userId,moduleType,modulePath);
         return R.ok(menuService.buildMenus(menus));
     }
+    @GetMapping("checkModulePermission")
+    public R<Boolean> checkModulePermission(@RequestParam("modulePath") String modulePath){
+        Long userId = LoginHelper.getUserId();
+        return R.ok(menuService.checkModulePermission(userId,modulePath));
+    }
 }
