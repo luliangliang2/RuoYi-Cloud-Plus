@@ -1,0 +1,32 @@
+# Tomcat
+server:
+  port: 12121
+
+# Spring
+spring:
+  application:
+    # ????
+    name: hm-system
+  profiles:
+    # ????
+    active: @profiles.active@
+
+--- # nacos ??
+spring:
+  cloud:
+    nacos:
+      # nacos ????
+      server-addr: @nacos.server@
+      discovery:
+        # ???
+        group: @nacos.discovery.group@
+        namespace: ${spring.profiles.active}
+      config:
+        # ???
+        group: @nacos.config.group@
+        namespace: ${spring.profiles.active}
+  config:
+    import:
+      - optional:nacos:application-common.yml
+      - optional:nacos:datasource.yml
+      - optional:nacos:${spring.application.name}.yml
