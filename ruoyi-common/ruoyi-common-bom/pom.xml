@@ -15,6 +15,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- iotdb-->
+            <dependency>
+                <groupId>com.ruoyi</groupId>
+                <artifactId>ruoyi-common-iotdb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- 核心模块 -->
             <dependency>
                 <groupId>com.ruoyi</groupId>

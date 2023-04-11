@@ -1,4 +1,4 @@
-package com.ruoyi;
+package com.ruoyi.weather;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
