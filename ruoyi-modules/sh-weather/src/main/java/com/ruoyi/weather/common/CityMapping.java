@@ -28,4 +28,7 @@ public class CityMapping implements Serializable {
     private String weatherCode;
     @TableField("hf_code")
     private String hfCode;
+
+    @TableField("path_name")
+    private String pathName;
 }

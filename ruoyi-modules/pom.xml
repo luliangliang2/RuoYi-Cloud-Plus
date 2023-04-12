@@ -15,6 +15,7 @@
         <module>ruoyi-resource</module>
         <module>sh-weather</module>
         <module>heima-system</module>
+        <module>sh-water</module>
     </modules>
 
     <artifactId>ruoyi-modules</artifactId>

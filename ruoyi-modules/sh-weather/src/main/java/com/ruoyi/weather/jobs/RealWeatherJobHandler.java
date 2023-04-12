@@ -56,7 +56,7 @@ public class RealWeatherJobHandler{
 
         for (CityMapping city : cities) {
             Float realWeather = getRealWeather(city.getWeatherCode());
-            WeatherSimpleInfo weatherInfo = getRealWeatherInfo();
+            WeatherSimpleInfo weatherInfo = getRealWeatherInfo(city.getWeatherCode());
             weatherInfo.setCityName(city.getCityName());
             weatherInfo.setTemp(realWeather);
 
@@ -105,8 +105,8 @@ public class RealWeatherJobHandler{
     }
 
 
-    public WeatherSimpleInfo getRealWeatherInfo(){
-        String body = HttpRequest.get("http://www.nmc.cn/rest/weather?stationid=50778")
+    public WeatherSimpleInfo getRealWeatherInfo(String cityCode){
+        String body = HttpRequest.get("http://www.nmc.cn/rest/weather?stationid=" + cityCode)
             .timeout(20000)//超时，毫秒
             .header("Host","www.nmc.cn")
             .header("Referer","http://www.nmc.cn/publish/forecast/ALN/shenyang.html")
