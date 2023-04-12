@@ -133,4 +133,14 @@ public interface ISysMenuService {
      * @return 结果
      */
     boolean checkMenuNameUnique(SysMenu menu);
+
+    List<SysMenu> selectMenuTreeByUserIdAndModuleType(Long userId, String moduleType,String path);
+
+    /**
+     * 校验是否具有该模块权限
+     * @param modulePath 路径
+     * @return
+     */
+    Boolean checkModulePermission(Long userId,String modulePath);
+
 }

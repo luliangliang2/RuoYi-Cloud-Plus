@@ -1,4 +1,4 @@
-package com.ruoyi.job;
+package com.ruoyi.water;
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
@@ -6,19 +6,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
 
 /**
- * 任务调度模块
+ * 系统模块
  *
- * @author Lion Li
+ * @author ruoyi
  */
 @EnableDubbo
 @SpringBootApplication
-public class RuoYiJobApplication {
-
+public class WaterApplication {
     public static void main(String[] args) {
-        SpringApplication application = new SpringApplication(RuoYiJobApplication.class);
+        SpringApplication application = new SpringApplication(WaterApplication.class);
         application.setApplicationStartup(new BufferingApplicationStartup(2048));
         application.run(args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  任务调度模块启动成功   ლ(´ڡ`ლ)ﾞ  ");
+        System.out.println("(♥◠‿◠)ﾉﾞ  水温模块启动成功   ლ(´ڡ`ლ)ﾞ  ");
     }
-
 }

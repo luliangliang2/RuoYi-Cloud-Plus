@@ -1,4 +1,4 @@
-package com.ruoyi.job.service;
+package com.ruoyi.jobs.service;
 
 import com.ruoyi.system.api.RemoteUserService;
 import com.ruoyi.system.api.domain.SysUser;
