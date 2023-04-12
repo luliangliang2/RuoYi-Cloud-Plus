@@ -1,5 +1,6 @@
 package com.example.hmsystem.domain;
 
+import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -27,20 +28,20 @@ public class YearTable {
     private String yearName;
     //年度开始日期
     @TableField("year_start_day")
-    private Date yearStartDay;
+    private String yearStartDay;
     //年度结束日期
     @TableField("year_end_day")
-    private Date yearEndDay;
+    private String yearEndDay;
     //供暖开始日期
     @TableField("heating_start_day")
-    private Date heatingStartDay;
+    private String heatingStartDay;
     //供暖结束日期
     @TableField("heating_end_day")
-    private Date heatingEndDay;
+    private String heatingEndDay;
     //备注
     @TableField("remark")
     private String remark;
     //创建时间
     @TableField("create_time")
-    private Date createTime;
+    private String createTime;
 }

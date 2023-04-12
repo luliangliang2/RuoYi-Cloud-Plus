@@ -16,11 +16,11 @@ import java.util.List;
  */
 public interface YearTableService {
     //查询所有年表
-    List<YearTable> getAll();
+    List<YearTable> getAll(YearTable yearTable);
 
     int inset(YearTable yearTable);
 
-    int del(Integer yearId);
+    int del(String yearId);
 
     int put(YearTable yearTable);
 

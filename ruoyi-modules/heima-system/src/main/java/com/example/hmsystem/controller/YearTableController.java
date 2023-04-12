@@ -36,12 +36,8 @@ public class YearTableController {
      */
     @GetMapping(value = "/getAll")
     @ResponseBody
-    public R getAll() {
-        System.out.println("dadsadwa");
-        List<YearTable> list = yearTableService.getAll();
-        for (int i = 0; i < list.size(); i++) {
-            System.out.println("结果："+list.get(i));
-        }
+    public R getAll(YearTable yearTable) {
+        List<YearTable> list = yearTableService.getAll(yearTable);
         return R.ok(list);
     }
 
@@ -68,7 +64,7 @@ public class YearTableController {
      */
 
     @GetMapping("/del")
-    public R del(Integer yearId) {
+    public R del(String yearId) {
         int count = yearTableService.del(yearId);
         return R.ok("影响条数为："+count);
     }
