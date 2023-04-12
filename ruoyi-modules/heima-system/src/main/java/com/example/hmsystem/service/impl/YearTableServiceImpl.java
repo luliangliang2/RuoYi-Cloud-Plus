@@ -27,8 +27,10 @@ public class YearTableServiceImpl implements YearTableService {
     }
 
     @Override
-    public List<YearTable> getAll() {
-        return yearTableMapper.selectList(null);
+    public List<YearTable> getAll(YearTable yearTable) {
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.setEntity(yearTable);
+        return yearTableMapper.selectList(queryWrapper);
     }
 
     @Override
@@ -37,7 +39,7 @@ public class YearTableServiceImpl implements YearTableService {
     }
 
     @Override
-    public int del(Integer yearId) {
+    public int del(String yearId) {
         return yearTableMapper.deleteById(yearId);
     }
 
