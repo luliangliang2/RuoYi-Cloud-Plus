@@ -1,9 +1,9 @@
 package org.dromara.gateway.handler;
 
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.exception.CaptchaException;
 import org.dromara.gateway.service.ValidateCodeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -21,9 +21,9 @@ import java.util.Map;
  * @author ruoyi
  */
 @Component
+@RequiredArgsConstructor
 public class ValidateCodeHandler implements HandlerFunction<ServerResponse> {
-    @Autowired
-    private ValidateCodeService validateCodeService;
+    private final ValidateCodeService validateCodeService;
 
     @Override
     public Mono<ServerResponse> handle(ServerRequest serverRequest) {
