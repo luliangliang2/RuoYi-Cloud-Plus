@@ -3,6 +3,7 @@ package org.dromara.gateway.service.impl;
 import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.captcha.generator.CodeGenerator;
 import cn.hutool.core.util.IdUtil;
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.Constants;
 import org.dromara.common.core.constant.GlobalConstants;
 import org.dromara.common.core.domain.R;
@@ -15,13 +16,11 @@ import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.gateway.config.properties.CaptchaProperties;
 import org.dromara.gateway.enums.CaptchaType;
 import org.dromara.gateway.service.ValidateCodeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +31,15 @@ import java.util.Map;
  * @author ruoyi
  */
 @Service
+@RequiredArgsConstructor
 public class ValidateCodeServiceImpl implements ValidateCodeService {
-    @Autowired
-    private CaptchaProperties captchaProperties;
+    private final CaptchaProperties captchaProperties;
 
     /**
      * 生成验证码
      */
     @Override
-    public R<Map<String, Object>> createCaptcha() throws IOException, CaptchaException {
+    public R<Map<String, Object>> createCaptcha() throws CaptchaException {
         Map<String, Object> ajax = new HashMap<>();
         boolean captchaEnabled = captchaProperties.getEnabled();
         ajax.put("captchaEnabled", captchaEnabled);

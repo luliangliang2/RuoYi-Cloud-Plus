@@ -1,7 +1,7 @@
 package org.dromara.common.core.config;
 
+import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.HibernateValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -16,28 +16,29 @@ import java.util.Properties;
  * @author Lion Li
  */
 @AutoConfiguration
+@RequiredArgsConstructor
 public class ValidatorConfig {
 
-    @Autowired
-    private MessageSource messageSource;
+    private final MessageSource messageSource;
 
     /**
      * 配置校验框架 快速返回模式
      */
     @Bean
     public Validator validator() {
-        LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean();
-        // 国际化
-        factoryBean.setValidationMessageSource(messageSource);
-        // 设置使用 HibernateValidator 校验器
-        factoryBean.setProviderClass(HibernateValidator.class);
-        Properties properties = new Properties();
-        // 设置 快速异常返回
-        properties.setProperty("hibernate.validator.fail_fast", "true");
-        factoryBean.setValidationProperties(properties);
-        // 加载配置
-        factoryBean.afterPropertiesSet();
-        return factoryBean.getValidator();
+        try(LocalValidatorFactoryBean factoryBean = new LocalValidatorFactoryBean()) {
+            // 国际化
+            factoryBean.setValidationMessageSource(messageSource);
+            // 设置使用 HibernateValidator 校验器
+            factoryBean.setProviderClass(HibernateValidator.class);
+            Properties properties = new Properties();
+            // 设置 快速异常返回
+            properties.setProperty("hibernate.validator.fail_fast", "true");
+            factoryBean.setValidationProperties(properties);
+            // 加载配置
+            factoryBean.afterPropertiesSet();
+            return factoryBean.getValidator();
+        }
     }
 
 }

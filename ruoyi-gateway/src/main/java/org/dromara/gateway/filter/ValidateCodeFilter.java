@@ -1,12 +1,12 @@
 package org.dromara.gateway.filter;
 
 import cn.hutool.core.lang.Dict;
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.JsonUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.gateway.config.properties.CaptchaProperties;
 import org.dromara.gateway.service.ValidateCodeService;
 import org.dromara.gateway.utils.WebFluxUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -18,14 +18,13 @@ import org.springframework.stereotype.Component;
  * @author ruoyi
  */
 @Component
+@RequiredArgsConstructor
 public class ValidateCodeFilter extends AbstractGatewayFilterFactory<Object> {
     private final static String[] VALIDATE_URL = new String[]{"/auth/login", "/auth/register", "/auth/smsLogin"};
 
-    @Autowired
-    private ValidateCodeService validateCodeService;
+    private final ValidateCodeService validateCodeService;
 
-    @Autowired
-    private CaptchaProperties captchaProperties;
+    private final CaptchaProperties captchaProperties;
 
     private static final String CODE = "code";
 

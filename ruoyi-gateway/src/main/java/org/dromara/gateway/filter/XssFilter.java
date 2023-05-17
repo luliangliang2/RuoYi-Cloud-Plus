@@ -1,11 +1,11 @@
 package org.dromara.gateway.filter;
 
 import cn.hutool.http.HtmlUtil;
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.gateway.config.properties.XssProperties;
 import org.dromara.gateway.utils.WebFluxUtils;
 import io.netty.buffer.ByteBufAllocator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -27,12 +27,12 @@ import java.nio.charset.StandardCharsets;
  *
  * @author ruoyi
  */
+@RequiredArgsConstructor
 @Component
 @ConditionalOnProperty(value = "security.xss.enabled", havingValue = "true")
 public class XssFilter implements GlobalFilter, Ordered {
     // 跨站脚本的 xss 配置，nacos自行添加
-    @Autowired
-    private XssProperties xss;
+    private final XssProperties xss;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -57,7 +57,7 @@ public class XssFilter implements GlobalFilter, Ordered {
     }
 
     private ServerHttpRequestDecorator requestDecorator(ServerWebExchange exchange) {
-        ServerHttpRequestDecorator serverHttpRequestDecorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
+        return new ServerHttpRequestDecorator(exchange.getRequest()) {
             @Override
             public Flux<DataBuffer> getBody() {
                 Flux<DataBuffer> body = super.getBody();
@@ -90,7 +90,6 @@ public class XssFilter implements GlobalFilter, Ordered {
             }
 
         };
-        return serverHttpRequestDecorator;
     }
 
     @Override
