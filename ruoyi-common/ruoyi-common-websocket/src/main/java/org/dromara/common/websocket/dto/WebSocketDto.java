@@ -1,9 +1,9 @@
 package org.dromara.common.websocket.dto;
 
-import lombok.Builder;
 import lombok.Data;
 
-import java.io.Serial;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * 消息的dto
@@ -11,18 +11,17 @@ import java.io.Serial;
  * @author zendwang
  */
 @Data
-@Builder
-public class WebSocketMessageDto {
+public class WebSocketDto implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 消息类型
+     * 需要推送到的session key 列表
      */
-    private String type;
+    private List<Long> sessionKeys;
+
     /**
      * 需要发送的消息
      */
-    private Object message;
+    private WebSocketMessageDto message;
 }
