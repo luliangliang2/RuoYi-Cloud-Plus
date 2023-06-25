@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TenantHelper {
 
-    private static final String DYNAMIC_TENANT_KEY = GlobalConstants.GLOBAL_REDIS_KEY + "dynamicTenant";
+    public static final String DYNAMIC_TENANT_KEY = GlobalConstants.GLOBAL_REDIS_KEY + "dynamicTenant";
 
     private static final ThreadLocal<String> TEMP_DYNAMIC_TENANT = new TransmittableThreadLocal<>();
 

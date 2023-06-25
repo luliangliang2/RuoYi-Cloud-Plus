@@ -1,6 +1,7 @@
 package org.dromara.common.websocket.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.websocket.dto.WebSocketMessageDto;
 import org.dromara.common.websocket.holder.WebSocketSessionHolder;
 import org.dromara.common.websocket.utils.WebSocketUtils;
@@ -8,9 +9,10 @@ import org.dromara.system.api.model.LoginUser;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
-import java.util.List;
+import java.net.URI;
+import java.util.Map;
 
-import static org.dromara.common.websocket.constant.WebSocketConstants.LOGIN_USER_KEY;
+import static org.dromara.common.websocket.constant.WebSocketConstants.*;
 
 /**
  * WebSocketHandler 实现类
@@ -27,6 +29,10 @@ public class PlusWebSocketHandler extends AbstractWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
         LoginUser loginUser = (LoginUser) session.getAttributes().get(LOGIN_USER_KEY);
         WebSocketSessionHolder.addSession(loginUser.getUserId(), session);
+        //通过URL获取分组标识
+        URI uri = session.getUri();
+        String groupKey = WebSocketUtils.genGroupKey(uri.getQuery(),session.getAttributes());
+        WebSocketSessionHolder.addGroup( groupKey, loginUser.getUserId() );
         log.info("[connect] sessionId: {},userId:{},userType:{}", session.getId(), loginUser.getUserId(), loginUser.getUserType());
     }
 
@@ -39,13 +45,11 @@ public class PlusWebSocketHandler extends AbstractWebSocketHandler {
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        LoginUser loginUser = (LoginUser) session.getAttributes().get(LOGIN_USER_KEY);
-        log.info("PlusWebSocketHandler, 连接：" + session.getId() + "，已收到消息:" + message.getPayload());
-        List<Long> userIds = List.of(loginUser.getUserId());
-        WebSocketMessageDto webSocketMessageDto = new WebSocketMessageDto();
-        webSocketMessageDto.setSessionKeys(userIds);
-        webSocketMessageDto.setMessage(message.getPayload());
-        WebSocketUtils.publishMessage(webSocketMessageDto);
+        log.info( "handleTextMessage, 连接：" + session.getId() + "，已收到消息:" + message.getPayload() );
+        Map map = JsonUtils.parseMap( message.getPayload() );
+        if (PING.equals( map.get( "type" ) )) {
+            WebSocketUtils.sendMessage( session, WebSocketMessageDto.builder().type( PONG ).build() );
+        }
     }
 
     @Override
@@ -87,6 +91,10 @@ public class PlusWebSocketHandler extends AbstractWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         LoginUser loginUser = (LoginUser) session.getAttributes().get(LOGIN_USER_KEY);
         WebSocketSessionHolder.removeSession(loginUser.getUserId());
+        //通过URL获取分组标识
+        URI uri = session.getUri();
+        String groupKey = WebSocketUtils.genGroupKey(uri.getQuery(), session.getAttributes());
+        WebSocketSessionHolder.removeGroup( groupKey, loginUser.getUserId() );
         log.info("[disconnect] sessionId: {},userId:{},userType:{}", session.getId(), loginUser.getUserId(), loginUser.getUserType());
     }
 
