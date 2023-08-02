@@ -1,0 +1,2 @@
+dubboTenantConsumerFilter=org.dromara.common.tenant.filter.DubboTenantConsumerFilter
+dubboTenantProviderFilter=org.dromara.common.tenant.filter.DubboTenantProviderFilter
