@@ -31,6 +31,11 @@ public class TenantHelper {
     private static final ThreadLocal<String> TEMP_DYNAMIC_TENANT = new TransmittableThreadLocal<>();
 
     /**
+     * RPC租户ID线程
+     */
+    private static final ThreadLocal<String> RPC_TENANT = new TransmittableThreadLocal<>();
+
+    /**
      * 租户功能是否启用
      */
     public static boolean isEnable() {
@@ -135,6 +140,32 @@ public class TenantHelper {
             tenantId = LoginHelper.getTenantId();
         }
         return tenantId;
+    }
+
+    /**
+     * 设置RPC租户id
+     */
+    public static void setRpcTenantId(String tenantId) {
+        RPC_TENANT.set(tenantId);
+        SaHolder.getStorage().set(LoginHelper.TENANT_KEY, tenantId);
+    }
+
+    /**
+     * 获取PRC租户id
+     */
+    public static String getRpcTenantId() {
+        String tenantId = LoginHelper.getTenantId();
+        if (StringUtils.isBlank(tenantId)) {
+            tenantId = RPC_TENANT.get();
+        }
+        return tenantId;
+    }
+
+    /**
+     * 清除线程数据
+     */
+    public static void clear() {
+        RPC_TENANT.remove();
     }
 
     /**
