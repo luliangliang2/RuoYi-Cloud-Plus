@@ -18,7 +18,7 @@ import java.util.Date;
  * @author Lion Li
  */
 @Slf4j
-public class CreateAndUpdateMetaObjectHandler implements MetaObjectHandler {
+public class InjectionMetaObjectHandler implements MetaObjectHandler {
 
     @Override
     public void insertFill(MetaObject metaObject) {
