@@ -6,12 +6,16 @@
 
     <groupId>com.ruoyi</groupId>
     <artifactId>ruoyi-common-bom</artifactId>
-    <version>1.8.0</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <description>
         ruoyi-common-bom common依赖项
     </description>
+
+    <properties>
+        <revision>1.8.0</revision>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
