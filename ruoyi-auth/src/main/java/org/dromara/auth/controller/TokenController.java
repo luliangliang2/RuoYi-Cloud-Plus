@@ -10,6 +10,8 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.dromara.auth.domain.model.AuthParams;
+import org.dromara.auth.domain.model.SocialAuthParams;
 import org.dromara.auth.domain.vo.LoginTenantVo;
 import org.dromara.auth.domain.vo.LoginVo;
 import org.dromara.auth.domain.vo.TenantListVo;
@@ -18,13 +20,13 @@ import org.dromara.auth.service.IAuthStrategy;
 import org.dromara.auth.service.SysLoginService;
 import org.dromara.common.core.constant.UserConstants;
 import org.dromara.common.core.domain.R;
-import org.dromara.common.core.domain.model.LoginBody;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.MessageUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.social.config.properties.SocialLoginConfigProperties;
 import org.dromara.common.social.config.properties.SocialProperties;
+import org.dromara.common.social.domain.model.SocialBody;
 import org.dromara.common.social.utils.SocialUtils;
 import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.system.api.RemoteClientService;
@@ -66,10 +68,10 @@ public class TokenController {
      * 登录方法
      */
     @PostMapping("login")
-    public R<LoginVo> login(@Validated @RequestBody LoginBody loginBody) {
+    public R<LoginVo> login(@Validated @RequestBody AuthParams authParams) {
         // 授权类型和客户端id
-        String clientId = loginBody.getClientId();
-        String grantType = loginBody.getGrantType();
+        String clientId = authParams.getClientId();
+        String grantType = authParams.getGrantType();
         RemoteClientVo clientVo = remoteClientService.queryByClientId(clientId);
 
         // 查询不到 client 或 client 内不包含 grantType
@@ -80,9 +82,9 @@ public class TokenController {
             return R.fail(MessageUtils.message("auth.grant.type.blocked"));
         }
         // 校验租户
-        sysLoginService.checkTenant(loginBody.getTenantId());
+        sysLoginService.checkTenant(authParams.getTenantId());
         // 登录
-        return R.ok(IAuthStrategy.login(loginBody, clientVo));
+        return R.ok(IAuthStrategy.login(grantType, authParams, clientVo));
     }
 
     /**
@@ -105,13 +107,14 @@ public class TokenController {
     /**
      * 第三方登录回调业务处理 绑定授权
      *
-     * @param loginBody 请求体
+     * @param authParams 请求体
      * @return 结果
      */
     @PostMapping("/social/callback")
-    public R<Void> socialCallback(@RequestBody LoginBody loginBody) {
+    public R<Void> socialCallback(@RequestBody SocialAuthParams authParams) {
+        SocialBody socialBody = MapstructUtils.convert(authParams, SocialBody.class);
         // 获取第三方登录信息
-        AuthResponse<AuthUser> response = SocialUtils.loginAuth(loginBody, socialProperties);
+        AuthResponse<AuthUser> response = SocialUtils.loginAuth(socialBody, socialProperties);
         AuthUser authUserData = response.getData();
         // 判断授权响应是否成功
         if (!response.ok()) {
@@ -146,7 +149,7 @@ public class TokenController {
      * 用户注册
      */
     @PostMapping("register")
-    public R<Void> register(@RequestBody RegisterBody registerBody) {
+    public R<Void> register(@RequestBody @Validated RegisterBody registerBody) {
         if (!remoteConfigService.selectRegisterEnabled(registerBody.getTenantId())) {
             return R.fail("当前系统没有开启注册功能！");
         }

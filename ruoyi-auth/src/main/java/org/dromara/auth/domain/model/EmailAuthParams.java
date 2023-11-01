@@ -1,25 +1,21 @@
-package org.dromara.auth.form;
+package org.dromara.auth.domain.model;
 
-import lombok.Data;
-
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
 
 /**
- * 邮件登录对象
- *
- * @author Lion Li
+ * @author lau
  */
-
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class EmailLoginBody {
-
-    /**
-     * 租户ID
-     */
-    @NotBlank(message = "{tenant.number.not.blank}")
-    private String tenantId;
-
+@NoArgsConstructor
+@JsonTypeName(value = "email")
+public class EmailAuthParams extends AuthParams{
     /**
      * 邮箱
      */
@@ -32,5 +28,4 @@ public class EmailLoginBody {
      */
     @NotBlank(message = "{email.code.not.blank}")
     private String emailCode;
-
 }
