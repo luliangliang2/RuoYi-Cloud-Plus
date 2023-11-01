@@ -7,10 +7,10 @@ import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.request.*;
-import org.dromara.common.core.domain.model.LoginBody;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.social.config.properties.SocialLoginConfigProperties;
 import org.dromara.common.social.config.properties.SocialProperties;
+import org.dromara.common.social.domain.model.SocialBody;
 import org.dromara.common.social.maxkey.AuthMaxKeyRequest;
 
 /**
@@ -23,11 +23,11 @@ public class SocialUtils  {
     private static final AuthRedisStateCache STATE_CACHE = SpringUtils.getBean(AuthRedisStateCache.class);
 
     @SuppressWarnings("unchecked")
-    public static AuthResponse<AuthUser> loginAuth(LoginBody loginBody, SocialProperties socialProperties) throws AuthException {
-        AuthRequest authRequest = getAuthRequest(loginBody.getSource(), socialProperties);
+    public static AuthResponse<AuthUser> loginAuth(SocialBody socialBody, SocialProperties socialProperties) throws AuthException {
+        AuthRequest authRequest = getAuthRequest(socialBody.getSource(), socialProperties);
         AuthCallback callback = new AuthCallback();
-        callback.setCode(loginBody.getSocialCode());
-        callback.setState(loginBody.getSocialState());
+        callback.setCode(socialBody.getSocialCode());
+        callback.setState(socialBody.getSocialState());
         return authRequest.login(callback);
     }
 

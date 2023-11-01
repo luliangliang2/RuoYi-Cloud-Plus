@@ -6,21 +6,19 @@ import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.dromara.auth.domain.model.PasswordAuthParams;
 import org.dromara.auth.domain.vo.LoginVo;
 import org.dromara.auth.properties.CaptchaProperties;
 import org.dromara.auth.service.IAuthStrategy;
 import org.dromara.auth.service.SysLoginService;
 import org.dromara.common.core.constant.Constants;
 import org.dromara.common.core.constant.GlobalConstants;
-import org.dromara.common.core.domain.model.LoginBody;
 import org.dromara.common.core.enums.LoginType;
 import org.dromara.common.core.exception.CaptchaException;
 import org.dromara.common.core.exception.user.CaptchaExpireException;
 import org.dromara.common.core.utils.MessageUtils;
 import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.core.utils.ValidatorUtils;
-import org.dromara.common.core.validate.auth.PasswordGroup;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.system.api.RemoteUserService;
@@ -36,7 +34,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service("password" + IAuthStrategy.BASE_NAME)
 @RequiredArgsConstructor
-public class PasswordAuthStrategy implements IAuthStrategy {
+public class PasswordAuthStrategy implements IAuthStrategy<PasswordAuthParams> {
 
     private final CaptchaProperties captchaProperties;
 
@@ -45,18 +43,15 @@ public class PasswordAuthStrategy implements IAuthStrategy {
     @DubboReference
     private RemoteUserService remoteUserService;
 
-    @Override
-    public void validate(LoginBody loginBody) {
-        ValidatorUtils.validate(loginBody, PasswordGroup.class);
-    }
 
     @Override
-    public LoginVo login(String clientId, LoginBody loginBody, RemoteClientVo client) {
-        String tenantId = loginBody.getTenantId();
-        String username = loginBody.getUsername();
-        String password = loginBody.getPassword();
-        String code = loginBody.getCode();
-        String uuid = loginBody.getUuid();
+    public LoginVo login(PasswordAuthParams authParams, RemoteClientVo client) {
+
+        String tenantId = authParams.getTenantId();
+        String username = authParams.getUsername();
+        String password = authParams.getPassword();
+        String code = authParams.getCode();
+        String uuid = authParams.getUuid();
 
         // 验证码开关
         if (captchaProperties.getEnabled()) {
@@ -73,7 +68,7 @@ public class PasswordAuthStrategy implements IAuthStrategy {
         // 例如: 后台用户30分钟过期 app用户1天过期
         model.setTimeout(client.getTimeout());
         model.setActiveTimeout(client.getActiveTimeout());
-        model.setExtra(LoginHelper.CLIENT_KEY, clientId);
+        model.setExtra(LoginHelper.CLIENT_KEY, client.getClientId());
         // 生成token
         LoginHelper.login(loginUser, model);
 
@@ -83,7 +78,7 @@ public class PasswordAuthStrategy implements IAuthStrategy {
         LoginVo loginVo = new LoginVo();
         loginVo.setAccessToken(StpUtil.getTokenValue());
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
-        loginVo.setClientId(clientId);
+        loginVo.setClientId(client.getClientId());
         return loginVo;
     }
 
