@@ -5,15 +5,13 @@ import cn.dev33.satoken.stp.StpUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.dromara.auth.domain.model.XcxAuthParams;
 import org.dromara.auth.domain.vo.LoginVo;
-import org.dromara.common.core.domain.model.LoginBody;
 import org.dromara.auth.service.IAuthStrategy;
 import org.dromara.auth.service.SysLoginService;
 import org.dromara.common.core.constant.Constants;
 import org.dromara.common.core.utils.MessageUtils;
 import org.dromara.common.core.utils.ServletUtils;
-import org.dromara.common.core.utils.ValidatorUtils;
-import org.dromara.common.core.validate.auth.WechatGroup;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.system.api.RemoteUserService;
 import org.dromara.system.api.domain.vo.RemoteClientVo;
@@ -28,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service("xcx" + IAuthStrategy.BASE_NAME)
 @RequiredArgsConstructor
-public class XcxAuthStrategy implements IAuthStrategy {
+public class XcxAuthStrategy implements IAuthStrategy<XcxAuthParams> {
 
     private final SysLoginService loginService;
 
@@ -36,14 +34,9 @@ public class XcxAuthStrategy implements IAuthStrategy {
     private RemoteUserService remoteUserService;
 
     @Override
-    public void validate(LoginBody loginBody) {
-        ValidatorUtils.validate(loginBody, WechatGroup.class);
-    }
-
-    @Override
-    public LoginVo login(String clientId, LoginBody loginBody, RemoteClientVo client) {
+    public LoginVo login(XcxAuthParams authParams, RemoteClientVo client) {
         // xcxCode 为 小程序调用 wx.login 授权后获取
-        String xcxCode = loginBody.getXcxCode();
+        String xcxCode = authParams.getXcxCode();
         // todo 以下自行实现
         // 校验 appid + appsrcret + xcxCode 调用登录凭证校验接口 获取 session_key 与 openid
         String openid = "";
@@ -57,7 +50,7 @@ public class XcxAuthStrategy implements IAuthStrategy {
         // 例如: 后台用户30分钟过期 app用户1天过期
         model.setTimeout(client.getTimeout());
         model.setActiveTimeout(client.getActiveTimeout());
-        model.setExtra(LoginHelper.CLIENT_KEY, clientId);
+        model.setExtra(LoginHelper.CLIENT_KEY, client.getClientId());
         // 生成token
         LoginHelper.login(loginUser, model);
 
@@ -67,7 +60,7 @@ public class XcxAuthStrategy implements IAuthStrategy {
         LoginVo loginVo = new LoginVo();
         loginVo.setAccessToken(StpUtil.getTokenValue());
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
-        loginVo.setClientId(clientId);
+        loginVo.setClientId(client.getClientId());
         loginVo.setOpenid(openid);
         return loginVo;
     }

@@ -1,8 +1,9 @@
 package org.dromara.auth.form;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.dromara.common.core.domain.model.LoginBody;
+import org.dromara.auth.domain.model.PasswordAuthParams;
 
 /**
  * 用户注册对象
@@ -11,7 +12,8 @@ import org.dromara.common.core.domain.model.LoginBody;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RegisterBody extends LoginBody {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+public class RegisterBody extends PasswordAuthParams {
 
     private String userType;
 
