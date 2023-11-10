@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.dromara.common.core.utils.SpringUtils;
 import org.redisson.api.*;
+import org.redisson.api.listener.SetObjectListener;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -150,8 +151,13 @@ public class RedisUtils {
      * @param listener 监听器配置
      */
     public static <T> void addObjectListener(final String key, final ObjectListener listener) {
-        RBucket<T> result = CLIENT.getBucket(key);
-        result.addListener(listener);
+        if (listener instanceof ExpiredObjectListener || listener instanceof DeletedObjectListener
+            || listener instanceof SetObjectListener) {
+            RBucket<T> result = CLIENT.getBucket(key);
+            result.addListener(listener);
+        } else {
+            throw new IllegalArgumentException("参数类型错误，只能传递ExpiredObjectListener、DeletedObjectListener、SetObjectListener的实例");
+        }
     }
 
     /**
@@ -287,8 +293,12 @@ public class RedisUtils {
      * @param listener 监听器配置
      */
     public static <T> void addSetListener(final String key, final ObjectListener listener) {
-        RSet<T> rSet = CLIENT.getSet(key);
-        rSet.addListener(listener);
+        if (listener instanceof ExpiredObjectListener || listener instanceof DeletedObjectListener) {
+            RSet<T> rSet = CLIENT.getSet(key);
+            rSet.addListener(listener);
+        } else {
+            throw new IllegalArgumentException("参数类型错误，只能传递ExpiredObjectListener、DeletedObjectListener的实例");
+        }
     }
 
     /**
@@ -324,8 +334,12 @@ public class RedisUtils {
      * @param listener 监听器配置
      */
     public static <T> void addMapListener(final String key, final ObjectListener listener) {
-        RMap<String, T> rMap = CLIENT.getMap(key);
-        rMap.addListener(listener);
+        if (listener instanceof ExpiredObjectListener || listener instanceof DeletedObjectListener) {
+            RMap<String, T> rMap = CLIENT.getMap(key);
+            rMap.addListener(listener);
+        } else {
+            throw new IllegalArgumentException("参数类型错误，只能传递ExpiredObjectListener、DeletedObjectListener的实例");
+        }
     }
 
     /**
