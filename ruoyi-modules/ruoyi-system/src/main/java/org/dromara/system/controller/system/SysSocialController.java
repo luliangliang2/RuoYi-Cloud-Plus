@@ -38,15 +38,6 @@ public class SysSocialController extends BaseController {
     }
 
 
-    /**
-     * 获取社会化关系详细信息
-     *
-     * @param id 主键
-     */
-    @GetMapping("/{id}")
-    public R<SysSocialVo> getInfo(@NotNull(message = "主键不能为空")
-                                  @PathVariable String id) {
-        return R.ok(socialUserService.queryById(id));
-    }
+    
 
 }
