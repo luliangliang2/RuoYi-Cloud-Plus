@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 /**
@@ -164,5 +165,31 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         LocalDateTime localDateTime = LocalDateTime.of(temporalAccessor, LocalTime.of(0, 0, 0));
         ZonedDateTime zdt = localDateTime.atZone(ZoneId.systemDefault());
         return Date.from(zdt.toInstant());
+    }
+
+    /**
+     * 根据当前小时，获取中文
+     */
+    public static String getTimeOfDay() {
+        String timeOfDay;
+        try {
+            int hour = LocalDateTime.now().getHour();
+
+            if (hour >= 5 && hour < 12) {
+                timeOfDay = "上午";
+            } else if (hour >= 12 && hour < 14) {
+                timeOfDay = "中午";
+            } else if (hour >= 14 && hour < 18) {
+                timeOfDay = "下午";
+            } else if (hour >= 18 && hour < 24) {
+                timeOfDay = "晚上";
+            } else {
+                timeOfDay = "凌晨";
+            }
+        } catch (DateTimeParseException | ArithmeticException e) {
+            // 处理可能的异常
+            timeOfDay = "上午";
+        }
+        return timeOfDay;
     }
 }
