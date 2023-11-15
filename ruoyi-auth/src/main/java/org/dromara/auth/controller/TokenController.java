@@ -95,10 +95,17 @@ public class TokenController {
         // 登录
         LoginVo loginVo = IAuthStrategy.login(body, clientVo, grantType);
 
-        Long userId = LoginHelper.getUserId();
-        scheduledExecutorService.schedule(() -> {
-            remoteMessageService.sendMessage(userId, "欢迎登录RuoYi-Cloud-Plus微服务管理系统");
-        }, 3, TimeUnit.SECONDS);
+        try {
+            Long userId = LoginHelper.getUserId();
+            String nickname = LoginHelper.getLoginUser().getNickname();
+            String message = DateUtils.getTimeOfDay() + "好！" + nickname + "，欢迎登录RuoYi-Cloud-Plus微服务管理系统";
+            scheduledExecutorService.schedule(() -> {
+                remoteMessageService.sendMessage(userId, message);
+            }, 5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("消息服务异常：{}", e);
+        }
+
         return R.ok(loginVo);
     }
 
