@@ -1,7 +1,5 @@
-package org.dromara.auth.service.impl;
+package org.dromara.auth.strategy.impl;
 
-import cn.dev33.satoken.stp.SaLoginModel;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.http.HttpUtil;
@@ -13,12 +11,12 @@ import me.zhyd.oauth.model.AuthUser;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.auth.domain.vo.LoginVo;
 import org.dromara.auth.form.SocialLoginBody;
-import org.dromara.auth.service.IAuthStrategy;
 import org.dromara.auth.service.SysLoginService;
+import org.dromara.auth.strategy.AbstractAuthStrategy;
+import org.dromara.common.core.enums.LoginType;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.ValidatorUtils;
 import org.dromara.common.json.utils.JsonUtils;
-import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.social.config.properties.SocialProperties;
 import org.dromara.common.social.utils.SocialUtils;
 import org.dromara.system.api.RemoteSocialService;
@@ -31,18 +29,19 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static org.dromara.common.core.enums.LoginType.SOCIAL;
+
 /**
  * 第三方授权策略
  *
  * @author thiszhc is 三三
  */
 @Slf4j
-@Service("social" + IAuthStrategy.BASE_NAME)
+@Service("socialAuthStrategy")
 @RequiredArgsConstructor
-public class SocialAuthStrategy implements IAuthStrategy {
+public class SocialAuthStrategy extends AbstractAuthStrategy {
 
     private final SocialProperties socialProperties;
-    private final SysLoginService loginService;
 
     @DubboReference
     private RemoteSocialService remoteSocialService;
@@ -52,8 +51,8 @@ public class SocialAuthStrategy implements IAuthStrategy {
     /**
      * 登录-第三方授权登录
      *
-     * @param body     登录信息
-     * @param client   客户端信息
+     * @param body   登录信息
+     * @param client 客户端信息
      */
     @Override
     public LoginVo login(String body, RemoteClientVo client) {
@@ -87,23 +86,12 @@ public class SocialAuthStrategy implements IAuthStrategy {
         RemoteSocialVo socialVo = opt.get();
 
         LoginUser loginUser = remoteUserService.getUserInfo(socialVo.getUserId(), socialVo.getTenantId());
-        loginUser.setClientKey(client.getClientKey());
-        loginUser.setDeviceType(client.getDeviceType());
-        SaLoginModel model = new SaLoginModel();
-        model.setDevice(client.getDeviceType());
-        // 自定义分配 不同用户体系 不同 token 授权时间 不设置默认走全局 yml 配置
-        // 例如: 后台用户30分钟过期 app用户1天过期
-        model.setTimeout(client.getTimeout());
-        model.setActiveTimeout(client.getActiveTimeout());
-        model.setExtra(LoginHelper.CLIENT_KEY, client.getClientId());
-        // 生成token
-        LoginHelper.login(loginUser, model);
+        return loginClient(client, loginUser);
+    }
 
-        LoginVo loginVo = new LoginVo();
-        loginVo.setAccessToken(StpUtil.getTokenValue());
-        loginVo.setExpireIn(StpUtil.getTokenTimeout());
-        loginVo.setClientId(client.getClientId());
-        return loginVo;
+    @Override
+    public LoginType loginType() {
+        return SOCIAL;
     }
 
 }
