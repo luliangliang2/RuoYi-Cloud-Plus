@@ -3,15 +3,23 @@ package org.dromara.resource.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.hutool.core.util.ObjectUtil;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.core.validate.AddGroup;
+import org.dromara.common.core.validate.EditGroup;
 import org.dromara.common.core.validate.QueryGroup;
-import org.dromara.common.web.core.BaseController;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.web.core.BaseController;
 import org.dromara.resource.domain.bo.SysOssBo;
+import org.dromara.resource.domain.bo.SysOssMultipartBo;
+import org.dromara.resource.domain.vo.SysOssMultipartVo;
 import org.dromara.resource.domain.vo.SysOssUploadVo;
 import org.dromara.resource.domain.vo.SysOssVo;
 import org.dromara.resource.service.ISysOssService;
@@ -20,8 +28,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -101,6 +107,56 @@ public class SysOssController extends BaseController {
     @DeleteMapping("/{ossIds}")
     public R<Void> remove(@NotEmpty(message = "主键不能为空") @PathVariable Long[] ossIds) {
         return toAjax(iSysOssService.deleteWithValidByIds(Arrays.asList(ossIds), true));
+    }
+
+    /**
+     * 初始化分片上传任务
+     *
+     * @param originalfileName 文件原名
+     */
+    @SaCheckPermission("system:oss:multipart")
+    @PostMapping(value = "/multipart/initiate")
+    public R<SysOssMultipartVo> initiateMultipart(@NotBlank(message = "文件原名不能为空")
+                                                  @Size(min = 1, max = 255, message = "文件原名长度必须在1到255之间") String originalfileName) {
+        return R.ok(iSysOssService.initiateMultipart(originalfileName));
+    }
+
+    /**
+     * 上传分段
+     */
+    @SaCheckPermission("system:oss:multipart")
+    @PostMapping(value = "/multipart/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public R<SysOssMultipartVo> uploadPart(@RequestPart("file") MultipartFile file, @Validated(AddGroup.class) @RequestBody SysOssMultipartBo multipartBo) {
+        return R.ok(iSysOssService.uploadPart(file, multipartBo));
+    }
+
+    /**
+     * 查询上传分段进度
+     */
+    @SaCheckPermission("system:oss:multipart")
+    @PostMapping(value = "/multipart/list")
+    public R<SysOssMultipartVo> uploadPartList(@Validated(QueryGroup.class) @RequestBody SysOssMultipartBo multipartBo) {
+        return R.ok(iSysOssService.uploadPartList(multipartBo));
+    }
+
+    /**
+     * 中止分段上传任务（需要多次执行）
+     */
+    @SaCheckPermission("system:oss:multipart")
+    @PutMapping(value = "/multipart/abort")
+    public R<Void> abortMultipartUpload(@Validated(QueryGroup.class) @RequestBody SysOssMultipartBo multipartBo) {
+        iSysOssService.abortMultipartUpload(multipartBo);
+        return R.ok();
+    }
+
+    /**
+     * 合并分段文件
+     */
+    @SaCheckPermission("system:oss:multipart")
+    @Log(title = "OSS对象存储-分片", businessType = BusinessType.INSERT)
+    @PostMapping(value = "/multipart/complete")
+    public R<SysOssVo> completeMultipartUpload(@Validated(EditGroup.class) @RequestBody SysOssMultipartBo multipartBo) {
+        return R.ok(iSysOssService.completeMultipartUpload(multipartBo));
     }
 
 }
