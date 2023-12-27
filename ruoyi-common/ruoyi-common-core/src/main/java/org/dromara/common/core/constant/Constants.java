@@ -77,5 +77,14 @@ public interface Constants {
      */
     Long TOP_PARENT_ID = 0L;
 
+    /**
+     * 发布环境key
+     */
+    String PROD_ENV_KEY = "prod";
+    /**
+     * 开发环境key
+     */
+    String DEV_ENV_KEY = "dev";
+
 }
 

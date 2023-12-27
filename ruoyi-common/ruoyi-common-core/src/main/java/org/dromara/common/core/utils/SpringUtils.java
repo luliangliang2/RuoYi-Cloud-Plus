@@ -4,6 +4,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.dromara.common.core.constant.Constants;
 
 /**
  * spring工具类
@@ -56,5 +57,14 @@ public final class SpringUtils extends SpringUtil {
     public static ApplicationContext context() {
         return getApplicationContext();
     }
+
+    /**
+     * 是否是开发环境
+     */
+    public static boolean isDevEnv(){
+        return Constants.DEV_ENV_KEY.equals(getActiveProfile());
+    }
+
+    
 
 }
