@@ -14,6 +14,7 @@ import org.dromara.common.core.domain.R;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.exception.base.BaseException;
 import org.dromara.common.core.utils.StreamUtils;
+import org.dromara.common.core.utils.SpringUtils;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -129,7 +130,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
-        return R.fail(e.getMessage());
+        return R.fail(Constants.PROD_ENV_KEY.equals(SpringUtils.getActiveProfile()) ? "未知异常, 请联系管理员" : e.getMessage());
     }
 
     /**
@@ -139,7 +140,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleException(Exception e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生系统异常.", requestURI, e);
-        return R.fail(e.getMessage());
+        return R.fail(Constants.PROD_ENV_KEY.equals(SpringUtils.getActiveProfile()) ? "系统异常, 请联系管理员" : e.getMessage());
     }
 
     /**
