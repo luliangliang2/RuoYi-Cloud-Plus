@@ -130,7 +130,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
-        return R.fail(Constants.PROD_ENV_KEY.equals(SpringUtils.getActiveProfile()) ? "未知异常, 请联系管理员" : e.getMessage());
+        return R.fail(SpringUtils.isDevEnv() ? e.getMessage() : "未知异常, 请联系管理员");
     }
 
     /**
@@ -140,7 +140,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleException(Exception e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生系统异常.", requestURI, e);
-        return R.fail(Constants.PROD_ENV_KEY.equals(SpringUtils.getActiveProfile()) ? "系统异常, 请联系管理员" : e.getMessage());
+        return R.fail(SpringUtils.isDevEnv() ? e.getMessage(): "系统异常, 请联系管理员");
     }
 
     /**
