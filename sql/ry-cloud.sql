@@ -896,3 +896,29 @@ CREATE TABLE IF NOT EXISTS undo_log
     log_modified  DATETIME(6)  NOT NULL COMMENT 'modify datetime',
     UNIQUE KEY ux_undo_log (xid, branch_id)
 ) ENGINE = InnoDB COMMENT ='AT transaction mode undo table';
+
+CREATE TABLE IF NOT EXISTS sys_email_log
+(
+   `email_id` bigint(20) NOT NULL COMMENT '日志主键',
+    `tenant_id` varchar(20) DEFAULT '000000' COMMENT '租户编号',
+     `business_level` char(1) DEFAULT '0' COMMENT '业务级别（0系统 1租户 2部门）',
+    `message_type` char(1) DEFAULT '0' COMMENT '消息类型（0单个 1多个）',
+    `message_id` text COMMENT 'message-id',
+    `tos` text NOT NULL COMMENT '收件人',
+     `ccs` text COMMENT '抄送人',
+     `bccs` text COMMENT '密送人',
+    `subject` varchar(100) NOT NULL COMMENT '标题',
+     `content` longblob COMMENT '正文',
+    `email_type` char(1) NOT NULL COMMENT '邮件类型（0文本 1HTML）',
+    `image_map` longblob COMMENT '图片与占位符，占位符格式为cid:$IMAGE_PLACEHOLDER',
+    `files` varchar(2000) DEFAULT NULL COMMENT '附件列表',
+    `status` char(1) DEFAULT '0' COMMENT '发送状态（0成功 1失败）',
+    `create_dept` bigint(20) DEFAULT NULL COMMENT '创建部门',
+    `create_by` bigint(20) DEFAULT NULL COMMENT '创建者',
+    `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+    `update_by` bigint(20) DEFAULT NULL COMMENT '更新者',
+    `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+    `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+   `del_flag` char(1) DEFAULT '0' COMMENT '删除标志（0代表存在 2代表删除）',
+    PRIMARY KEY (`email_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='邮件日志';
