@@ -27,6 +27,7 @@ import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.log.event.LogininforEvent;
+import org.dromara.common.redis.utils.CodeKeyUtils;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.tenant.exception.TenantException;
@@ -109,7 +110,6 @@ public class SysLoginService {
                 // 超级管理员 登出清除动态租户
                 TenantHelper.clearDynamic();
             }
-            recordLogininfor(loginUser.getTenantId(), loginUser.getUsername(), Constants.LOGOUT, MessageUtils.message("user.logout.success"));
         } catch (NotLoginException ignored) {
         } finally {
             try {
@@ -132,7 +132,7 @@ public class SysLoginService {
         boolean captchaEnabled = captchaProperties.getEnabled();
         // 验证码开关
         if (captchaEnabled) {
-            validateCaptcha(tenantId, username, registerBody.getCode(), registerBody.getUuid());
+            validateCode(tenantId, registerBody.getCode(), registerBody.getUuid());
         }
 
         // 注册用户信息
@@ -151,23 +151,55 @@ public class SysLoginService {
     }
 
     /**
-     * 校验验证码
+     * 验证验证码的方法，返回一个布尔值指示验证是否成功。
      *
-     * @param username 用户名
-     * @param code     验证码
-     * @param uuid     唯一标识
+     * @param tenantId 租户ID。
+     * @param key      与验证码相关联的键。
+     * @param code     用户输入的验证码。
+     * @return 如果验证码验证成功，则返回 true；否则返回 false。
+     * @throws CaptchaExpireException 如果验证码过期。
      */
-    public void validateCaptcha(String tenantId, String username, String code, String uuid) {
-        String verifyKey = GlobalConstants.CAPTCHA_CODE_KEY + StringUtils.defaultString(uuid, "");
-        String captcha = RedisUtils.getCacheObject(verifyKey);
-        RedisUtils.deleteObject(verifyKey);
-        if (captcha == null) {
-            recordLogininfor(tenantId, username, Constants.REGISTER, MessageUtils.message("user.jcaptcha.expire"));
+    public boolean validateCode(String tenantId, String key, String code) {
+        try {
+            // 尝试验证验证码，如果验证通过，则返回 true
+            return CodeKeyUtils.validateCode(key, code);
+        } catch (CaptchaExpireException e) {
+            // 处理验证码过期的情况
+            recordLogininfor(tenantId, key, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire"));
             throw new CaptchaExpireException();
         }
-        if (!code.equalsIgnoreCase(captcha)) {
-            recordLogininfor(tenantId, username, Constants.REGISTER, MessageUtils.message("user.jcaptcha.error"));
-            throw new CaptchaException();
+    }
+
+    /**
+     * 验证验证码的方法，并在验证码验证失败时记录登录信息
+     *
+     * @param tenantId 租户ID
+     * @param username 用户名
+     * @param code     用户输入的验证码
+     * @param uuid     与验证码相关联的UUID
+     * @throws CaptchaExpireException 如果验证码过期
+     * @throws CaptchaException       如果验证码验证失败
+     */
+    public void validateCaptcha(String tenantId, String username, String code, String uuid) {
+        try {
+            // 验证码开关
+            if (captchaProperties.getEnabled()) {
+                // 验证验证码是否有效
+                boolean supplier = CodeKeyUtils.validateCode(uuid, code);
+                //从缓存中删除指定键的验证码
+                CodeKeyUtils.deleteVerifyKey(uuid);
+
+                // 处理验证码验证错误的情况
+                if (!supplier) {
+                    //记录登录失败信息
+                    recordLogininfor(tenantId, username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error"));
+                    throw new CaptchaException();
+                }
+            }
+        } catch (CaptchaExpireException e) {
+            // 处理验证码过期的情况
+            recordLogininfor(tenantId, username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire"));
+            throw new CaptchaExpireException();
         }
     }
 
