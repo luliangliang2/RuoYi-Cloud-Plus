@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.CharUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import jakarta.mail.Authenticator;
 import jakarta.mail.Session;
@@ -268,6 +269,29 @@ public class MailUtils {
      */
     public static String send(String to, String cc, String bcc, String subject, String content, Map<String, InputStream> imageMap, boolean isHtml, File... files) {
         return send(splitAddress(to), splitAddress(cc), splitAddress(bcc), subject, content, imageMap, isHtml, files);
+    }
+
+    /**
+     * 发送邮件给多人
+     *
+     * @param mailAccount 邮件帐户信息
+     * @param tos         收件人列表
+     * @param ccs         抄送人列表，可以为null或空
+     * @param bccs        密送人列表，可以为null或空
+     * @param subject     标题
+     * @param content     正文
+     * @param imageMap    图片与占位符，占位符格式为cid:$IMAGE_PLACEHOLDER
+     * @param isHtml      是否为HTML格式
+     * @param files       附件列表
+     * @return message-id
+     * @since 4.6.3
+     */
+    public static String send(MailAccount mailAccount, String tos, String ccs, String bccs, String subject, String content, Map<String, InputStream> imageMap,
+                              boolean isHtml, File... files) {
+        if (ObjectUtil.isNotNull(mailAccount)) {
+            return send(mailAccount, false, splitAddress(tos), splitAddress(ccs), splitAddress(bccs), subject, content, imageMap, isHtml, files);
+        }
+        return send(splitAddress(tos), splitAddress(ccs), splitAddress(bccs), subject, content, imageMap, isHtml, files);
     }
 
     /**
