@@ -45,11 +45,10 @@ public class SmsAuthStrategy implements IAuthStrategy {
         ValidatorUtils.validate(loginBody);
         String tenantId = loginBody.getTenantId();
         String phonenumber = loginBody.getPhonenumber();
-        String smsCode = loginBody.getSmsCode();
 
         // 通过手机号查找用户
         LoginUser loginUser = remoteUserService.getUserInfoByPhonenumber(phonenumber, tenantId);
-        loginService.checkLogin(LoginType.SMS, tenantId, loginUser.getUsername(), () -> !validateSmsCode(tenantId, phonenumber, smsCode));
+        loginService.checkLogin(LoginType.SMS, tenantId, loginUser.getUsername(), () -> !loginService.validateCode(tenantId, phonenumber, loginBody.getSmsCode()));
         loginUser.setClientKey(client.getClientKey());
         loginUser.setDeviceType(client.getDeviceType());
         SaLoginModel model = new SaLoginModel();
@@ -67,18 +66,6 @@ public class SmsAuthStrategy implements IAuthStrategy {
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
         loginVo.setClientId(client.getClientId());
         return loginVo;
-    }
-
-    /**
-     * 校验短信验证码
-     */
-    private boolean validateSmsCode(String tenantId, String phonenumber, String smsCode) {
-        String code = RedisUtils.getCacheObject(GlobalConstants.CAPTCHA_CODE_KEY + phonenumber);
-        if (StringUtils.isBlank(code)) {
-            loginService.recordLogininfor(tenantId, phonenumber, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire"));
-            throw new CaptchaExpireException();
-        }
-        return code.equals(smsCode);
     }
 
 }

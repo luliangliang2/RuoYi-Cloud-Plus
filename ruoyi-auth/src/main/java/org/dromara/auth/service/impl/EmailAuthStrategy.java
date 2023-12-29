@@ -9,15 +9,9 @@ import org.dromara.auth.domain.vo.LoginVo;
 import org.dromara.auth.form.EmailLoginBody;
 import org.dromara.auth.service.IAuthStrategy;
 import org.dromara.auth.service.SysLoginService;
-import org.dromara.common.core.constant.Constants;
-import org.dromara.common.core.constant.GlobalConstants;
 import org.dromara.common.core.enums.LoginType;
-import org.dromara.common.core.exception.user.CaptchaExpireException;
-import org.dromara.common.core.utils.MessageUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.ValidatorUtils;
 import org.dromara.common.json.utils.JsonUtils;
-import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.system.api.RemoteUserService;
 import org.dromara.system.api.domain.vo.RemoteClientVo;
@@ -49,7 +43,7 @@ public class EmailAuthStrategy implements IAuthStrategy {
 
         // 通过邮箱查找用户
         LoginUser loginUser = remoteUserService.getUserInfoByEmail(email, tenantId);
-        loginService.checkLogin(LoginType.EMAIL, tenantId, loginUser.getUsername(), () -> !validateEmailCode(tenantId, email, emailCode));
+        loginService.checkLogin(LoginType.EMAIL, tenantId, loginUser.getUsername(), () -> !loginService.validateCode(tenantId, email, emailCode));
         loginUser.setClientKey(client.getClientKey());
         loginUser.setDeviceType(client.getDeviceType());
         SaLoginModel model = new SaLoginModel();
@@ -67,18 +61,6 @@ public class EmailAuthStrategy implements IAuthStrategy {
         loginVo.setExpireIn(StpUtil.getTokenTimeout());
         loginVo.setClientId(client.getClientId());
         return loginVo;
-    }
-
-    /**
-     * 校验邮箱验证码
-     */
-    private boolean validateEmailCode(String tenantId, String email, String emailCode) {
-        String code = RedisUtils.getCacheObject(GlobalConstants.CAPTCHA_CODE_KEY + email);
-        if (StringUtils.isBlank(code)) {
-            loginService.recordLogininfor(tenantId, email, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.expire"));
-            throw new CaptchaExpireException();
-        }
-        return code.equals(emailCode);
     }
 
 }
