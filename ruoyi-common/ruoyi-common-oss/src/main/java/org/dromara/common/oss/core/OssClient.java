@@ -155,6 +155,8 @@ public class OssClient {
                 } catch (S3Exception e) {
                     throw new OssException("创建Bucket失败, 请核对配置信息:[" + e.getMessage() + "]");
                 }
+            } else if (ex.getCause() instanceof S3Exception) {
+                throw new OssException("判断Bucket是否存在失败，请核对配置信息::[" + ex.getMessage() + "]");
             } else {
                 // 其他异常
                 throw new OssException("判断存储桶是否存在时发生异常:[" + ex.getMessage() + "]");
@@ -403,7 +405,7 @@ public class OssClient {
             if (StringUtils.isNotBlank(domain)) {
                 return header + domain;
             }
-            return header + properties.getBucketName() + "." + endpoint;
+            return header + endpoint;
         }
         // minio 单独处理
         if (StringUtils.isNotBlank(domain)) {
