@@ -26,10 +26,22 @@
             <artifactId>ruoyi-common-redis</artifactId>
         </dependency>
 
+        <!--  AWS SDK for Java 2.x  -->
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
         </dependency>
+        <!-- 基于 AWS CRT 的 S3 客户端的性能增强的 S3 传输管理器 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+        </dependency>
+        <!-- 使用AWS基于 CRT 的 S3 客户端 -->
+        <dependency>
+            <groupId>software.amazon.awssdk.crt</groupId>
+            <artifactId>aws-crt</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
