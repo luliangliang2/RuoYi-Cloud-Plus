@@ -67,6 +67,13 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- http客户端 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-common-http</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- 缓存服务 -->
             <dependency>
                 <groupId>org.dromara</groupId>
