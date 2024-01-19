@@ -65,6 +65,12 @@ public class RedisUtils {
         consumer.accept(msg);
     }
 
+    /**
+     * 发布通道消息
+     *
+     * @param channelKey 通道key
+     * @param msg        发送数据
+     */
     public static <T> void publish(String channelKey, T msg) {
         RTopic topic = CLIENT.getTopic(channelKey);
         topic.publish(msg);
@@ -362,6 +368,22 @@ public class RedisUtils {
             RMap<String, T> rMap = CLIENT.getMap(key);
             rMap.putAll(dataMap);
         }
+    }
+
+    /**
+     * 缓存Map
+     *
+     * @param key      缓存的键值
+     * @param dataMap  缓存的数据
+     * @param duration 时间
+     */
+    public static <T> boolean setCacheMap(final String key, final Map<String, T> dataMap, final Duration duration) {
+        if (dataMap != null) {
+            RMap<String, T> rMap = CLIENT.getMap(key);
+            rMap.putAll(dataMap);
+            return rMap.expire(duration);
+        }
+        return false;
     }
 
     /**
