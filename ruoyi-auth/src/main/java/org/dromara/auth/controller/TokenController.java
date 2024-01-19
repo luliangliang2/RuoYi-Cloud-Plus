@@ -23,12 +23,10 @@ import org.dromara.common.core.domain.model.LoginBody;
 import org.dromara.common.core.utils.*;
 import org.dromara.common.encrypt.annotation.ApiEncrypt;
 import org.dromara.common.json.utils.JsonUtils;
-import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.social.config.properties.SocialLoginConfigProperties;
 import org.dromara.common.social.config.properties.SocialProperties;
 import org.dromara.common.social.utils.SocialUtils;
 import org.dromara.common.tenant.helper.TenantHelper;
-import org.dromara.resource.api.RemoteMessageService;
 import org.dromara.system.api.RemoteClientService;
 import org.dromara.system.api.RemoteConfigService;
 import org.dromara.system.api.RemoteSocialService;
@@ -39,8 +37,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * token 控制
@@ -54,8 +50,6 @@ public class TokenController {
 
     private final SocialProperties socialProperties;
     private final SysLoginService sysLoginService;
-    private final ScheduledExecutorService scheduledExecutorService;
-
     @DubboReference
     private final RemoteConfigService remoteConfigService;
     @DubboReference
@@ -64,8 +58,6 @@ public class TokenController {
     private final RemoteClientService remoteClientService;
     @DubboReference
     private final RemoteSocialService remoteSocialService;
-    @DubboReference(stub = "true")
-    private final RemoteMessageService remoteMessageService;
 
     /**
      * 登录方法
@@ -94,11 +86,6 @@ public class TokenController {
         sysLoginService.checkTenant(loginBody.getTenantId());
         // 登录
         LoginVo loginVo = IAuthStrategy.login(body, clientVo, grantType);
-
-        Long userId = LoginHelper.getUserId();
-        scheduledExecutorService.schedule(() -> {
-            remoteMessageService.publishMessage(userId, "欢迎登录RuoYi-Cloud-Plus微服务管理系统");
-        }, 3, TimeUnit.SECONDS);
         return R.ok(loginVo);
     }
 

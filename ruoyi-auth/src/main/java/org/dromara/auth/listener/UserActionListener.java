@@ -21,9 +21,12 @@ import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.resource.api.RemoteMessageService;
 import org.dromara.system.api.RemoteUserService;
 import org.dromara.system.api.domain.SysUserOnline;
+import org.dromara.system.api.model.LoginUser;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户行为 侦听器的实现
@@ -36,9 +39,10 @@ import java.time.Duration;
 public class UserActionListener implements SaTokenListener {
 
     private final SaTokenConfig tokenConfig;
+    private final ScheduledExecutorService scheduledExecutorService;
     @DubboReference
     private RemoteUserService remoteUserService;
-    @DubboReference
+    @DubboReference(stub = "true")
     private RemoteMessageService remoteMessageService;
 
     /**
@@ -57,6 +61,7 @@ public class UserActionListener implements SaTokenListener {
         userOnline.setTokenId(tokenValue);
         String username = (String) loginModel.getExtra(LoginHelper.USER_NAME_KEY);
         String tenantId = (String) loginModel.getExtra(LoginHelper.TENANT_KEY);
+        Long userId = (Long) loginModel.getExtra(LoginHelper.USER_KEY);
         userOnline.setUserName(username);
         userOnline.setClientKey((String) loginModel.getExtra(LoginHelper.CLIENT_KEY));
         userOnline.setDeviceType(loginModel.getDevice());
@@ -68,16 +73,15 @@ public class UserActionListener implements SaTokenListener {
                 RedisUtils.setCacheObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue, userOnline, Duration.ofSeconds(tokenConfig.getTimeout()));
             }
         });
-        // 记录登录日志
-        LogininforEvent logininforEvent = new LogininforEvent();
-        logininforEvent.setTenantId(tenantId);
-        logininforEvent.setUsername(username);
-        logininforEvent.setStatus(Constants.LOGIN_SUCCESS);
-        logininforEvent.setMessage(MessageUtils.message("user.login.success"));
-        logininforEvent.setRequest(ServletUtils.getRequest());
-        SpringUtils.context().publishEvent(logininforEvent);
-        // 更新登录信息
-        remoteUserService.recordLoginInfo((Long) loginModel.getExtra(LoginHelper.USER_KEY), ip);
+
+        // 发布登录成功事件，记录登录日志
+        recordLogininfor(tenantId, username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success"));
+        scheduledExecutorService.schedule(() -> {
+            // 更新登录信息
+            remoteUserService.recordLoginInfo(userId, ip);
+            //发送站内信（可以增加设备类型判断发送）
+            remoteMessageService.sendMessage(userId, "欢迎登录RuoYi-Cloud-Plus微服务管理系统");
+        }, 3, TimeUnit.SECONDS);
         log.info("user doLogin, useId:{}, token:{}", loginId, tokenValue);
     }
 
@@ -86,6 +90,10 @@ public class UserActionListener implements SaTokenListener {
      */
     @Override
     public void doLogout(String loginType, Object loginId, String tokenValue) {
+        // 获取当前登录用户信息
+        LoginUser user = LoginHelper.getLoginUser();
+        // 发布注销事件，记录登录日志
+        recordLogininfor(user.getTenantId(), user.getUsername(), Constants.LOGOUT, MessageUtils.message("user.logout.success"));
         RedisUtils.deleteObject(CacheConstants.ONLINE_TOKEN_KEY + tokenValue);
         log.info("user doLogout, useId:{}, token:{}", loginId, tokenValue);
     }
@@ -155,6 +163,25 @@ public class UserActionListener implements SaTokenListener {
      */
     @Override
     public void doRenewTimeout(String tokenValue, Object loginId, long timeout) {
+    }
+
+    /**
+     * 记录登录、注销信息
+     *
+     * @param username 用户名
+     * @param status   状态
+     * @param message  消息内容
+     */
+    private void recordLogininfor(String tenantId, String username, String status, String message) {
+        // 封装对象
+        LogininforEvent logininforEvent = new LogininforEvent();
+        logininforEvent.setTenantId(tenantId);
+        logininforEvent.setUsername(username);
+        logininforEvent.setStatus(status);
+        logininforEvent.setMessage(message);
+        logininforEvent.setRequest(ServletUtils.getRequest());
+        //用于实现发布-订阅模式 将logininforEvent发布到Spring应用程序上下文（LogEventListener.saveLogininfor）
+        SpringUtils.context().publishEvent(logininforEvent);
     }
 
 }
