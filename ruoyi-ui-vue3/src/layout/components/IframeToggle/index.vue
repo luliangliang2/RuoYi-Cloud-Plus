@@ -1,6 +1,10 @@
 <template>
   <transition-group name="fade-transform" mode="out-in">
     <inner-link
+      v-if="!settingsStore.tagsView && route.meta.link"
+      :src="iframeUrl(route.meta.link, route.query)"
+    ></inner-link>
+    <inner-link
       v-for="(item, index) in tagsViewStore.iframeViews"
       :key="item.path"
       :iframeId="'iframe' + index"
@@ -13,9 +17,11 @@
 <script setup>
 import InnerLink from "../InnerLink/index";
 import useTagsViewStore from "@/store/modules/tagsView";
+import useSettingsStore from "@/store/modules/settings";
 
 const route = useRoute();
 const tagsViewStore = useTagsViewStore();
+const settingsStore = useSettingsStore();
 
 function iframeUrl(url, query) {
   if (Object.keys(query).length > 0) {
