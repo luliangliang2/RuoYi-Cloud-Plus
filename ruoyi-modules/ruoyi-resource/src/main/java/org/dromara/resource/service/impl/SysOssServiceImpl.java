@@ -26,7 +26,9 @@ import org.dromara.resource.domain.bo.SysOssBo;
 import org.dromara.resource.domain.vo.SysOssVo;
 import org.dromara.resource.mapper.SysOssMapper;
 import org.dromara.resource.service.ISysOssService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -141,6 +143,18 @@ public class SysOssServiceImpl implements ISysOssService {
     }
 
     /**
+     * 根据 eTag 从缓存或数据库中获取 SysOssVo 对象
+     *
+     * @param eTag 已上传对象的实体标记
+     * @return SysOss 对象，包含文件信息
+     */
+    @Cacheable(cacheNames = CacheNames.SYS_OSS, key = "#eTag", unless = "#result == null")
+    @Override
+    public SysOssVo getByETag(String eTag) {
+        return baseMapper.selectVoOne(new LambdaQueryWrapper<SysOss>().eq(SysOss::getETag, eTag));
+    }
+
+    /**
      * 文件下载方法，支持一次性下载完整文件
      *
      * @param ossId    OSS对象ID
@@ -202,13 +216,23 @@ public class SysOssServiceImpl implements ISysOssService {
         return buildResultEntity(originalfileName, suffix, storage.getConfigKey(), uploadResult);
     }
 
-    private SysOssVo buildResultEntity(String originalfileName, String suffix, String configKey, UploadResult uploadResult) {
+    /**
+     * 构建返回对象
+     * @param originalfileName 原名
+     * @param suffix 后缀名
+     * @param configKey 服务商
+     * @param uploadResult 上传返回体
+     * @return vo
+     */
+    @Override
+    public SysOssVo buildResultEntity(String originalfileName, String suffix, String configKey, UploadResult uploadResult) {
         SysOss oss = new SysOss();
         oss.setUrl(uploadResult.getUrl());
         oss.setFileSuffix(suffix);
         oss.setFileName(uploadResult.getFilename());
         oss.setOriginalName(originalfileName);
         oss.setService(configKey);
+        oss.setETag(uploadResult.getETag());
         baseMapper.insert(oss);
         SysOssVo sysOssVo = MapstructUtils.convert(oss, SysOssVo.class);
         return this.matchingUrl(sysOssVo);
@@ -230,24 +254,15 @@ public class SysOssServiceImpl implements ISysOssService {
         return flag;
     }
 
-    /**
-     * 删除OSS对象存储
-     *
-     * @param ids     OSS对象ID串
-     * @param isValid 判断是否需要校验
-     * @return 结果
-     */
+    @Caching(evict = {
+        @CacheEvict(cacheNames = CacheNames.SYS_OSS, key = "#bo.ossId"),
+        @CacheEvict(cacheNames = CacheNames.SYS_OSS, key = "#bo.eTag")
+    })
     @Override
-    public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if (isValid) {
-            // 做一些业务上的校验,判断是否需要校验
-        }
-        List<SysOss> list = baseMapper.selectBatchIds(ids);
-        for (SysOss sysOss : list) {
-            OssClient storage = OssFactory.instance(sysOss.getService());
-            storage.delete(sysOss.getUrl());
-        }
-        return baseMapper.deleteBatchIds(ids) > 0;
+    public int deleteOss(SysOssBo bo) {
+        OssClient storage = OssFactory.instance(bo.getService());
+        storage.delete(bo.getUrl());
+        return baseMapper.deleteById(bo.getOssId());
     }
 
     /**

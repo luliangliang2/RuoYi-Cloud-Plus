@@ -3,6 +3,7 @@ package org.dromara.resource.service;
 import jakarta.servlet.http.HttpServletResponse;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.oss.entity.UploadResult;
 import org.dromara.resource.domain.bo.SysOssBo;
 import org.dromara.resource.domain.vo.SysOssVo;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,6 +54,14 @@ public interface ISysOssService {
     SysOssVo getById(Long ossId);
 
     /**
+     * 根据 eTag 从缓存或数据库中获取 SysOssVo 对象
+     *
+     * @param eTag 已上传对象的实体标记
+     * @return SysOss 对象，包含文件信息
+     */
+    SysOssVo getByETag(String eTag);
+
+    /**
      * 上传 MultipartFile 到对象存储服务，并保存文件信息到数据库
      *
      * @param file 要上传的 MultipartFile 对象
@@ -67,6 +76,16 @@ public interface ISysOssService {
      * @return 上传成功后的 SysOssVo 对象，包含文件信息
      */
     SysOssVo upload(File file);
+
+    /**
+     * 构建返回对象
+     * @param originalfileName 原名
+     * @param suffix 后缀名
+     * @param configKey 服务商
+     * @param uploadResult 上传返回体
+     * @return vo
+     */
+    SysOssVo buildResultEntity(String originalfileName, String suffix, String configKey, UploadResult uploadResult);
 
     /**
      * 新增OSS对象存储
@@ -87,9 +106,9 @@ public interface ISysOssService {
     /**
      * 删除OSS对象存储
      *
-     * @param ids     OSS对象ID串
-     * @param isValid 判断是否需要校验
+     * @param bo     OSS对象
      * @return 结果
      */
-    Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid);
+    int deleteOss(SysOssBo bo);
+
 }

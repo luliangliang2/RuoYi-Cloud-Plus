@@ -1,5 +1,6 @@
 package org.dromara.resource.dubbo;
 
+import cn.hutool.crypto.digest.MD5;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.oss.core.OssClient;
@@ -8,12 +9,15 @@ import org.dromara.common.oss.factory.OssFactory;
 import org.dromara.resource.api.RemoteFileService;
 import org.dromara.resource.api.domain.RemoteFile;
 import org.dromara.resource.domain.bo.SysOssBo;
+import org.dromara.resource.domain.vo.SysOssVo;
 import org.dromara.resource.service.ISysOssService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 /**
  * 文件请求处理
@@ -35,22 +39,14 @@ public class RemoteFileServiceImpl implements RemoteFileService {
     @Override
     public RemoteFile upload(String name, String originalFilename, String contentType, byte[] file) throws ServiceException {
         try {
-            String suffix = StringUtils.substring(originalFilename, originalFilename.lastIndexOf("."), originalFilename.length());
-            OssClient storage = OssFactory.instance();
-            UploadResult uploadResult = storage.uploadSuffix(file, suffix);
-            // 保存文件信息
-            SysOssBo oss = new SysOssBo();
-            oss.setUrl(uploadResult.getUrl());
-            oss.setFileSuffix(suffix);
-            oss.setFileName(uploadResult.getFilename());
-            oss.setOriginalName(originalFilename);
-            oss.setService(storage.getConfigKey());
-            sysOssService.insertByBo(oss);
-            RemoteFile sysFile = new RemoteFile();
-            sysFile.setOssId(oss.getOssId());
-            sysFile.setName(uploadResult.getFilename());
-            sysFile.setUrl(uploadResult.getUrl());
-            return sysFile;
+            SysOssVo oss = sysOssService.getByETag(MD5.create().digestHex(file));
+            if (Objects.isNull(oss)) {
+                String suffix = StringUtils.substring(originalFilename, originalFilename.lastIndexOf("."), originalFilename.length());
+                OssClient storage = OssFactory.instance();
+                UploadResult uploadResult = storage.uploadSuffix(file, suffix);
+                oss = sysOssService.buildResultEntity(originalFilename, suffix, storage.getConfigKey(), uploadResult);
+            }
+            return new RemoteFile(oss.getOssId(), oss.getFileName(), oss.getUrl());
         } catch (Exception e) {
             log.error("上传文件失败", e);
             throw new ServiceException("上传文件失败");

@@ -1,6 +1,8 @@
 package org.dromara.resource.api.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -11,6 +13,8 @@ import java.io.Serializable;
  * @author ruoyi
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RemoteFile implements Serializable {
 
     @Serial
