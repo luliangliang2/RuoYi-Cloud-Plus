@@ -169,6 +169,7 @@ create table if not exists sys_dept
     parent_id   int8        default 0,
     ancestors   varchar(500)default ''::varchar,
     dept_name   varchar(30) default ''::varchar,
+    dept_category varchar(100) default null::varchar,
     order_num   int4        default 0,
     leader      int8        default null,
     phone       varchar(11) default null::varchar,
@@ -189,6 +190,7 @@ comment on column sys_dept.tenant_id    is '租户编号';
 comment on column sys_dept.parent_id    is '父部门ID';
 comment on column sys_dept.ancestors    is '祖级列表';
 comment on column sys_dept.dept_name    is '部门名称';
+comment on column sys_dept.dept_category    is '部门类别编码';
 comment on column sys_dept.order_num    is '显示顺序';
 comment on column sys_dept.leader       is '负责人';
 comment on column sys_dept.phone        is '联系电话';
@@ -204,16 +206,16 @@ comment on column sys_dept.update_time  is '更新时间';
 -- ----------------------------
 -- 初始化-部门表数据
 -- ----------------------------
-insert into sys_dept values(100, '000000', 0,   '0',          'XXX科技',   0, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(101, '000000', 100, '0,100',      '深圳总公司', 1, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(102, '000000', 100, '0,100',      '长沙分公司', 2, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(103, '000000', 101, '0,100,101',  '研发部门',   1, 1, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(104, '000000', 101, '0,100,101',  '市场部门',   2, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(105, '000000', 101, '0,100,101',  '测试部门',   3, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(106, '000000', 101, '0,100,101',  '财务部门',   4, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(107, '000000', 101, '0,100,101',  '运维部门',   5, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(108, '000000', 102, '0,100,102',  '市场部门',   1, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
-insert into sys_dept values(109, '000000', 102, '0,100,102',  '财务部门',   2, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(100, '000000', 0,   '0',          'XXX科技',   null, 0, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(101, '000000', 100, '0,100',      '深圳总公司', null, 1, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(102, '000000', 100, '0,100',      '长沙分公司', null, 2, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(103, '000000', 101, '0,100,101',  '研发部门',   null, 1, 1, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(104, '000000', 101, '0,100,101',  '市场部门',   null, 2, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(105, '000000', 101, '0,100,101',  '测试部门',   null, 3, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(106, '000000', 101, '0,100,101',  '财务部门',   null, 4, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(107, '000000', 101, '0,100,101',  '运维部门',   null, 5, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(108, '000000', 102, '0,100,102',  '市场部门',   null, 1, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
+insert into sys_dept values(109, '000000', 102, '0,100,102',  '财务部门',   null, 2, null, '15888888888', 'xxx@qq.com', '0', '0', 103, 1, now(), null, null);
 
 -- ----------------------------
 -- 2、用户信息表
@@ -283,7 +285,9 @@ create table if not exists sys_post
 (
     post_id     int8,
     tenant_id   varchar(20) default '000000'::varchar,
+    dept_id     int8,
     post_code   varchar(64) not null,
+    post_category   varchar(100) default null,
     post_name   varchar(50) not null,
     post_sort   int4        not null,
     status      char        not null,
@@ -299,7 +303,9 @@ create table if not exists sys_post
 comment on table sys_post               is '岗位信息表';
 comment on column sys_post.post_id      is '岗位ID';
 comment on column sys_post.tenant_id    is '租户编号';
+comment on column sys_post.dept_id      is '部门id';
 comment on column sys_post.post_code    is '岗位编码';
+comment on column sys_post.post_category is '岗位类别编码';
 comment on column sys_post.post_name    is '岗位名称';
 comment on column sys_post.post_sort    is '显示顺序';
 comment on column sys_post.status       is '状态（0正常 1停用）';
@@ -313,10 +319,10 @@ comment on column sys_post.remark       is '备注';
 -- ----------------------------
 -- 初始化-岗位信息表数据
 -- ----------------------------
-insert into sys_post values(1, '000000', 'ceo',  '董事长',    1, '0', 103, 1, now(), null, null, '');
-insert into sys_post values(2, '000000', 'se',   '项目经理',  2, '0', 103, 1, now(), null, null, '');
-insert into sys_post values(3, '000000', 'hr',   '人力资源',  3, '0', 103, 1, now(), null, null, '');
-insert into sys_post values(4, '000000', 'user', '普通员工',  4, '0', 103, 1, now(), null, null, '');
+insert into sys_post values(1, '000000', 103, 'ceo',  null, '董事长',    1, '0', 103, 1, now(), null, null, '');
+insert into sys_post values(2, '000000', 100, 'se',   null, '项目经理',  2, '0', 103, 1, now(), null, null, '');
+insert into sys_post values(3, '000000', 100, 'hr',   null, '人力资源',  3, '0', 103, 1, now(), null, null, '');
+insert into sys_post values(4, '000000', 100, 'user', null, '普通员工',  4, '0', 103, 1, now(), null, null, '');
 
 -- ----------------------------
 -- 4、角色信息表
@@ -427,7 +433,7 @@ insert into sys_menu values('6', '系统管理', '0', '2', 'tenant',           n
 insert into sys_menu values('2', '系统监控', '0', '3', 'monitor',          null, '', '1', '0', 'M', '0', '0', '', 'monitor',  103, 1, now(), null, null, '系统监控目录');
 insert into sys_menu values('3', '系统工具', '0', '4', 'tool',             null, '', '1', '0', 'M', '0', '0', '', 'tool',     103, 1, now(), null, null, '系统工具目录');
 insert into sys_menu values('4', 'PLUS官网', '0', '5', 'https://gitee.com/dromara/RuoYi-Cloud-Plus', null, '', '0', '0', 'M', '0', '0', '', 'guide',    103, 1, now(), null, null, 'RuoYi-Cloud-Plus官网地址');
-insert into sys_menu VALUES('5', '测试菜单', '0', '5', 'demo',             null, '1', '0', 'M', '0', '0', null, 'star',       103, 1, now(), null, null, '测试菜单');
+insert into sys_menu VALUES('5', '测试菜单', '0', '5', 'demo',             null, '', '1', '0', 'M', '0', '0', null, 'star',       103, 1, now(), null, null, '测试菜单');
 -- 二级菜单
 insert into sys_menu values('100',  '用户管理',     '1',   '1', 'user',             'system/user/index',            '', '1', '0', 'C', '0', '0', 'system:user:list',            'user',          103, 1, now(), null, null, '用户管理菜单');
 insert into sys_menu values('101',  '角色管理',     '1',   '2', 'role',             'system/role/index',            '', '1', '0', 'C', '0', '0', 'system:role:list',            'peoples',       103, 1, now(), null, null, '角色管理菜单');
@@ -552,8 +558,8 @@ insert into sys_menu values('1065', '客户端管理导出', '123', '5',  '#', '
 -- 测试菜单
 INSERT INTO sys_menu VALUES('1500', '测试单表',     '5',   '1', 'demo', 'demo/demo/index', '',  '1', '0', 'C', '0', '0', 'demo:demo:list', '#', 103, 1, now(), NULL, NULL, '测试单表菜单');
 INSERT INTO sys_menu VALUES('1501', '测试单表查询', '1500', '1', '#', '', '',  '1', '0', 'F', '0', '0', 'demo:demo:query',                  '#', 103, 1, now(), NULL, NULL, '');
-INSERT INTO sys_menu VALUES('1502', '测试单表新增', '1500', '2,' '#', '', '',  '1', '0', 'F', '0', '0', 'demo:demo:add',                    '#', 103, 1, now(), NULL, NULL, '');
-INSERT INTO sys_menu VALUES('1503', '测试单表修改', '1500', '3', '#', '', '',  '1', '0,' 'F', '0', '0', 'demo:demo:edit',                   '#', 103, 1, now(), NULL, NULL, '');
+INSERT INTO sys_menu VALUES('1502', '测试单表新增', '1500', '2', '#', '', '',  '1', '0', 'F', '0', '0', 'demo:demo:add',                    '#', 103, 1, now(), NULL, NULL, '');
+INSERT INTO sys_menu VALUES('1503', '测试单表修改', '1500', '3', '#', '', '',  '1', '0', 'F', '0', '0', 'demo:demo:edit',                   '#', 103, 1, now(), NULL, NULL, '');
 INSERT INTO sys_menu VALUES('1504', '测试单表删除', '1500', '4', '#', '', '',  '1', '0', 'F', '0', '0', 'demo:demo:remove',                 '#', 103, 1, now(), NULL, NULL, '');
 INSERT INTO sys_menu VALUES('1505', '测试单表导出', '1500', '5', '#', '', '',  '1', '0', 'F', '0', '0', 'demo:demo:export',                 '#', 103, 1, now(), NULL, NULL, '');
 INSERT INTO sys_menu VALUES('1506', '测试树表',     '5',   '1', 'tree', 'demo/tree/index', '',  '1', '0', 'C', '0', '0', 'demo:tree:list', '#', 103, 1, now(), NULL, NULL, '测试树表菜单');
@@ -810,7 +816,7 @@ insert into sys_dict_type values(6, '000000', '系统是否', 'sys_yes_no',     
 insert into sys_dict_type values(7, '000000', '通知类型', 'sys_notice_type',     103, 1, now(), null, null, '通知类型列表');
 insert into sys_dict_type values(8, '000000', '通知状态', 'sys_notice_status',   103, 1, now(), null, null, '通知状态列表');
 insert into sys_dict_type values(9, '000000', '操作类型', 'sys_oper_type',       103, 1, now(), null, null, '操作类型列表');
-insert into sys_dict_type values(10, '000000', '系统状态', 'sys_common_status',   103, 1, now(), null, null, '登录状态列表');
+insert into sys_dict_type values(10, '000000', '系统状态', 'sys_common_status',  103, 1, now(), null, null, '登录状态列表');
 insert into sys_dict_type values(11, '000000', '授权类型', 'sys_grant_type',     103, 1, now(), null, null, '认证授权类型');
 insert into sys_dict_type values(12, '000000', '设备类型', 'sys_device_type',    103, 1, now(), null, null, '客户端设备类型');
 
@@ -1263,8 +1269,8 @@ create table if not exists test_demo
     test_key    varchar(255),
     value       varchar(255),
     version     int4            default 0,
-    create_time timestamp,
     create_dept int8,
+    create_time timestamp,
     create_by   int8,
     update_time timestamp,
     update_by   int8,
@@ -1296,8 +1302,8 @@ create table if not exists test_tree
     user_id     int8,
     tree_name   varchar(255),
     version     int4            default 0,
-    create_time timestamp,
     create_dept int8,
+    create_time timestamp,
     create_by   int8,
     update_time timestamp,
     update_by   int8,
