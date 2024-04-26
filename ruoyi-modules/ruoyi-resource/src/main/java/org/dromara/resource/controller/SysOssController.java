@@ -2,7 +2,9 @@ package org.dromara.resource.controller;
 
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.crypto.digest.MD5;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.validate.QueryGroup;
@@ -25,6 +27,7 @@ import jakarta.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 文件上传 控制层
@@ -68,11 +71,14 @@ public class SysOssController extends BaseController {
     @SaCheckPermission("system:oss:upload")
     @Log(title = "OSS对象存储", businessType = BusinessType.INSERT)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public R<SysOssUploadVo> upload(@RequestPart("file") MultipartFile file) {
+    public R<SysOssUploadVo> upload(@RequestPart("file") MultipartFile file) throws IOException {
         if (ObjectUtil.isNull(file)) {
             return R.fail("上传文件不能为空");
         }
-        SysOssVo oss = iSysOssService.upload(file);
+        SysOssVo oss = iSysOssService.getByETag(MD5.create().digestHex(file.getBytes()));
+        if (Objects.isNull(oss)) {
+            oss = iSysOssService.upload(file);
+        }
         SysOssUploadVo uploadVo = new SysOssUploadVo();
         uploadVo.setUrl(oss.getUrl());
         uploadVo.setFileName(oss.getOriginalName());
@@ -100,7 +106,13 @@ public class SysOssController extends BaseController {
     @Log(title = "OSS对象存储", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ossIds}")
     public R<Void> remove(@NotEmpty(message = "主键不能为空") @PathVariable Long[] ossIds) {
-        return toAjax(iSysOssService.deleteWithValidByIds(Arrays.asList(ossIds), true));
+        //可做一些业务上的校验,判断是否需要校验
+        for (Long ossId : ossIds) {
+            SysOssVo vo = iSysOssService.getById(ossId);
+            SysOssBo bo = BeanUtil.toBean(vo, SysOssBo.class);
+            iSysOssService.deleteOss(bo);
+        }
+        return R.ok();
     }
 
 }

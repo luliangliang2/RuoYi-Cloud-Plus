@@ -47,4 +47,9 @@ public class SysOss extends TenantEntity {
      */
     private String service;
 
+    /**
+     * 已上传对象的实体标记（用来校验文件）
+     */
+    private String eTag;
+
 }

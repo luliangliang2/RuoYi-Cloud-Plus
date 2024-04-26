@@ -2,3 +2,5 @@ ALTER TABLE sys_dept ADD dept_category VARCHAR(100) DEFAULT NULL COMMENT '部门
 ALTER TABLE sys_post ADD dept_id BIGINT(20) NOT NULL COMMENT '部门id', ADD post_category VARCHAR(100) DEFAULT NULL COMMENT '岗位类别编码';
 UPDATE sys_post SET dept_id = 100;
 UPDATE sys_post SET dept_id = 103 where post_id = 1;
+
+ALTER TABLE sys_oss ADD e_tag VARCHAR(32) DEFAULT '' COMMENT '已上传对象的实体标记（用来校验文件）';
