@@ -810,6 +810,7 @@ create table sys_oss (
   update_time     datetime              default null      comment '更新时间',
   update_by       bigint(20)            default null      comment '更新人',
   service         varchar(20)  not null default 'minio'   comment '服务商',
+  e_tag           varchar(32)           default ''        comment '已上传对象的实体标记（用来校验文件）',
   primary key (oss_id)
 ) engine=innodb comment ='OSS对象存储表';
 
