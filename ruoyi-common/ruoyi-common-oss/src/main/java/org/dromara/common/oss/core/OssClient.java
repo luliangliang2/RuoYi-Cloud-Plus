@@ -167,7 +167,7 @@ public class OssClient {
     }
 
     public String getUrl() {
-        String domain = properties.getDomain();
+        String domain = properties.getMyDomain();
         String endpoint = properties.getEndpoint();
         String header = OssConstant.IS_HTTPS.equals(properties.getIsHttps()) ? "https://" : "http://";
         // 云服务商直接返回

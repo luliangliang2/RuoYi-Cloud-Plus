@@ -1,42 +1,49 @@
+create schema test;
+set schema test;
+
 DROP TABLE if EXISTS test_demo;
 CREATE TABLE test_demo
 (
-    id          bigint(0)    NOT NULL COMMENT '主键',
-    tenant_id   varchar(20)  NULL DEFAULT '000000' COMMENT '租户编号',
-    dept_id     bigint(0)    NULL DEFAULT NULL COMMENT '部门id',
-    user_id     bigint(0)    NULL DEFAULT NULL COMMENT '用户id',
-    order_num   int(0)       NULL DEFAULT 0 COMMENT '排序号',
-    test_key    varchar(255) NULL DEFAULT NULL COMMENT 'key键',
-    value       varchar(255) NULL DEFAULT NULL COMMENT '值',
-    version     int(0)       NULL DEFAULT 0 COMMENT '版本',
-    create_dept bigint(0)    NULL DEFAULT NULL COMMENT '创建部门',
-    create_time datetime(0)  NULL DEFAULT NULL COMMENT '创建时间',
-    create_by   bigint(0)    NULL DEFAULT NULL COMMENT '创建人',
-    update_time datetime(0)  NULL DEFAULT NULL COMMENT '更新时间',
-    update_by   bigint(0)    NULL DEFAULT NULL COMMENT '更新人',
-    del_flag    int(0)       NULL DEFAULT 0 COMMENT '删除标志',
-    PRIMARY KEY (id) USING BTREE
-) ENGINE = InnoDB COMMENT = '测试单表';
+    id          BIGINT    NOT NULL COMMENT '主键',
+    tenant_id   VARCHAR2(20)  NULL DEFAULT '000000' COMMENT '租户编号',
+    dept_id     BIGINT    NULL DEFAULT NULL COMMENT '部门id',
+    user_id     BIGINT    NULL DEFAULT NULL COMMENT '用户id',
+    order_num   INT       NULL DEFAULT 0 COMMENT '排序号',
+    test_key    VARCHAR2(255) NULL DEFAULT NULL COMMENT 'key键',
+    value       VARCHAR2(255) NULL DEFAULT NULL COMMENT '值',
+    version     INT       NULL DEFAULT 0 COMMENT '版本',
+    create_dept BIGINT    NULL DEFAULT NULL COMMENT '创建部门',
+    create_time datetime  NULL DEFAULT NULL COMMENT '创建时间',
+    create_by   BIGINT    NULL DEFAULT NULL COMMENT '创建人',
+    update_time datetime  NULL DEFAULT NULL COMMENT '更新时间',
+    update_by   BIGINT    NULL DEFAULT NULL COMMENT '更新人',
+    del_flag    INT       NULL DEFAULT 0 COMMENT '删除标志',
+    PRIMARY KEY (id) 
+) ;
+
+
 
 DROP TABLE if EXISTS test_tree;
 CREATE TABLE test_tree
 (
-    id          bigint(0)    NOT NULL COMMENT '主键',
-    tenant_id   varchar(20)  NULL DEFAULT '000000' COMMENT '租户编号',
-    parent_id   bigint(0)    NULL DEFAULT 0 COMMENT '父id',
-    dept_id     bigint(0)    NULL DEFAULT NULL COMMENT '部门id',
-    user_id     bigint(0)    NULL DEFAULT NULL COMMENT '用户id',
-    tree_name   varchar(255) NULL DEFAULT NULL COMMENT '值',
-    version     int(0)       NULL DEFAULT 0 COMMENT '版本',
-    create_dept bigint(0)    NULL DEFAULT NULL COMMENT '创建部门',
-    create_time datetime(0)  NULL DEFAULT NULL COMMENT '创建时间',
-    create_by   bigint(0)    NULL DEFAULT NULL COMMENT '创建人',
-    update_time datetime(0)  NULL DEFAULT NULL COMMENT '更新时间',
-    update_by   bigint(0)    NULL DEFAULT NULL COMMENT '更新人',
-    del_flag    int(0)       NULL DEFAULT 0 COMMENT '删除标志',
-    PRIMARY KEY (id) USING BTREE
-) ENGINE = InnoDB COMMENT = '测试树表';
+    id          BIGINT    NOT NULL COMMENT '主键',
+    tenant_id   VARCHAR2(20)  NULL DEFAULT '000000' COMMENT '租户编号',
+    parent_id   BIGINT    NULL DEFAULT 0 COMMENT '父id',
+    dept_id     BIGINT    NULL DEFAULT NULL COMMENT '部门id',
+    user_id     BIGINT    NULL DEFAULT NULL COMMENT '用户id',
+    tree_name   VARCHAR2(255) NULL DEFAULT NULL COMMENT '值',
+    version     INT       NULL DEFAULT 0 COMMENT '版本',
+    create_dept BIGINT    NULL DEFAULT NULL COMMENT '创建部门',
+    create_time datetime  NULL DEFAULT NULL COMMENT '创建时间',
+    create_by   BIGINT    NULL DEFAULT NULL COMMENT '创建人',
+    update_time datetime  NULL DEFAULT NULL COMMENT '更新时间',
+    update_by   BIGINT    NULL DEFAULT NULL COMMENT '更新人',
+    del_flag    INT       NULL DEFAULT 0 COMMENT '删除标志',
+    PRIMARY KEY (id) 
+);
 
+
+set schema ry_cloud;
 INSERT INTO sys_user(user_id, tenant_id, dept_id, user_name, nick_name, user_type, email, phonenumber, sex, avatar, password, status, del_flag, login_ip, login_date, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (3, '000000', 108, 'test', '本部门及以下 密码666666', 'sys_user', '', '', '0', null, '$2a$10$b8yUzN0C71sbz.PhNOCgJe.Tu1yWC3RNrTyjSQ8p1W0.aaUXUJ.Ne', '0', '0', '127.0.0.1', sysdate(), 103, 1, sysdate(), 3, sysdate(), NULL);
 INSERT INTO sys_user(user_id, tenant_id, dept_id, user_name, nick_name, user_type, email, phonenumber, sex, avatar, password, status, del_flag, login_ip, login_date, create_dept, create_by, create_time, update_by, update_time, remark) VALUES (4, '000000', 102, 'test1', '仅本人 密码666666', 'sys_user', '', '', '0', null, '$2a$10$b8yUzN0C71sbz.PhNOCgJe.Tu1yWC3RNrTyjSQ8p1W0.aaUXUJ.Ne', '0', '0', '127.0.0.1', sysdate(), 103, 1, sysdate(), 4, sysdate(), NULL);
 
@@ -146,6 +153,9 @@ INSERT INTO sys_role_menu(role_id, menu_id) VALUES (4, 1511);
 INSERT INTO sys_user_role(user_id, role_id) VALUES (3, 3);
 INSERT INTO sys_user_role(user_id, role_id) VALUES (4, 4);
 
+
+
+set schema test;
 INSERT INTO test_demo(id, tenant_id, dept_id, user_id, order_num, test_key, value, version, create_dept, create_time, create_by, update_time, update_by, del_flag) VALUES (1, '000000', 102, 4, 1, '测试数据权限', '测试', 0, 103, sysdate(), 1, NULL, NULL, 0);
 INSERT INTO test_demo(id, tenant_id, dept_id, user_id, order_num, test_key, value, version, create_dept, create_time, create_by, update_time, update_by, del_flag) VALUES (2, '000000', 102, 3, 2, '子节点1', '111', 0, 103, sysdate(), 1, NULL, NULL, 0);
 INSERT INTO test_demo(id, tenant_id, dept_id, user_id, order_num, test_key, value, version, create_dept, create_time, create_by, update_time, update_by, del_flag) VALUES (3, '000000', 102, 3, 3, '子节点2', '222', 0, 103, sysdate(), 1, NULL, NULL, 0);

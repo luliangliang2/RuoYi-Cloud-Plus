@@ -1,7 +1,11 @@
 -- ----------------------------
 -- 第三方平台授权表
 -- ----------------------------
-create table sys_social
+create schema oracle_ry_cloud;
+set schema oracle_ry_cloud;
+
+
+create table oracle_ry_cloud.sys_social
 (
     id                 number(20)        not null,
     user_id            number(20)        not null,
@@ -14,7 +18,7 @@ create table sys_social
     email              varchar2(255)     default '',
     avatar             varchar2(500)     default '',
     access_token       varchar2(255)     not null,
-    expire_in          number(100)       default null,
+    expire_in          number(38)       default null,
     refresh_token      varchar2(255)     default null,
     access_code        varchar2(255)     default null,
     union_id           varchar2(255)     default null,
@@ -34,43 +38,43 @@ create table sys_social
     del_flag           char(1)          default '0'
 );
 
-alter table sys_social add constraint pk_sys_social primary key (id);
+alter table oracle_ry_cloud.sys_social add constraint pk_sys_social primary key (id);
 
-comment on table   sys_social                   is '社会化关系表';
-comment on column  sys_social.id                is '主键';
-comment on column  sys_social.user_id           is '用户ID';
-comment on column  sys_social.tenant_id         is '租户id';
-comment on column  sys_social.auth_id           is '平台+平台唯一id';
-comment on column  sys_social.source            is '用户来源';
-comment on column  sys_social.open_id           is '平台编号唯一id';
-comment on column  sys_social.user_name         is '登录账号';
-comment on column  sys_social.nick_name         is '用户昵称';
-comment on column  sys_social.email             is '用户邮箱';
-comment on column  sys_social.avatar            is '头像地址';
-comment on column  sys_social.access_token      is '用户的授权令牌';
-comment on column  sys_social.expire_in         is '用户的授权令牌的有效期，部分平台可能没有';
-comment on column  sys_social.refresh_token     is '刷新令牌，部分平台可能没有';
-comment on column  sys_social.access_code       is '平台的授权信息，部分平台可能没有';
-comment on column  sys_social.union_id          is '用户的 unionid';
-comment on column  sys_social.scope             is '授予的权限，部分平台可能没有';
-comment on column  sys_social.token_type        is '个别平台的授权信息，部分平台可能没有';
-comment on column  sys_social.id_token          is 'id token，部分平台可能没有';
-comment on column  sys_social.mac_algorithm     is '小米平台用户的附带属性，部分平台可能没有';
-comment on column  sys_social.mac_key           is '小米平台用户的附带属性，部分平台可能没有';
-comment on column  sys_social.code              is '用户的授权code，部分平台可能没有';
-comment on column  sys_social.oauth_token       is 'Twitter平台用户的附带属性，部分平台可能没有';
-comment on column  sys_social.oauth_token_secret is 'Twitter平台用户的附带属性，部分平台可能没有';
-comment on column  sys_social.create_dept       is '创建部门';
-comment on column  sys_social.create_by         is '创建者';
-comment on column  sys_social.create_time       is '创建时间';
-comment on column  sys_social.update_by         is '更新者';
-comment on column  sys_social.update_time       is '更新时间';
-comment on column  sys_social.del_flag          is '删除标志（0代表存在 2代表删除）';
+comment on table   oracle_ry_cloud.sys_social                   is '社会化关系表';
+comment on column  oracle_ry_cloud.sys_social.id                is '主键';
+comment on column  oracle_ry_cloud.sys_social.user_id           is '用户ID';
+comment on column  oracle_ry_cloud.sys_social.tenant_id         is '租户id';
+comment on column  oracle_ry_cloud.sys_social.auth_id           is '平台+平台唯一id';
+comment on column  oracle_ry_cloud.sys_social.source            is '用户来源';
+comment on column  oracle_ry_cloud.sys_social.open_id           is '平台编号唯一id';
+comment on column  oracle_ry_cloud.sys_social.user_name         is '登录账号';
+comment on column  oracle_ry_cloud.sys_social.nick_name         is '用户昵称';
+comment on column  oracle_ry_cloud.sys_social.email             is '用户邮箱';
+comment on column  oracle_ry_cloud.sys_social.avatar            is '头像地址';
+comment on column  oracle_ry_cloud.sys_social.access_token      is '用户的授权令牌';
+comment on column  oracle_ry_cloud.sys_social.expire_in         is '用户的授权令牌的有效期，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.refresh_token     is '刷新令牌，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.access_code       is '平台的授权信息，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.union_id          is '用户的 unionid';
+comment on column  oracle_ry_cloud.sys_social.scope             is '授予的权限，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.token_type        is '个别平台的授权信息，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.id_token          is 'id token，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.mac_algorithm     is '小米平台用户的附带属性，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.mac_key           is '小米平台用户的附带属性，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.code              is '用户的授权code，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.oauth_token       is 'Twitter平台用户的附带属性，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.oauth_token_secret is 'Twitter平台用户的附带属性，部分平台可能没有';
+comment on column  oracle_ry_cloud.sys_social.create_dept       is '创建部门';
+comment on column  oracle_ry_cloud.sys_social.create_by         is '创建者';
+comment on column  oracle_ry_cloud.sys_social.create_time       is '创建时间';
+comment on column  oracle_ry_cloud.sys_social.update_by         is '更新者';
+comment on column  oracle_ry_cloud.sys_social.update_time       is '更新时间';
+comment on column  oracle_ry_cloud.sys_social.del_flag          is '删除标志（0代表存在 2代表删除）';
 
 -- ----------------------------
 -- 租户表
 -- ----------------------------
-create table sys_tenant (
+create table oracle_ry_cloud.sys_tenant (
     id                number(20)    not null,
     tenant_id         varchar2(20)  not null,
     contact_user_name varchar2(20)  default '',
@@ -79,7 +83,7 @@ create table sys_tenant (
     license_number    varchar2(30)  default '',
     address           varchar2(200) default '',
     intro             varchar2(200) default '',
-    domain            varchar2(200) default '',
+    "domain"            varchar2(200) default '',
     remark            varchar2(200) default '',
     package_id        number(20)    default null,
     expire_time       date          default null,
@@ -93,39 +97,39 @@ create table sys_tenant (
     update_time       date
 );
 
-alter table sys_tenant add constraint pk_sys_tenant primary key (id);
+alter table oracle_ry_cloud.sys_tenant add constraint pk_sys_tenant primary key (id);
 
-comment on table   sys_tenant                    is '租户表';
-comment on column  sys_tenant.tenant_id          is '租户编号';
-comment on column  sys_tenant.contact_phone      is '联系电话';
-comment on column  sys_tenant.company_name       is '企业名称';
-comment on column  sys_tenant.company_name       is '联系人';
-comment on column  sys_tenant.license_number     is '统一社会信用代码';
-comment on column  sys_tenant.address            is '地址';
-comment on column  sys_tenant.intro              is '企业简介';
-comment on column  sys_tenant.remark             is '备注';
-comment on column  sys_tenant.package_id         is '租户套餐编号';
-comment on column  sys_tenant.expire_time        is '过期时间';
-comment on column  sys_tenant.account_count      is '用户数量（-1不限制）';
-comment on column  sys_tenant.status             is '租户状态（0正常 1停用）';
-comment on column  sys_tenant.del_flag           is '删除标志（0代表存在 2代表删除）';
-comment on column  sys_tenant.create_dept        is '创建部门';
-comment on column  sys_tenant.create_by          is '创建者';
-comment on column  sys_tenant.create_time        is '创建时间';
-comment on column  sys_tenant.update_by          is '更新者';
-comment on column  sys_tenant.update_time        is '更新时间';
+comment on table   oracle_ry_cloud.sys_tenant                    is '租户表';
+comment on column  oracle_ry_cloud.sys_tenant.tenant_id          is '租户编号';
+comment on column  oracle_ry_cloud.sys_tenant.contact_phone      is '联系电话';
+comment on column  oracle_ry_cloud.sys_tenant.company_name       is '企业名称';
+comment on column  oracle_ry_cloud.sys_tenant.company_name       is '联系人';
+comment on column  oracle_ry_cloud.sys_tenant.license_number     is '统一社会信用代码';
+comment on column  oracle_ry_cloud.sys_tenant.address            is '地址';
+comment on column  oracle_ry_cloud.sys_tenant.intro              is '企业简介';
+comment on column  oracle_ry_cloud.sys_tenant.remark             is '备注';
+comment on column  oracle_ry_cloud.sys_tenant.package_id         is '租户套餐编号';
+comment on column  oracle_ry_cloud.sys_tenant.expire_time        is '过期时间';
+comment on column  oracle_ry_cloud.sys_tenant.account_count      is '用户数量（-1不限制）';
+comment on column  oracle_ry_cloud.sys_tenant.status             is '租户状态（0正常 1停用）';
+comment on column  oracle_ry_cloud.sys_tenant.del_flag           is '删除标志（0代表存在 2代表删除）';
+comment on column  oracle_ry_cloud.sys_tenant.create_dept        is '创建部门';
+comment on column  oracle_ry_cloud.sys_tenant.create_by          is '创建者';
+comment on column  oracle_ry_cloud.sys_tenant.create_time        is '创建时间';
+comment on column  oracle_ry_cloud.sys_tenant.update_by          is '更新者';
+comment on column  oracle_ry_cloud.sys_tenant.update_time        is '更新时间';
 
 -- ----------------------------
 -- 初始化-租户表数据
 -- ----------------------------
 
-insert into sys_tenant values(1, '000000', '管理组', '15888888888', 'XXX有限公司', null, null, '多租户通用后台管理管理系统', null, null, null, null, -1, '0', '0', 103, 1, sysdate, null, null);
+insert into oracle_ry_cloud.sys_tenant values(1, '000000', '管理组', '15888888888', 'XXX有限公司', null, null, '多租户通用后台管理管理系统', null, null, null, null, -1, '0', '0', 103, 1, sysdate, null, null);
 
 
 -- ----------------------------
 -- 租户套餐表
 -- ----------------------------
-create table sys_tenant_package (
+create table oracle_ry_cloud.sys_tenant_package (
     package_id              number(20)      not null,
     package_name            varchar2(20)    default '',
     menu_ids                varchar2(3000)  default '',
@@ -140,26 +144,26 @@ create table sys_tenant_package (
     update_time             date
 );
 
-alter table sys_tenant_package add constraint pk_sys_tenant_package primary key (package_id);
+alter table oracle_ry_cloud.sys_tenant_package add constraint pk_sys_tenant_package primary key (package_id);
 
-comment on table   sys_tenant_package                    is '租户套餐表';
-comment on column  sys_tenant_package.package_id         is '租户套餐id';
-comment on column  sys_tenant_package.package_name       is '套餐名称';
-comment on column  sys_tenant_package.menu_ids           is '关联菜单id';
-comment on column  sys_tenant_package.remark             is '备注';
-comment on column  sys_tenant_package.status             is '状态（0正常 1停用）';
-comment on column  sys_tenant_package.del_flag           is '删除标志（0代表存在 2代表删除）';
-comment on column  sys_tenant_package.create_dept        is '创建部门';
-comment on column  sys_tenant_package.create_by          is '创建者';
-comment on column  sys_tenant_package.create_time        is '创建时间';
-comment on column  sys_tenant_package.update_by          is '更新者';
-comment on column  sys_tenant_package.update_time        is '更新时间';
+comment on table   oracle_ry_cloud.sys_tenant_package                    is '租户套餐表';
+comment on column  oracle_ry_cloud.sys_tenant_package.package_id         is '租户套餐id';
+comment on column  oracle_ry_cloud.sys_tenant_package.package_name       is '套餐名称';
+comment on column  oracle_ry_cloud.sys_tenant_package.menu_ids           is '关联菜单id';
+comment on column  oracle_ry_cloud.sys_tenant_package.remark             is '备注';
+comment on column  oracle_ry_cloud.sys_tenant_package.status             is '状态（0正常 1停用）';
+comment on column  oracle_ry_cloud.sys_tenant_package.del_flag           is '删除标志（0代表存在 2代表删除）';
+comment on column  oracle_ry_cloud.sys_tenant_package.create_dept        is '创建部门';
+comment on column  oracle_ry_cloud.sys_tenant_package.create_by          is '创建者';
+comment on column  oracle_ry_cloud.sys_tenant_package.create_time        is '创建时间';
+comment on column  oracle_ry_cloud.sys_tenant_package.update_by          is '更新者';
+comment on column  oracle_ry_cloud.sys_tenant_package.update_time        is '更新时间';
 
 
 -- ----------------------------
 -- 1、部门表
 -- ----------------------------
-create table sys_dept (
+create table oracle_ry_cloud.sys_dept (
   dept_id           number(20)      not null,
   tenant_id         varchar2(20)    default '000000',
   parent_id         number(20)      default 0,
@@ -178,25 +182,25 @@ create table sys_dept (
   update_time       date
 );
 
-alter table sys_dept add constraint pk_sys_dept primary key (dept_id);
+alter table oracle_ry_cloud.sys_dept add constraint pk_sys_dept primary key (dept_id);
 
-comment on table  sys_dept              is '部门表';
-comment on column sys_dept.dept_id      is '部门id';
-comment on column sys_dept.tenant_id    is '租户编号';
-comment on column sys_dept.parent_id    is '父部门id';
-comment on column sys_dept.ancestors    is '祖级列表';
-comment on column sys_dept.dept_name    is '部门名称';
-comment on column sys_dept.order_num    is '显示顺序';
-comment on column sys_dept.leader       is '负责人';
-comment on column sys_dept.phone        is '联系电话';
-comment on column sys_dept.email        is '邮箱';
-comment on column sys_dept.status       is '部门状态（0正常 1停用）';
-comment on column sys_dept.del_flag     is '删除标志（0代表存在 2代表删除）';
-comment on column sys_dept.create_dept  is '创建部门';
-comment on column sys_dept.create_by    is '创建者';
-comment on column sys_dept.create_time  is '创建时间';
-comment on column sys_dept.update_by    is '更新者';
-comment on column sys_dept.update_time  is '更新时间';
+comment on table  oracle_ry_cloud.sys_dept              is '部门表';
+comment on column oracle_ry_cloud.sys_dept.dept_id      is '部门id';
+comment on column oracle_ry_cloud.sys_dept.tenant_id    is '租户编号';
+comment on column oracle_ry_cloud.sys_dept.parent_id    is '父部门id';
+comment on column oracle_ry_cloud.sys_dept.ancestors    is '祖级列表';
+comment on column oracle_ry_cloud.sys_dept.dept_name    is '部门名称';
+comment on column oracle_ry_cloud.sys_dept.order_num    is '显示顺序';
+comment on column oracle_ry_cloud.sys_dept.leader       is '负责人';
+comment on column oracle_ry_cloud.sys_dept.phone        is '联系电话';
+comment on column oracle_ry_cloud.sys_dept.email        is '邮箱';
+comment on column oracle_ry_cloud.sys_dept.status       is '部门状态（0正常 1停用）';
+comment on column oracle_ry_cloud.sys_dept.del_flag     is '删除标志（0代表存在 2代表删除）';
+comment on column oracle_ry_cloud.sys_dept.create_dept  is '创建部门';
+comment on column oracle_ry_cloud.sys_dept.create_by    is '创建者';
+comment on column oracle_ry_cloud.sys_dept.create_time  is '创建时间';
+comment on column oracle_ry_cloud.sys_dept.update_by    is '更新者';
+comment on column oracle_ry_cloud.sys_dept.update_time  is '更新时间';
 
 -- ----------------------------
 -- 初始化-部门表数据
@@ -1157,9 +1161,9 @@ create table sys_oss_config (
   access_key      varchar(255)  default '',
   secret_key      varchar(255)  default '',
   bucket_name     varchar(255)  default '',
-  prefix          varchar(255)  default '',
+  "prefix"          varchar(255)  default '',
   endpoint        varchar(255)  default '',
-  domain          varchar(255)  default '',
+  "domain"          varchar(255)  default '',
   is_https        char(1)       default 'N',
   region          varchar(255)  default '',
   access_policy   char(1)       default '1' not null,
@@ -1182,9 +1186,9 @@ comment on column sys_oss_config.config_key     is '配置key';
 comment on column sys_oss_config.access_key     is 'accesskey';
 comment on column sys_oss_config.secret_key     is '秘钥';
 comment on column sys_oss_config.bucket_name    is '桶名称';
-comment on column sys_oss_config.prefix         is '前缀';
+comment on column sys_oss_config."prefix"         is '前缀';
 comment on column sys_oss_config.endpoint       is '访问站点';
-comment on column sys_oss_config.domain         is '自定义域名';
+comment on column sys_oss_config."domain"         is '自定义域名';
 comment on column sys_oss_config.is_https       is '是否https（Y=是,N=否）';
 comment on column sys_oss_config.region         is '域';
 comment on column sys_oss_config.access_policy  is '桶权限类型(0=private 1=public 2=custom)';
@@ -1264,7 +1268,7 @@ CREATE TABLE undo_log
     id            NUMBER(19)    NOT NULL,
     branch_id     NUMBER(19)    NOT NULL,
     xid           VARCHAR2(128) NOT NULL,
-    context       VARCHAR2(128) NOT NULL,
+    "context"       VARCHAR2(128) NOT NULL,
     rollback_info BLOB          NOT NULL,
     log_status    NUMBER(10)    NOT NULL,
     log_created   TIMESTAMP(0)  NOT NULL,

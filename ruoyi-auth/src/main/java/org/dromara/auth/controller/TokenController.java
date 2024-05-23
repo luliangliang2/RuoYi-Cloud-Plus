@@ -198,7 +198,7 @@ public class TokenController {
         }
         // 根据域名进行筛选
         List<TenantListVo> list = StreamUtils.filter(voList, vo ->
-            StringUtils.equals(vo.getDomain(), host));
+            StringUtils.equals(vo.getMyDomain(), host));
         // 返回对象
         LoginTenantVo vo = new LoginTenantVo();
         vo.setVoList(CollUtil.isNotEmpty(list) ? list : voList);

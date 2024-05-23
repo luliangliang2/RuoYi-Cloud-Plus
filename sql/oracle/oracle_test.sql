@@ -1,3 +1,6 @@
+create schema oracle_test;
+set schema oracle_test;
+
 create table test_demo (
     id          number(20)      not null,
     tenant_id   varchar2(20)    default '000000',
@@ -5,7 +8,7 @@ create table test_demo (
     user_id     number(20)      default null,
     order_num   number(10)      default 0,
     test_key    varchar2(255)   default null,
-    value       varchar2(255)   default null,
+    "value"       varchar2(255)   default null,
     version     number(10)      default 0,
     create_dept number(20)      default null,
     create_time date,
@@ -24,7 +27,7 @@ comment on column test_demo.dept_id      is '部门id';
 comment on column test_demo.user_id      is '用户id';
 comment on column test_demo.order_num    is '排序号';
 comment on column test_demo.test_key     is 'key键';
-comment on column test_demo.value        is '值';
+comment on column test_demo."value"        is '值';
 comment on column test_demo.version      is '版本';
 comment on column test_demo.create_dept  is '创建部门';
 comment on column test_demo.create_time  is '创建时间';
@@ -65,6 +68,8 @@ comment on column test_tree.create_by    is '创建人';
 comment on column test_tree.update_time  is '更新时间';
 comment on column test_tree.update_by    is '更新人';
 comment on column test_tree.del_flag     is '删除标志';
+
+set schema oracle_ry_cloud;
 
 insert into sys_user(user_id, tenant_id, dept_id, user_name, nick_name, user_type, email, phonenumber, sex, avatar, password, status, del_flag, login_ip, login_date, create_dept, create_by, create_time, update_by, update_time, remark) values (3, '000000', 108, 'test', '本部门及以下 密码666666', 'sys_user', '', '', '0', null, '$2a$10$b8yUzN0C71sbz.PhNOCgJe.Tu1yWC3RNrTyjSQ8p1W0.aaUXUJ.Ne', '0', '0', '127.0.0.1', sysdate, 103, 1, sysdate, 3, sysdate, null);
 insert into sys_user(user_id, tenant_id, dept_id, user_name, nick_name, user_type, email, phonenumber, sex, avatar, password, status, del_flag, login_ip, login_date, create_dept, create_by, create_time, update_by, update_time, remark) values (4, '000000', 102, 'test1', '仅本人 密码666666', 'sys_user', '', '', '0', null, '$2a$10$b8yUzN0C71sbz.PhNOCgJe.Tu1yWC3RNrTyjSQ8p1W0.aaUXUJ.Ne', '0', '0', '127.0.0.1', sysdate, 103, 1, sysdate, 4, sysdate, null);
@@ -174,6 +179,8 @@ insert into sys_role_menu(role_id, menu_id) values (4, 1511);
 
 insert into sys_user_role(user_id, role_id) values (3, 3);
 insert into sys_user_role(user_id, role_id) values (4, 4);
+
+set schema oracle_test;
 
 insert into test_demo(id, tenant_id, dept_id, user_id, order_num, test_key, value, version, create_dept, create_time, create_by, update_time, update_by, del_flag) values (1, '000000', 102, 4, 1, '测试数据权限', '测试', 0, 103, sysdate, 1, null, null, 0);
 insert into test_demo(id, tenant_id, dept_id, user_id, order_num, test_key, value, version, create_dept, create_time, create_by, update_time, update_by, del_flag) values (2, '000000', 102, 3, 2, '子节点1', '111', 0, 103, sysdate, 1, null, null, 0);

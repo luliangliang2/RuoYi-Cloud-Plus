@@ -14,6 +14,6 @@ public class TenantListVo {
 
     private String companyName;
 
-    private String domain;
+    private String myDomain;
 
 }

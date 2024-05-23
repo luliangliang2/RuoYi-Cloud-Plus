@@ -56,7 +56,7 @@ public class RemoteTenantVo implements Serializable {
     /**
      * 域名
      */
-    private String domain;
+    private String myDomain;
 
     /**
      * 企业简介

@@ -74,7 +74,7 @@ public class SysOssConfigBo extends BaseEntity {
     /**
      * 自定义域名
      */
-    private String domain;
+    private String myDomain;
 
     /**
      * 是否https（Y=是,N=否）
