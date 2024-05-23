@@ -45,7 +45,7 @@ public class DataBaseHelper {
     }
 
     public static boolean isOracle() {
-        return DataBaseType.ORACLE == getDataBaseType();
+        return true;
     }
 
     public static boolean isPostgerSql() {
