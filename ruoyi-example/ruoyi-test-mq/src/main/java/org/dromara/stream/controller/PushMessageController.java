@@ -4,13 +4,14 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.NormalPushConsumer;
-import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.TransactionPushConsumer;
-import org.dromara.stream.mq.producer.kafkaMq.NormalKafkaProducer;
+import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.RocketNormalConsumer;
+import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.RocketTransactionConsumer;
+import org.dromara.stream.mq.producer.kafkaMq.KafkaNormalProducer;
 import org.dromara.stream.mq.producer.rabbitMq.DelayRabbitProducer;
 import org.dromara.stream.mq.producer.rabbitMq.NormalRabbitProducer;
-import org.dromara.stream.mq.producer.rocketMq.nativeInstances.NormalMessageSyncProducer;
-import org.dromara.stream.mq.producer.rocketMq.nativeInstances.TransactionMessageProducer;
+import org.dromara.stream.mq.producer.rocketMq.SpringRocketNormalProducer;
+import org.dromara.stream.mq.producer.rocketMq.nativeInstances.RocketNormalProducer;
+import org.dromara.stream.mq.producer.rocketMq.nativeInstances.RocketTransactionProducer;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,22 +36,26 @@ public class PushMessageController {
     private DelayRabbitProducer delayRabbitProducer;
 
     @Resource
-    private NormalMessageSyncProducer syncProducer;
+    private RocketNormalProducer rocketNormalProducer;
 
     @Resource
-    private TransactionMessageProducer transactionMessageProducer;
+    private RocketTransactionProducer transactionMessageProducer;
 
     @Resource
-    private TransactionPushConsumer transactionPushConsumer;
+    private RocketTransactionConsumer transactionPushConsumer;
 
     @Resource
-    private NormalPushConsumer pushConsumer;
+    private SpringRocketNormalProducer springRocketNormalProducer;
+
+
+    @Resource
+    private RocketNormalConsumer pushConsumer;
 
     @Resource
     private RocketMQTemplate rocketMQTemplate;
 
     @Resource
-    private NormalKafkaProducer normalKafkaProducer;
+    private KafkaNormalProducer normalKafkaProducer;
 
     /**
      * rabbit普通消息的处理
@@ -75,7 +80,7 @@ public class PushMessageController {
      */
     @GetMapping("/rocketMq/send")
     public void sendRockerMq() throws Exception {
-        syncProducer.sendMessage();
+        rocketNormalProducer.sendMessage();
         pushConsumer.pushConsumerTest("TestTopic","TestGroup");
     }
     @GetMapping("/rocketMq/transactionMsg")
@@ -88,7 +93,7 @@ public class PushMessageController {
      */
     @GetMapping("/rocketMq/normalMsg")
     public void sendNormalMsg() {
-        rocketMQTemplate.convertAndSend("test", "hello RocketMQ");
+        springRocketNormalProducer.springNormalMessage();
     }
 
     @GetMapping("/rocketMq/normalMsg/transactionMsg")

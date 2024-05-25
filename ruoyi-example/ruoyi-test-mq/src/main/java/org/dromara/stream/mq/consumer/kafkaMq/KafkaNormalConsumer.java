@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
  **/
 @Slf4j
 @Component
-public class NormalKafkaConsumer {
+public class KafkaNormalConsumer {
 
     //默认获取最后一条消息
     @KafkaListener(topics = "test-topic",groupId = "demo")
     public void timiKafka(ConsumerRecord record){
         Object key = record.key();
         Object value = record.value();
-        log.info("接收到消息的key {}，value：{}",key,value);
+        log.info("【消费者】received the message key {}，value：{}",key,value);
     }
 
 }

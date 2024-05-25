@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RocketMQMessageListener(topic = "test", consumerGroup = "test_consumer")
-public class SpringRocketMQMessageListener implements RocketMQListener<String> {
+public class SpringRocketNormalConsumer implements RocketMQListener<String> {
 
     @Override
     public void onMessage(String s) {
-        log.info("接收到Spring RocketMQ消息[topic={}] ======> {}", "test", s);
+        log.info("【消费者】a spring rocketmq message is received： {}", s);
     }
 }

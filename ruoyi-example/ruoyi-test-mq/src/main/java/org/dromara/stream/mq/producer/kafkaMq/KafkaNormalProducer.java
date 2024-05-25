@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
  **/
 @Slf4j
 @Component
-public class NormalKafkaProducer {
+public class KafkaNormalProducer {
     @Resource
     private KafkaTemplate kafkaTemplate;
 

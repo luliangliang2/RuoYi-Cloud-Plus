@@ -18,10 +18,10 @@ import java.io.IOException;
  * @description RocketMQ 普通消息同步发送。rocketMQ5x需要打开代理
  */
 @Component
-public class NormalMessageSyncProducer {
-    private static final Logger log = LoggerFactory.getLogger(NormalMessageSyncProducer.class);
+public class RocketNormalProducer {
+    private static final Logger log = LoggerFactory.getLogger(RocketNormalProducer.class);
 
-    private NormalMessageSyncProducer() {
+    private RocketNormalProducer() {
     }
 
     public void sendMessage() throws ClientException, IOException {
@@ -53,9 +53,9 @@ public class NormalMessageSyncProducer {
         try {
             // 发送消息，需要关注发送结果，并捕获失败等异常。
             SendReceipt sendReceipt = producer.send(message);
-            log.info("send message successfully, messageId={}", sendReceipt.getMessageId());
+            log.info("【生产者】send message successfully, messageId={}", sendReceipt.getMessageId());
         } catch (ClientException e) {
-            log.error("failed to send message", e);
+            log.error("【生产者】failed to send message", e);
         }
         // 关闭
         producer.close();

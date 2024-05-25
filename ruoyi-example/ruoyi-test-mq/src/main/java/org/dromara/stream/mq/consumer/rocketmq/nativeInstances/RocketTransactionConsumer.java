@@ -17,39 +17,34 @@ import java.util.Collections;
  **/
 @Slf4j
 @Component
-public class TransactionPushConsumer {
+public class RocketTransactionConsumer {
 
     public void pushConsumerTest(String topic,String consumerGroup) throws Exception {
         final ClientServiceProvider provider = ClientServiceProvider.loadService();
         String endpoints = "192.168.1.13:8081";
         ClientConfiguration clientConfiguration = ClientConfiguration.newBuilder()
             .setEndpoints(endpoints)
-            // On some Windows platforms, you may encounter SSL compatibility issues. Try turning off the SSL option in
-            // client configuration to solve the problem please if SSL is not essential.
+             /*在某些 Windows 平台上，您可能会遇到 SSL 兼容性问题。尝试关闭 SSL 选项
+             如果SSL不是必需的，请客户端配置来解决问题。*/
             // .enableSsl(false)
             //.setCredentialProvider(sessionCredentialsProvider)
             .build();
         String tag = "*";
         FilterExpression filterExpression = new FilterExpression(tag, FilterExpressionType.TAG);
-        /*String consumerGroup = "transaction_group";
-        String topic = "transaction_topic";*/
-        // In most case, you don't need to create too many consumers, singleton pattern is recommended.
+
         PushConsumer pushConsumer = provider.newPushConsumerBuilder()
             .setClientConfiguration(clientConfiguration)
-            // Set the consumer group name.
+            // 设置使用者组名称。
             .setConsumerGroup(consumerGroup)
-            // Set the subscription for the consumer.
+            // 为使用者设置订阅。
             .setSubscriptionExpressions(Collections.singletonMap(topic, filterExpression))
             .setMessageListener(messageView -> {
-                // Handle the received message and return consume result.
-                log.info("事务消费Consume message={}", messageView);
+                // 处理收到的消息并返回消费结果。
+                log.info("【消费者】Transaction Consume message={}", messageView);
                 return ConsumeResult.SUCCESS;
             })
             .build();
-        // Block the main thread, no need for production environment.
         Thread.sleep(10000);
-        // Close the push consumer when you don't need it anymore.
-        // You could close it manually or add this into the JVM shutdown hook.
         pushConsumer.close();
     }
 }

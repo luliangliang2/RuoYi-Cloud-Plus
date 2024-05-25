@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @Component
 @RocketMQTransactionListener
-public class SpringRocketMQLocalTransactionListener implements RocketMQLocalTransactionListener {
+public class SpringRocketTransactionListener implements RocketMQLocalTransactionListener {
 
     @Override
     public RocketMQLocalTransactionState executeLocalTransaction(Message message, Object arg) {

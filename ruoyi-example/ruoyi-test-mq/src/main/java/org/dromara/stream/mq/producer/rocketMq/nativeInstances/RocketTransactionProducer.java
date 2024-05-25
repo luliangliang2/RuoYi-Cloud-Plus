@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
  **/
 @Slf4j
 @Component
-public class TransactionMessageProducer {
+public class RocketTransactionProducer {
 
-    private TransactionMessageProducer() {
+    private RocketTransactionProducer() {
     }
 
     public void sendTransactionMessage() throws ClientException, InterruptedException {
@@ -47,7 +47,7 @@ public class TransactionMessageProducer {
                 }
                 // 检查本地事务是否提交
                 String order = getOrderById(orderId);
-                log.info("check transaction start order={} [orderId={}]", order, orderId);
+                log.info("【生产者】check transaction start order={} [orderId={}]", order, orderId);
                 if (!StringUtils.hasText(order)) {
                     // 本地事务没有正常提交直接回滚
                     return TransactionResolution.ROLLBACK;
@@ -81,7 +81,7 @@ public class TransactionMessageProducer {
         SendReceipt sendReceipt;
         try {
             sendReceipt = producer.send(message, transaction);
-            log.info("send message successfully, messageId={}", sendReceipt.getMessageId());
+            log.info("【生产者】send message successfully, messageId={}", sendReceipt.getMessageId());
         } catch (ClientException e) {
             e.printStackTrace();
             // 事务消息发送失败，事务可以直接退出并回滚

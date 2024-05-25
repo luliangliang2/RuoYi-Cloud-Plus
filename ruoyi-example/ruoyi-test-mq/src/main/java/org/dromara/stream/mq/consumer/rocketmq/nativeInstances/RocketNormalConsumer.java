@@ -18,7 +18,7 @@ import java.util.Collections;
  */
 @Slf4j
 @Component
-public class NormalPushConsumer {
+public class RocketNormalConsumer {
 
     public void pushConsumerTest(String topic,String consumerGroup) throws Exception {
         ClientServiceProvider provider = ClientServiceProvider.loadService();
@@ -45,12 +45,12 @@ public class NormalPushConsumer {
             // 设置消费监听器
             .setMessageListener(messageView -> {
                 // 处理消息并返回消费结果
-                log.info("consume message successfully, messageId={}", messageView.getMessageId());
+                log.info("【消费者】consume message successfully, messageId={}", messageView.getMessageId());
                 // 消息内容处理
                 ByteBuffer body = messageView.getBody();
                 String message = StandardCharsets.UTF_8.decode(body).toString();
                 body.flip();
-                log.info("message body={}", message);
+                log.info("【消费者】message body={}", message);
                 return ConsumeResult.SUCCESS;
             }).build();
         Thread.sleep(5000);
