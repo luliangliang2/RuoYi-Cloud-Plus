@@ -1,9 +1,9 @@
 package org.dromara.stream.mq.producer.rabbitMq;
 
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.stream.config.RabbitTtlQueueConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Slf4j
 @Component
 public class DelayRabbitProducer {
-    @Autowired
+    @Resource
     private RabbitTemplate rabbitTemplate;
 
     @GetMapping("/sendDelay")
-    public String sendDelayMessage(String message) {
+    public void sendDelayMessage(String message) {
         rabbitTemplate.convertAndSend(RabbitTtlQueueConfig.DELAY_EXCHANGE_NAME, RabbitTtlQueueConfig.DELAY_ROUTING_KEY, message);
-        return "Delayed message send: " + message;
+        log.info("【生产者】Delayed message send: " + message);
     }
 }

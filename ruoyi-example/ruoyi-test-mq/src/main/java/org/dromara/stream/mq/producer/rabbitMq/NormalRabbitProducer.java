@@ -19,6 +19,6 @@ public class NormalRabbitProducer {
 
     public void sendMq(String message) {
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, message);
-        log.info("Message send: " + message);
+        log.info("【生产者】Message send: " + message);
     }
 }
