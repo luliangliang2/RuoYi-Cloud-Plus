@@ -1,7 +1,9 @@
 package org.dromara.stream.config;
 
-import org.springframework.amqp.core.*;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,8 +13,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-    public static final String EXCHANGE_NAME = "rabbit_exchange";
-    public static final String QUEUE_NAME = "rabbit_queue";
+    public static final String EXCHANGE_NAME = "demo-exchange";
+    public static final String QUEUE_NAME = "demo-queue";
+    public static final String ROUTING_KEY = "demo.routing.key";
     /**
      * 创建交换机
      * ExchangeBuilder有四种交换机模式
@@ -23,8 +26,8 @@ public class RabbitConfig {
      * durable 交换器是否持久化（false 不持久化，true 持久化）
      **/
     @Bean
-    public Exchange rabbitExchange(){
-        return ExchangeBuilder.topicExchange(EXCHANGE_NAME).durable(true).build();
+    public TopicExchange exchange() {
+        return new TopicExchange(EXCHANGE_NAME);
     }
 	/**
 	 * 创建队列
@@ -32,8 +35,8 @@ public class RabbitConfig {
 	 * deliveryMode 消息是否持久化（1 不持久化，2 持久化）
 	 **/
     @Bean
-    public Queue rabbitQueue(){
-        return QueueBuilder.durable(QUEUE_NAME).build();
+    public Queue queue() {
+        return new Queue(QUEUE_NAME, false);
     }
 	/**
 	* 绑定交换机和队列
@@ -44,8 +47,8 @@ public class RabbitConfig {
 	* 这个方法的意思是把rabbit开头的消息 和 上面的队列 和 上面的交换机绑定
 	**/
     @Bean
-    public Binding rabbitBinding(@Qualifier("rabbitExchange") Exchange exchange, @Qualifier("rabbitQueue") Queue queue){
-        return BindingBuilder.bind(queue).to(exchange).with("rabbit.#").noargs();
+    public Binding binding(Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
     }
 
 }

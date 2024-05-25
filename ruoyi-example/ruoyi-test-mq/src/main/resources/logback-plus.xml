@@ -16,9 +16,6 @@
 
     <include resource="logback-common.xml" />
 
-    <!-- 开启 skywalking 日志收集 -->
-    <include resource="logback-skylog.xml" />
-
 	<!--系统操作日志-->
     <root level="info">
         <appender-ref ref="console" />

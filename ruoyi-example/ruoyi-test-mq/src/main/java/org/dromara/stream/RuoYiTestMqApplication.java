@@ -13,10 +13,10 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
  */
 @SpringBootApplication
 @ImportAutoConfiguration({RocketMQAutoConfiguration.class})
-public class RuoYiStreamMqApplication {
+public class RuoYiTestMqApplication {
 
     public static void main(String[] args) {
-        SpringApplication application = new SpringApplication(RuoYiStreamMqApplication.class);
+        SpringApplication application = new SpringApplication(RuoYiTestMqApplication.class);
         application.setApplicationStartup(new BufferingApplicationStartup(2048));
         application.run(args);
         System.out.println("(♥◠‿◠)ﾉﾞ  MQ案例模块启动成功   ლ(´ڡ`ლ)ﾞ  ");

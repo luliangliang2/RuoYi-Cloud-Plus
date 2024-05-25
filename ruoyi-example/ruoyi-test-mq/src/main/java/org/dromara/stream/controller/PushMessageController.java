@@ -7,15 +7,16 @@ import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.NormalPushConsumer;
 import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.TransactionPushConsumer;
 import org.dromara.stream.mq.producer.kafkaMq.NormalKafkaProducer;
+import org.dromara.stream.mq.producer.rabbitMq.DelayRabbitProducer;
 import org.dromara.stream.mq.producer.rabbitMq.NormalRabbitProducer;
 import org.dromara.stream.mq.producer.rocketMq.nativeInstances.NormalMessageSyncProducer;
 import org.dromara.stream.mq.producer.rocketMq.nativeInstances.TransactionMessageProducer;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class PushMessageController {
     private NormalRabbitProducer normalRabbitProducer;
 
     @Resource
-    private RabbitTemplate rabbitTemplate;
+    private DelayRabbitProducer delayRabbitProducer;
 
     @Resource
     private NormalMessageSyncProducer syncProducer;
@@ -54,24 +55,17 @@ public class PushMessageController {
     /**
      * rabbit普通消息的处理
      */
-    @GetMapping("/rabbitMsg/send")
-    public String sendMq() {
-        return normalRabbitProducer.sendMq("hello rabbitMQ");
+    @GetMapping("/rabbitMsg/sendNormal")
+    public void sendMq() {
+        normalRabbitProducer.sendMq("hello normal RabbitMsg");
     }
 
     /**
      * rabbit延迟队列类型：类似生产者
      */
-    @GetMapping("/rabbitMsg/sendTTL/")
+    @GetMapping("/rabbitMsg/sendDelay")
     public void sendMessage() {
-        String message = "Hello ttl RabbitMsg";
-        String ttl = "2000";
-        log.info("当前时间：{} 发送一条信息给队列{},ttl为：{}", new Date().toString(), message, ttl);
-        rabbitTemplate.convertAndSend("X", "XC", "TTL为用户设置的队列：" + message, (msg -> {
-            //发送消息 并设置TTL
-            msg.getMessageProperties().setExpiration(ttl);
-            return msg;
-        }));
+        delayRabbitProducer.sendDelayMessage("Hello ttl RabbitMsg");
     }
 
     /**

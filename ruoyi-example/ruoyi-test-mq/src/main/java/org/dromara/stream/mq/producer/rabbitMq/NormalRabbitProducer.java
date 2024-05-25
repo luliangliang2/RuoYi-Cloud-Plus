@@ -1,6 +1,7 @@
 package org.dromara.stream.mq.producer.rabbitMq;
 
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.dromara.stream.config.RabbitConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author xbhog
  */
+@Slf4j
 @Component
 public class NormalRabbitProducer {
 
@@ -15,8 +17,8 @@ public class NormalRabbitProducer {
     RabbitTemplate rabbitTemplate;
 
 
-    public String sendMq(String mq) {
-        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, "rabbit.demo", mq);
-        return "发送成功，消息是：" + mq;
+    public void sendMq(String message) {
+        rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, message);
+        log.info("Message send: " + message);
     }
 }
