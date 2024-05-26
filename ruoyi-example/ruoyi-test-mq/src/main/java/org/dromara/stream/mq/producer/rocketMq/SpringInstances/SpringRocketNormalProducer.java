@@ -1,4 +1,4 @@
-package org.dromara.stream.mq.producer.rocketMq;
+package org.dromara.stream.mq.producer.rocketMq.SpringInstances;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

@@ -2,24 +2,18 @@ package org.dromara.stream.controller;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.TransactionSendResult;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.RocketNormalConsumer;
 import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.RocketTransactionConsumer;
 import org.dromara.stream.mq.producer.kafkaMq.KafkaNormalProducer;
 import org.dromara.stream.mq.producer.rabbitMq.DelayRabbitProducer;
 import org.dromara.stream.mq.producer.rabbitMq.NormalRabbitProducer;
-import org.dromara.stream.mq.producer.rocketMq.SpringRocketNormalProducer;
+import org.dromara.stream.mq.producer.rocketMq.SpringInstances.SpringRocketNormalProducer;
+import org.dromara.stream.mq.producer.rocketMq.SpringInstances.SpringRocketTransactionProducer;
 import org.dromara.stream.mq.producer.rocketMq.nativeInstances.RocketNormalProducer;
 import org.dromara.stream.mq.producer.rocketMq.nativeInstances.RocketTransactionProducer;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author xbhog
@@ -52,7 +46,7 @@ public class PushMessageController {
     private RocketNormalConsumer pushConsumer;
 
     @Resource
-    private RocketMQTemplate rocketMQTemplate;
+    private SpringRocketTransactionProducer springRocketTransactionProducer;
 
     @Resource
     private KafkaNormalProducer normalKafkaProducer;
@@ -92,23 +86,14 @@ public class PushMessageController {
     /**
      * 集成SpringBoot
      */
-    @GetMapping("/rocketMq/normalMsg")
+    @GetMapping("/rocketMq/spring/normalMsg")
     public void sendNormalMsg() {
         springRocketNormalProducer.springNormalMessage();
     }
 
-    @GetMapping("/rocketMq/normalMsg/transactionMsg")
+    @GetMapping("/rocketMq/spring/transactionMsg")
     public void sendTransactionMsg() {
-        String destination = "transaction_topic:tx";
-        for (int i = 1; i < 5; i++) {
-            Message<String> message = MessageBuilder.withPayload(String.format("事务消息%s", i))
-                .setHeader("orderId", i)
-                .build();
-            Map<String, Object> params = new HashMap<>();
-            // 发送事务消息
-            TransactionSendResult res = rocketMQTemplate.sendMessageInTransaction(destination, message, params);
-            log.info("msgId = {} , sendStatus = {}", res.getMsgId(), res.getSendStatus());
-        }
+        springRocketTransactionProducer.sendTransactionalMessage("transaction_topic","This is a Spring rockerMQ transaction message");
     }
     /**
      * kafkaSpringboot集成
