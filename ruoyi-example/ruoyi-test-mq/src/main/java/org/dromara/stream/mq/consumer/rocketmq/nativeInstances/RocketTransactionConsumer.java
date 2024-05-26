@@ -44,7 +44,7 @@ public class RocketTransactionConsumer {
                 return ConsumeResult.SUCCESS;
             })
             .build();
-        Thread.sleep(10000);
+        Thread.sleep(40000);
         pushConsumer.close();
     }
 }

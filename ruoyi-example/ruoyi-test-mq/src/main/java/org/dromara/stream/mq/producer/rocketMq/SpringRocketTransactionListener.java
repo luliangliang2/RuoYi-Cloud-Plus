@@ -7,14 +7,12 @@ import org.apache.rocketmq.spring.core.RocketMQLocalTransactionState;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 /**
  * @author xbhog
  */
 @Slf4j
-@Component
 @RocketMQTransactionListener
 public class SpringRocketTransactionListener implements RocketMQLocalTransactionListener {
 

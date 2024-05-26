@@ -10,7 +10,6 @@ import org.apache.rocketmq.client.apis.producer.SendReceipt;
 import org.apache.rocketmq.client.apis.producer.Transaction;
 import org.apache.rocketmq.client.apis.producer.TransactionResolution;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -25,7 +24,7 @@ public class RocketTransactionProducer {
     private RocketTransactionProducer() {
     }
 
-    public void sendTransactionMessage() throws ClientException, InterruptedException {
+    public void sendTransactionMessage(String orderIdParam) throws ClientException, InterruptedException {
         String endpoint = "192.168.1.13:8081";
         ClientConfiguration configuration = ClientConfiguration.newBuilder()
             .setEndpoints(endpoint).build();
@@ -34,21 +33,22 @@ public class RocketTransactionProducer {
         // 构造事务生产者：事务消息需要生产者构建一个事务检查器，用于检查确认异常事务的中间状态
         ClientServiceProvider provider = ClientServiceProvider.loadService();
         Producer producer = provider.newProducerBuilder()
-            .setTopics(topic)
             .setClientConfiguration(configuration)
             // 设置事务检查器
             .setTransactionChecker(messageView -> {
                 // 事务检查器一般是根据业务的ID去检查本地事务是否正确提交还是回滚，此处以订单ID属性为例
                 // 在订单表找到了这个订单，说明本地事务插入订单的操作已经正确提交；如果订单表没有订单，说明本地事务已经回滚
                 String orderId = messageView.getProperties().get("orderId");
-                if (!StringUtils.hasText(orderId)) {
+                log.info("查看是否有这个数据：{}",orderId);
+                if (orderId.equals("1111")) {
                     // 没有业务ID直接回滚
+                    log.info("没有数据；直接回滚");
                     return TransactionResolution.ROLLBACK;
                 }
                 // 检查本地事务是否提交
-                String order = getOrderById(orderId);
-                log.info("【生产者】check transaction start order={} [orderId={}]", order, orderId);
-                if (!StringUtils.hasText(order)) {
+                boolean orderExist = getOrderById(orderId);
+                log.info("【生产者】check transaction start order={} [orderId={}]", orderExist, orderId);
+                if (!orderExist) {
                     // 本地事务没有正常提交直接回滚
                     return TransactionResolution.ROLLBACK;
                 }
@@ -57,6 +57,16 @@ public class RocketTransactionProducer {
                 return TransactionResolution.COMMIT;
             }).build();
 
+
+        // 构建事务消息
+        Message message = provider.newMessageBuilder()
+            .setTopic(topic)
+            //.setKeys("transaction_key")
+            .setTag("transaction_tag")
+            // 一般事务消息都会设置一个本地事务关联的唯一ID，用来做本地事务回查的校验
+            .addProperty("orderId", orderIdParam)
+            .setBody("hello rocketMQ this is a transaction message".getBytes(StandardCharsets.UTF_8))
+            .build();
         // 开启事务分支
         Transaction transaction;
         try {
@@ -66,22 +76,12 @@ public class RocketTransactionProducer {
             // 事务分支开启失败则直接退出
             return;
         }
-
-        // 构建事务消息
-        Message message = provider.newMessageBuilder()
-            .setTopic(topic)
-            .setKeys("transaction_key")
-            .setTag("transaction_tag")
-            // 一般事务消息都会设置一个本地事务关联的唯一ID，用来做本地事务回查的校验
-            //.addProperty("orderId", UUID.randomUUID().toString())
-            .setBody("hello rocketMQ this is a transaction message".getBytes(StandardCharsets.UTF_8))
-            .build();
-
         // 发送事务消息
         SendReceipt sendReceipt;
         try {
             sendReceipt = producer.send(message, transaction);
             log.info("【生产者】send message successfully, messageId={}", sendReceipt.getMessageId());
+            Thread.sleep(20000);
         } catch (ClientException e) {
             e.printStackTrace();
             // 事务消息发送失败，事务可以直接退出并回滚
@@ -95,14 +95,10 @@ public class RocketTransactionProducer {
          */
         boolean localTransactionOk = doLocalTransaction();
         if (localTransactionOk) {
-            try {
-                transaction.commit();
-            } catch (ClientException e) {
-                // 业务可以自身对实时性的要求选择是否重试，如果放弃重试，可以依赖事务消息回查机制进行事务状态的提交
-                e.printStackTrace();
-            }
+            transaction.commit();
         } else {
             try {
+                log.info("本地事务失败：开始回滚");
                 transaction.rollback();
             } catch (ClientException e) {
                 // 建议记录异常信息，回滚异常时可以无需重试，依赖事务消息回查机制进行事务状态的提交
@@ -110,17 +106,18 @@ public class RocketTransactionProducer {
             }
         }
         log.info("发送完成");
-        Thread.sleep(5000);
+
     }
     // 模拟订单查询服务用来确认订单事务是否提交成功
-    private static String getOrderById(String orderId) {
+    private boolean getOrderById(String orderId) {
         log.info("检查事务是否已经提交成功");
-        return "order";
+        return true;
     }
 
     // 模拟本地事务执行结果
-    private static boolean doLocalTransaction() {
+    private static boolean doLocalTransaction()  {
         log.info("查看本地事务的执行结果");
+        //Thread.sleep(2000);
         return true;
     }
 }

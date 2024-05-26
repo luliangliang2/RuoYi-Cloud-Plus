@@ -84,8 +84,9 @@ public class PushMessageController {
         pushConsumer.pushConsumerTest("TestTopic","TestGroup");
     }
     @GetMapping("/rocketMq/transactionMsg")
-    public void sendRockerMqTransactionMsg() throws Exception {
-        transactionMessageProducer.sendTransactionMessage();
+    public void sendRockerMqTransactionMsg(String orderId) throws Exception {
+        log.info("前端传递的数据为：{}",orderId);
+        transactionMessageProducer.sendTransactionMessage(orderId);
         transactionPushConsumer.pushConsumerTest("transaction_topic","transaction_group");
     }
     /**
