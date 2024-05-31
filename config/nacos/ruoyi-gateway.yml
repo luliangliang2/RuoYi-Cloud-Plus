@@ -65,13 +65,6 @@ spring:
           uri: lb://ruoyi-workflow
           predicates:
             - Path=/workflow/**
-        # workflow TestLeaveDemo
-        - id: ruoyi-workflow-test-leave
-          uri: lb://ruoyi-workflow
-          predicates:
-            - Path=/demo/leave/**
-          filters:
-            - StripPrefix=1
         # 演示服务
         - id: ruoyi-demo
           uri: lb://ruoyi-demo
