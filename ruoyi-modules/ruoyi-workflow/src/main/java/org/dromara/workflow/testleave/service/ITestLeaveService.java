@@ -1,9 +1,9 @@
-package org.dromara.demo.service;
+package org.dromara.workflow.testleave.service;
 
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
-import org.dromara.demo.domain.bo.TestLeaveBo;
-import org.dromara.demo.domain.vo.TestLeaveVo;
+import org.dromara.workflow.testleave.domain.bo.TestLeaveBo;
+import org.dromara.workflow.testleave.domain.vo.TestLeaveVo;
 
 import java.util.Collection;
 import java.util.List;

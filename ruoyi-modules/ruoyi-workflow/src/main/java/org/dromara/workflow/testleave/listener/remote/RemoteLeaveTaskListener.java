@@ -1,4 +1,4 @@
-package org.dromara.demo.listener;
+package org.dromara.workflow.testleave.listener.remote;
 
 import org.dromara.workflow.api.RemoteTaskListener;
 
@@ -8,5 +8,5 @@ import org.dromara.workflow.api.RemoteTaskListener;
  * @author may
  * @date 2023-12-12
  */
-public interface TestLeaveTaskListener extends RemoteTaskListener {
+public interface RemoteLeaveTaskListener extends RemoteTaskListener {
 }

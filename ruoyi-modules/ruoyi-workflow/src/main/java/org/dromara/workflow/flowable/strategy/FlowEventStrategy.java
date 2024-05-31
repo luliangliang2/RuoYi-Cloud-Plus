@@ -1,7 +1,7 @@
 package org.dromara.workflow.flowable.strategy;
 
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.workflow.api.annotation.FlowListenerAnnotation;
+import org.dromara.workflow.annotation.FlowListenerAnnotation;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;

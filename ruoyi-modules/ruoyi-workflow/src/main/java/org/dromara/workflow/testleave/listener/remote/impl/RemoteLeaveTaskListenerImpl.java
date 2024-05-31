@@ -1,10 +1,9 @@
-package org.dromara.demo.listener.impl;
+package org.dromara.workflow.testleave.listener.remote.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.dromara.demo.listener.TestLeaveTaskListener;
-import org.dromara.workflow.api.RemoteTaskListener;
 import org.dromara.workflow.api.domain.dto.TaskDTO;
+import org.dromara.workflow.testleave.listener.remote.RemoteLeaveTaskListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -16,9 +15,8 @@ import java.util.Map;
  * @date 2023-12-12
  */
 @Slf4j
-@Component("testLeaveTaskListener")
 @DubboService
-public class TestLeaveTaskListenerImpl implements TestLeaveTaskListener {
+public class RemoteLeaveTaskListenerImpl implements RemoteLeaveTaskListener {
 
     @Override
     public Map<String, Object> notify(TaskDTO task) {

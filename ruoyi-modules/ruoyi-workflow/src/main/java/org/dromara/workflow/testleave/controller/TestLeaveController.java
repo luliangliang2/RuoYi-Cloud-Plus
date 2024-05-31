@@ -1,4 +1,4 @@
-package org.dromara.demo.controller;
+package org.dromara.workflow.testleave.controller;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,9 +15,9 @@ import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.common.web.core.BaseController;
-import org.dromara.demo.domain.bo.TestLeaveBo;
-import org.dromara.demo.domain.vo.TestLeaveVo;
-import org.dromara.demo.service.ITestLeaveService;
+import org.dromara.workflow.testleave.domain.bo.TestLeaveBo;
+import org.dromara.workflow.testleave.domain.vo.TestLeaveVo;
+import org.dromara.workflow.testleave.service.ITestLeaveService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

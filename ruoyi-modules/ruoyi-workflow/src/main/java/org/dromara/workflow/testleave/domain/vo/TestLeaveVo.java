@@ -1,11 +1,11 @@
-package org.dromara.demo.domain.vo;
+package org.dromara.workflow.testleave.domain.vo;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
-import org.dromara.demo.domain.TestLeave;
 import org.dromara.workflow.api.domain.dto.ProcessInstanceDTO;
+import org.dromara.workflow.testleave.domain.TestLeave;
 
 import java.io.Serial;
 import java.io.Serializable;

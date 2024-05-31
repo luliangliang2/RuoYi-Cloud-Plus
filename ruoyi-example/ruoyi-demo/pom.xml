@@ -109,10 +109,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-api-workflow</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
