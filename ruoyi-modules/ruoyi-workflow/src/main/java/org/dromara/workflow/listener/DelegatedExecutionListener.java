@@ -37,20 +37,20 @@ public class DelegatedExecutionListener implements ExecutionListener {
         // 获取远端接口
         List<FieldExtension> fieldExtensions = execution.getCurrentFlowableListener().getFieldExtensions();
         FieldExtension clazzExtension = fieldExtensions.stream()
-            .filter(fieldExtension -> fieldExtension.getFieldName().equals("clazz"))
+            .filter(fieldExtension -> fieldExtension.getFieldName().equals("interfaceName"))
             .findFirst().orElse(null);
         if (null == clazzExtension){
             throw new RuntimeException("获取参数失败，远端接口配置不存在。");
         }
 
-        String clazzName = clazzExtension.getStringValue();
+        String interfaceName = clazzExtension.getStringValue();
         // 构造参数
         ExecutionDTO executionDTO = BeanUtil.copyProperties(execution, ExecutionDTO.class);
         Map<String, Object> variables = execution.getVariables();
         executionDTO.setVariables(variables);
 
         // 调用远程服务
-        Object result = consumer.call(clazzName, RemoteExecutionListener.METHOD_NAME, executionDTO);
+        Object result = consumer.call(interfaceName, RemoteExecutionListener.METHOD_NAME, executionDTO);
 
         // 设置业务参数
         if (result instanceof Map map){
