@@ -1,1 +1,2 @@
 org.dromara.common.dubbo.config.DubboConfiguration
+org.dromara.common.dubbo.generic.DubboGenericConsumer

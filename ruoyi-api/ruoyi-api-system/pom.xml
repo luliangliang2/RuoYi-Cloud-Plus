@@ -28,6 +28,11 @@
             <artifactId>ruoyi-common-excel</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-task-service-api</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>

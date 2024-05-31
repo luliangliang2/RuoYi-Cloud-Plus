@@ -108,6 +108,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-api-workflow</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

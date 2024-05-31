@@ -1,5 +1,7 @@
 package org.dromara.demo;
 
+import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
@@ -10,6 +12,7 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
  * @author Lion Li
  */
 @SpringBootApplication
+@EnableDubbo
 public class RuoYiDemoApplication {
     public static void main(String[] args) {
         SpringApplication application = new SpringApplication(RuoYiDemoApplication.class);
