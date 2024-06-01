@@ -9,13 +9,13 @@
 现模块：集成基础的rabbit、rocketmq、kafka等主流的中间件，功能包含
 
 1. rabbit: 普通消息、延迟队列
-2. rocket：原生实例包含--普通消息、事务消息
+2. rocket：普通消息、事务消息
 3. kafka：普通消息
 
 后续可实现的：
 
-1. SpringbootStarter官方支持5x后可集成
-2. kafka stream流的使用
+1. kafka stream流的使用
+2. rocket 顺序、异步、延时等
 
 ## 项目目录
 
@@ -29,7 +29,6 @@
 │      │              │  RuoYiTestMqApplication.java
 │      │              │  
 │      │              ├─config
-│      │              │      ProducerSingleton.java 
 │      │              │      RabbitConfig.java 普通消息配置类
 │      │              │      RabbitTtlQueueConfig.java  延迟队列配置类
 │      │              │      
@@ -43,14 +42,10 @@
 │      │                  │  ├─rabbit
 │      │                  │  │      ConsumerListener.java
 │      │                  │  └─rocketmq
-│      │                  │      ├─nativeInstances  原生实例 消费者
-│      │                  │      │      RocketNormalConsumer.java
-│      │                  │      │      RocketTransactionConsumer.java
-│      │                  │      │      
-│      │                  │      └─SpringInstances SpringBoot实例 消费者(移出)
-│      │                  │              SpringRocketNormalConsumer.java
-│      │                  │              SpringRocketTransactionListener.java
-│      │                  │              
+│      │                  │          NormalRocketConsumer.java
+│      │                  │          TransactionRocketConsumer.java
+│      │                  ├─listener
+│      │                  │      TranscationRocketListener.java
 │      │                  └─producer
 │      │                      ├─kafkaMq
 │      │                      │      KafkaNormalProducer.java
@@ -58,13 +53,8 @@
 │      │                      │      DelayRabbitProducer.java
 │      │                      │      NormalRabbitProducer.java
 │      │                      └─rocketMq
-│      │                          ├─nativeInstances 原生实例 生产者
-│      │                          │      RocketNormalProducer.java
-│      │                          │      RocketTransactionProducer.java
-│      │                          └─SpringInstances SpringBoot实例 生产者(移出)
-│      │                                  MyTransactionListener.java 事务监听器
-│      │                                  SpringRocketNormalProducer.java
-│      │                                  SpringRocketTransactionProducer.java
+│      │  	                         NormalRocketProducer.java
+│      │  	                         TransactionRocketProducer.java
 │      │                                  
 │      └─resources
 │              application.yml  IP:Host根据实际情况替换
@@ -106,20 +96,6 @@ kafka-topics.sh --create --topic <topic_name> --bootstrap-server <broker_list> -
 ```shell
 kafka-topics.sh --create --topic my_topic --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
 ```
-
-## 特殊解释
-
-```java
-// 模拟本地事务执行结果
-private static boolean doLocalTransaction() throws InterruptedException {
-    log.info("查看本地事务的执行结果");
-    //模拟业务执行
-    Thread.sleep(20000);
-    return true;
-}
-```
-
-在RocketMQ 5原生实例中；实现的事务消息这部分；在发送半事务的时候需要进行**延时操作**，模拟业务执行流程，这样可以是代码进入到本地事务的执行和check中。
 
 ## 验证方式
 

@@ -2,13 +2,11 @@ package org.dromara.stream.controller;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.RocketNormalConsumer;
-import org.dromara.stream.mq.consumer.rocketmq.nativeInstances.RocketTransactionConsumer;
 import org.dromara.stream.mq.producer.kafkaMq.KafkaNormalProducer;
 import org.dromara.stream.mq.producer.rabbitMq.DelayRabbitProducer;
 import org.dromara.stream.mq.producer.rabbitMq.NormalRabbitProducer;
-import org.dromara.stream.mq.producer.rocketMq.nativeInstances.RocketNormalProducer;
-import org.dromara.stream.mq.producer.rocketMq.nativeInstances.RocketTransactionProducer;
+import org.dromara.stream.mq.producer.rocketMq.NormalRocketProducer;
+import org.dromara.stream.mq.producer.rocketMq.TransactionRocketProducer;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,18 +26,10 @@ public class PushMessageController {
     private DelayRabbitProducer delayRabbitProducer;
 
     @Resource
-    private RocketNormalProducer rocketNormalProducer;
+    private NormalRocketProducer normalRocketProducer;
 
     @Resource
-    private RocketTransactionProducer transactionMessageProducer;
-
-    @Resource
-    private RocketTransactionConsumer transactionPushConsumer;
-
-    @Resource
-    private RocketNormalConsumer pushConsumer;
-
-
+    private TransactionRocketProducer transactionRocketProducer;
 
     @Resource
     private KafkaNormalProducer normalKafkaProducer;
@@ -61,20 +51,16 @@ public class PushMessageController {
     }
 
     /**
-     * rockerMQ原生实例
+     * rockerMQ实例
      * 需要手动创建相关的Topic和group
-     * @throws Exception
      */
     @GetMapping("/rocketMq/send")
-    public void sendRockerMq() throws Exception {
-        rocketNormalProducer.sendMessage();
-        pushConsumer.pushConsumerTest("TestTopic","TestGroup");
+    public void sendRockerMq(){
+        normalRocketProducer.sendMessage();
     }
     @GetMapping("/rocketMq/transactionMsg")
-    public void sendRockerMqTransactionMsg(String orderId) throws Exception {
-        log.info("前端传递的数据为：{}",orderId);
-        transactionMessageProducer.sendTransactionMessage(orderId);
-        transactionPushConsumer.pushConsumerTest("transaction_topic","transaction_group");
+    public void sendRockerMqTransactionMsg(){
+        transactionRocketProducer.sendTransactionMessage();
     }
     /**
      * kafkaSpringboot集成
