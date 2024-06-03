@@ -54,5 +54,9 @@ public class TestLeave extends BaseEntity {
      */
     private String remark;
 
+    /**
+     * 状态
+     */
+    private String status;
 
 }

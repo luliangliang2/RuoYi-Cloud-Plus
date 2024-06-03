@@ -1,19 +1,21 @@
 package org.dromara.workflow.api.domain.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
- * 流程实例模型
+ * 业务与流程实例关联对象
  *
- * @author may
+ * @Author ZETA
+ * @Date 2024/6/3
  */
 @Data
-public class ProcessInstanceDTO implements Serializable {
+@NoArgsConstructor
+public class BusinessInstanceDTO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -31,32 +33,12 @@ public class ProcessInstanceDTO implements Serializable {
     /**
      * 流程定义名称
      */
-    private String processDefinitionName;
-
-    /**
-     * 流程定义key
-     */
-    private String processDefinitionKey;
-
-    /**
-     * 流程定义版本
-     */
-    private Integer processDefinitionVersion;
-
-    /**
-     * 部署id
-     */
-    private String deploymentId;
+    private String name;
 
     /**
      * 业务id
      */
     private String businessKey;
-
-    /**
-     * 是否挂起
-     */
-    private Boolean isSuspended;
 
     /**
      * 租户id
@@ -87,14 +69,4 @@ public class ProcessInstanceDTO implements Serializable {
      * 流程状态
      */
     private String businessStatusName;
-
-    /**
-     * 待办任务集合
-     */
-    private List<TaskDTO> taskVoList;
-
-    /**
-     * 节点配置
-     */
-    private WfNodeConfigDTO wfNodeConfigVo;
 }

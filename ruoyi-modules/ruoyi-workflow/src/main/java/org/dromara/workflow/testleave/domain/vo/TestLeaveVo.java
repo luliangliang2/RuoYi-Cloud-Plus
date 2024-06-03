@@ -4,7 +4,7 @@ import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
-import org.dromara.workflow.api.domain.dto.ProcessInstanceDTO;
+import org.dromara.workflow.api.domain.dto.BusinessInstanceDTO;
 import org.dromara.workflow.testleave.domain.TestLeave;
 
 import java.io.Serial;
@@ -63,9 +63,15 @@ public class TestLeaveVo implements Serializable {
     private String remark;
 
     /**
-     * 流程实例对象
+     * 状态
      */
-    private ProcessInstanceDTO processInstanceVo;
+    @ExcelProperty(value = "状态")
+    private String status;
+
+    /**
+     * 业务与流程实例关联对象
+     */
+    private BusinessInstanceDTO businessInstanceDTO;
 
 
 }
