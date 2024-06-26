@@ -15,6 +15,15 @@
  */
 package io.seata.server.storage.db.store;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.sql.DataSource;
+
 import io.seata.common.exception.DataAccessException;
 import io.seata.common.exception.StoreException;
 import io.seata.common.util.IOUtil;
@@ -29,11 +38,6 @@ import io.seata.core.store.LogStore;
 import io.seata.core.store.db.sql.log.LogStoreSqlsFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 import static io.seata.common.DefaultValues.DEFAULT_STORE_DB_BRANCH_TABLE;
 import static io.seata.common.DefaultValues.DEFAULT_STORE_DB_GLOBAL_TABLE;
@@ -169,6 +173,12 @@ public class LogStoreDataBaseDAO implements LogStore {
                 ps.setInt(i + 1, status);
             }
             ps.setInt(statuses.length + 1, limit);
+
+            //modify for the change of limit position in sqlserver
+            if ("sqlserver".equalsIgnoreCase(dbType)) {
+                ps.setInt(1, limit);
+                ps.setInt(statuses.length + 1, statuses[0]);
+            }
             rs = ps.executeQuery();
             while (rs.next()) {
                 ret.add(convertGlobalTransactionDO(rs));
@@ -224,6 +234,27 @@ public class LogStoreDataBaseDAO implements LogStore {
             ps = conn.prepareStatement(sql);
             ps.setInt(index++, globalTransactionDO.getStatus());
             ps.setString(index++, globalTransactionDO.getXid());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new StoreException(e);
+        } finally {
+            IOUtil.close(ps, conn);
+        }
+    }
+
+    @Override
+    public boolean updateGlobalTransactionDO(GlobalTransactionDO globalTransactionDO, Integer expectedStatus) {
+        String sql =
+            LogStoreSqlsFactory.getLogStoreSqls(dbType).getUpdateGlobalTransactionStatusByStatusSQL(globalTable);
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = logStoreDataSource.getConnection();
+            conn.setAutoCommit(true);
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, globalTransactionDO.getStatus());
+            ps.setString(2, globalTransactionDO.getXid());
+            ps.setInt(3, expectedStatus);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new StoreException(e);
@@ -503,7 +534,7 @@ public class LogStoreDataBaseDAO implements LogStore {
         } else if ("postgresql".equalsIgnoreCase(dbType)) {
             String sql = "select current_schema";
             try (PreparedStatement ps = conn.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+                 ResultSet rs = ps.executeQuery()) {
                 String schema = null;
                 if (rs.next()) {
                     schema = rs.getString(1);
@@ -512,6 +543,8 @@ public class LogStoreDataBaseDAO implements LogStore {
             } catch (SQLException e) {
                 throw new StoreException(e);
             }
+        } else if ("sqlserver".equalsIgnoreCase(dbType)) {
+            return conn.getSchema();
         } else {
             return conn.getMetaData().getUserName();
         }
