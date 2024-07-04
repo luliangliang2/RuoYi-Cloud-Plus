@@ -1,7 +1,7 @@
 #FROM findepi/graalvm:java17-native
 FROM openjdk:17.0.2-oraclelinux8
 
-MAINTAINER Lion Li
+LABEL maintainer="Lion Li"
 
 RUN mkdir -p /ruoyi/gen/logs
 
@@ -13,4 +13,4 @@ EXPOSE ${SERVER_PORT}
 
 ADD ./target/ruoyi-gen.jar ./app.jar
 
-ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -Dserver.port=${SERVER_PORT} ${JAVA_OPTS} -jar app.jar
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dserver.port=${SERVER_PORT}", "${JAVA_OPTS}", "-jar", "app.jar"]

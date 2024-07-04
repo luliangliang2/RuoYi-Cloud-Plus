@@ -1,7 +1,7 @@
 #FROM findepi/graalvm:java17-native
 FROM openjdk:17.0.2-oraclelinux8
 
-MAINTAINER Lion Li
+LABEL maintainer="Lion Li"
 
 RUN mkdir -p /ruoyi/gateway/logs  \
     /ruoyi/gateway/temp  \
@@ -15,8 +15,8 @@ EXPOSE ${SERVER_PORT}
 
 ADD ./target/ruoyi-gateway.jar ./app.jar
 
-ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -Dserver.port=${SERVER_PORT} \
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom -Dserver.port=${SERVER_PORT}", \
            #-Dskywalking.agent.service_name=ruoyi-gateway \
            #-javaagent:/ruoyi/skywalking/agent/skywalking-agent.jar \
-           -XX:+HeapDumpOnOutOfMemoryError -XX:+UseZGC ${JAVA_OPTS} \
-           -jar app.jar
+           "-XX:+HeapDumpOnOutOfMemoryError", "-XX:+UseZGC" "${JAVA_OPTS}", \
+           "-jar", "app.jar"]

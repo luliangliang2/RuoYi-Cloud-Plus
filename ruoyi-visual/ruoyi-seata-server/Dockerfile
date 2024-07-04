@@ -1,7 +1,7 @@
 #FROM findepi/graalvm:java17-native
 FROM openjdk:17.0.2-oraclelinux8
 
-MAINTAINER Lion Li
+LABEL maintainer="Lion Li"
 
 RUN mkdir -p /ruoyi/seata-server/logs \
     /ruoyi/skywalking/agent
@@ -16,8 +16,8 @@ EXPOSE 8091
 
 ADD ./target/ruoyi-seata-server.jar ./app.jar
 
-ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom \
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", \
            #-Dskywalking.agent.service_name=ruoyi-seata-server", \
            #-Dskywalking.plugin.seata.server=true", \
            #-javaagent:/ruoyi/skywalking/agent/skywalking-agent.jar", \
-           ${JAVA_OPTS} -jar app.jar
+           "${JAVA_OPTS}", "-jar", "app.jar"]

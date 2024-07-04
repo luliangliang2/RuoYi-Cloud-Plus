@@ -1,7 +1,7 @@
 #FROM findepi/graalvm:java17-native
 FROM openjdk:17.0.2-oraclelinux8
 
-MAINTAINER Lion Li
+LABEL maintainer="Lion Li"
 
 RUN mkdir -p /ruoyi/monitor/logs
 
@@ -13,6 +13,6 @@ EXPOSE 9100
 
 ADD ./target/ruoyi-monitor.jar ./app.jar
 
-ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom \
-           -XX:+HeapDumpOnOutOfMemoryError -XX:+UseZGC ${JAVA_OPTS} \
-           -jar app.jar
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", \
+           "-XX:+HeapDumpOnOutOfMemoryError", "-XX:+UseZGC", "${JAVA_OPTS}", \
+           "-jar", "app.jar"]
