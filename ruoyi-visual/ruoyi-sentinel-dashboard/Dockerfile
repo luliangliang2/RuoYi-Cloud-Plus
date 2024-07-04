@@ -1,7 +1,7 @@
 #FROM findepi/graalvm:java17-native
 FROM openjdk:17.0.2-oraclelinux8
 
-MAINTAINER Lion Li
+LABEL maintainer="Lion Li"
 
 RUN mkdir -p /ruoyi/sentinel-dashboard/logs \
     /ruoyi/skywalking/agent
@@ -14,7 +14,7 @@ EXPOSE 8718
 
 ADD ./target/ruoyi-sentinel-dashboard.jar ./app.jar
 
-ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom \
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", \
            #-Dskywalking.agent.service_name=ruoyi-sentinel-dashboard \
            #-javaagent:/ruoyi/skywalking/agent/skywalking-agent.jar \
-           ${JAVA_OPTS} -jar app.jar
+           "${JAVA_OPTS}", "-jar", "app.jar"]
