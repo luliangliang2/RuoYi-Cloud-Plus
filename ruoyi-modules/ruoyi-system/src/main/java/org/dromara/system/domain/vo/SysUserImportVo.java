@@ -25,28 +25,28 @@ public class SysUserImportVo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 用户ID
-     */
-    @ExcelProperty(value = "用户序号")
-    private Long userId;
-
-    /**
-     * 部门ID
-     */
-    @ExcelProperty(value = "部门编号")
-    private Long deptId;
-
-    /**
      * 用户账号
      */
-    @ExcelProperty(value = "登录名称")
+    @ExcelProperty(value = "用户账号")
     private String userName;
 
     /**
      * 用户昵称
      */
-    @ExcelProperty(value = "用户名称")
+    @ExcelProperty(value = "用户昵称")
     private String nickName;
+
+    /**
+     * 角色权限字符串
+     */
+    @ExcelProperty(value = "权限字符")
+    private String roleKey;
+
+    /**
+     * 岗位编码
+     */
+    @ExcelProperty(value = "岗位编码")
+    private String postCode;
 
     /**
      * 用户邮箱

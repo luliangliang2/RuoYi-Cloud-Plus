@@ -3,10 +3,12 @@ package org.dromara.system.domain.bo;
 import io.github.linpeilie.annotations.AutoMapper;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.dromara.common.core.constant.RegexConstants;
 import org.dromara.common.core.constant.UserConstants;
 import org.dromara.common.core.xss.Xss;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
@@ -65,6 +67,7 @@ public class SysUserBo extends BaseEntity {
     /**
      * 手机号码
      */
+    @Pattern(regexp = RegexConstants.MOBILE, message = "手机号格式不正确")
     private String phonenumber;
 
     /**
