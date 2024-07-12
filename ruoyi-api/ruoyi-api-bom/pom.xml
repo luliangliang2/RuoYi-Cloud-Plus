@@ -43,4 +43,16 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <distributionManagement>
+        <!-- Maven 私服仓库 -->
+        <repository>
+            <!-- 唯一标识符 -->
+            <id>plus-base</id>
+            <name>Plus Nexus Repository</name>
+            <!-- 仓库的访问地址 -->
+            <url>https://{ip}/repository/plus-base/</url>
+        </repository>
+    </distributionManagement>
+
 </project>
