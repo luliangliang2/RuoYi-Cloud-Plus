@@ -9,7 +9,7 @@ RUN mkdir -p /ruoyi/snailjob/logs
 
 WORKDIR /ruoyi/snailjob
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS="-Xms512m -Xmx1024m"
+ENV TZ=Asia/Shanghai LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS="-Xms512m -Xmx1024m"
 
 EXPOSE 8800
 EXPOSE 17888
