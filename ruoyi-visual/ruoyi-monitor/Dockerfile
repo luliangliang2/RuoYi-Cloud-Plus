@@ -9,7 +9,7 @@ RUN mkdir -p /ruoyi/monitor/logs
 
 WORKDIR /ruoyi/monitor
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
+ENV TZ=Asia/Shanghai LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
 
 EXPOSE 9100
 

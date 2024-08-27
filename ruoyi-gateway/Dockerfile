@@ -11,7 +11,7 @@ RUN mkdir -p /ruoyi/gateway/logs  \
 
 WORKDIR /ruoyi/gateway
 
-ENV SERVER_PORT=8080 LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
+ENV TZ=Asia/Shanghai SERVER_PORT=8080 LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
 
 EXPOSE ${SERVER_PORT}
 

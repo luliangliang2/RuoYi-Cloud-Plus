@@ -10,7 +10,7 @@ RUN mkdir -p /ruoyi/sentinel-dashboard/logs \
 
 WORKDIR /ruoyi/sentinel-dashboard
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
+ENV TZ=Asia/Shanghai LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
 
 EXPOSE 8718
 
