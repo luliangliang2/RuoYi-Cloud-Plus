@@ -53,9 +53,14 @@ public class PageQuery implements Serializable {
     public static final int DEFAULT_PAGE_NUM = 1;
 
     /**
-     * 每页显示记录数 默认值 默认查全部
+     * 每页显示记录数 默认值
      */
-    public static final int DEFAULT_PAGE_SIZE = Integer.MAX_VALUE;
+    public static final int DEFAULT_PAGE_SIZE = 10;
+
+    /**
+     * 每页显示记录数 最大值
+     */
+    public static final int MAX_PAGE_SIZE = 100;
 
     /**
      * 构建分页对象
@@ -65,6 +70,10 @@ public class PageQuery implements Serializable {
         Integer pageSize = ObjectUtil.defaultIfNull(getPageSize(), DEFAULT_PAGE_SIZE);
         if (pageNum <= 0) {
             pageNum = DEFAULT_PAGE_NUM;
+        }
+        if (pageSize > MAX_PAGE_SIZE) {
+            //可自行扩展非法调用处理
+            pageSize = MAX_PAGE_SIZE;
         }
         Page<T> page = new Page<>(pageNum, pageSize);
         List<OrderItem> orderItems = buildOrderItem();
