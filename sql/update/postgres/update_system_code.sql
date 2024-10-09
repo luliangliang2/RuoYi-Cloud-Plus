@@ -1,0 +1,5 @@
+ALTER TABLE sys_menu ADD COLUMN system_code varchar(32) default 'master'::varchar;
+COMMENT ON COLUMN sys_menu.system_code IS '系统编码';
+INSERT INTO "public"."sys_dict_type" ("dict_id", "tenant_id", "dict_name", "dict_type", "create_dept", "create_by", "create_time", "remark") VALUES (13, '000000', '系统编码', 'sys_code', 103, 1, '2024-10-09 14:02:55', '系统编码列表');
+INSERT INTO "public"."sys_dict_data" ("dict_code", "tenant_id", "dict_sort", "dict_label", "dict_value", "dict_type", "css_class", "list_class", "is_default", "create_dept", "create_by", "create_time", "remark") VALUES (39, '000000', 0, '主系统', 'master', 'sys_code', '', 'default', 'N', 103, 1, '2024-10-09 14:03:48', '主系统编码');
+INSERT INTO "public"."sys_dict_data" ("dict_code", "tenant_id", "dict_sort", "dict_label", "dict_value", "dict_type", "css_class", "list_class", "is_default", "create_dept", "create_by", "create_time", "remark") VALUES (40, '000000', 1, '物联平台', 'iot', 'sys_code', '', 'default', 'N', 103, 1, '2024-10-09 14:06:20', '物联平台编码');
