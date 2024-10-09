@@ -101,6 +101,11 @@ public class SysMenu extends BaseEntity {
     private String remark;
 
     /**
+     * 系统编码
+     */
+    private String systemCode;
+
+    /**
      * 父菜单名称
      */
     @TableField(exist = false)

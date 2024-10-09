@@ -107,5 +107,8 @@ public class SysMenuBo extends BaseEntity {
      */
     private String remark;
 
-
+    /**
+     * 系统编码
+     */
+    private String systemCode;
 }

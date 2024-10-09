@@ -144,4 +144,12 @@ public interface ISysMenuService {
      * @return 结果
      */
     boolean checkMenuNameUnique(SysMenuBo menu);
+
+    /**
+     * 查询菜单树信息
+     *
+     * @param bo 博
+     * @return {@link List }<{@link SysMenu }>
+     */
+    List<SysMenu> selectMenuTree(SysMenuBo bo);
 }
