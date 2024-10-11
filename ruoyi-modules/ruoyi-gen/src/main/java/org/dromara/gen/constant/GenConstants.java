@@ -63,7 +63,7 @@ public interface GenConstants {
      */
     String[] COLUMNTYPE_NUMBER = {"tinyint", "smallint", "mediumint", "int", "int2", "int4", "int8", "number", "integer",
         "bit", "bigint", "float", "double", "decimal", "numeric", "real", "double precision",
-        "smallserial", "serial", "bigserial", "money", "smallmoney"};
+        "smallserial", "serial", "bigserial", "money", "smallmoney","int2","int4","int8","float4","float8"};
 
     /**
      * BO对象 不需要添加字段
