@@ -56,7 +56,7 @@ public interface GenConstants {
      * 数据库时间类型
      */
     String[] COLUMNTYPE_TIME = {"datetime", "time", "date", "timestamp", "year", "interval",
-        "smalldatetime", "datetime2", "datetimeoffset"};
+        "smalldatetime", "datetime2", "datetimeoffset","timestamptz"};
 
     /**
      * 数据库数字类型

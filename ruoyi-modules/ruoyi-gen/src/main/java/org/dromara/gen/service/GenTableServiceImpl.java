@@ -312,6 +312,16 @@ public class GenTableServiceImpl implements IGenTableService {
             tableColumn.setColumnName(column.getName());
             tableColumn.setColumnComment(column.getComment());
             tableColumn.setColumnType(column.getTypeName().toLowerCase());
+            if(!column.getTypeName().contains("(")&&!column.getTypeName().contains(")")){
+                if(column.getPrecision()!=null&&column.getScale()!=null&&column.getPrecision()!=-1&&column.getScale()!=-1){
+                    tableColumn.setColumnType(column.getTypeName().toLowerCase()+"("+column.getPrecision()+","+column.getScale()+")");
+                }
+                else if(column.getPrecision()!=null&&column.getPrecision()!=-1){
+                    tableColumn.setColumnType(column.getTypeName().toLowerCase()+"("+column.getPrecision()+")");
+                }else if(column.getLength()!=null&&column.getLength()!=-1){
+                    tableColumn.setColumnType(column.getTypeName().toLowerCase()+"("+column.getLength()+")");
+                }
+            }
             tableColumn.setSort(column.getPosition());
             tableColumn.setIsRequired(column.isNullable() == 0 ? "1" : "0");
             tableColumn.setIsIncrement(column.isAutoIncrement() == -1 ? "0" : "1");
