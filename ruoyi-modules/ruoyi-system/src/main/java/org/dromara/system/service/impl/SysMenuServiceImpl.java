@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -71,6 +72,7 @@ public class SysMenuServiceImpl implements ISysMenuService {
                 .like(StringUtils.isNotBlank(menu.getMenuName()), SysMenu::getMenuName, menu.getMenuName())
                 .eq(StringUtils.isNotBlank(menu.getVisible()), SysMenu::getVisible, menu.getVisible())
                 .eq(StringUtils.isNotBlank(menu.getStatus()), SysMenu::getStatus, menu.getStatus())
+                .eq(StrUtil.isNotBlank(menu.getSystemCode()), SysMenu::getSystemCode, menu.getSystemCode())
                 .orderByAsc(SysMenu::getParentId)
                 .orderByAsc(SysMenu::getOrderNum));
         } else {
@@ -79,6 +81,7 @@ public class SysMenuServiceImpl implements ISysMenuService {
                 .like(StringUtils.isNotBlank(menu.getMenuName()), "m.menu_name", menu.getMenuName())
                 .eq(StringUtils.isNotBlank(menu.getVisible()), "m.visible", menu.getVisible())
                 .eq(StringUtils.isNotBlank(menu.getStatus()), "m.status", menu.getStatus())
+                .eq(StrUtil.isNotBlank(menu.getSystemCode()), "m.system_code", menu.getSystemCode())
                 .orderByAsc("m.parent_id")
                 .orderByAsc("m.order_num");
             List<SysMenu> list = baseMapper.selectMenuListByUserId(wrapper);
@@ -330,6 +333,26 @@ public class SysMenuServiceImpl implements ISysMenuService {
             .eq(SysMenu::getParentId, menu.getParentId())
             .ne(ObjectUtil.isNotNull(menu.getMenuId()), SysMenu::getMenuId, menu.getMenuId()));
         return !exist;
+    }
+
+    @Override
+    public List<SysMenu> selectMenuTree(SysMenuBo bo) {
+        Long userId=LoginHelper.getUserId();
+        List<SysMenu> menus;
+        if (LoginHelper.isSuperAdmin(userId)) {
+            LambdaQueryWrapper<SysMenu> lqw = new LambdaQueryWrapper<SysMenu>()
+                .in(SysMenu::getMenuType, UserConstants.TYPE_DIR, UserConstants.TYPE_MENU)
+                .eq(SysMenu::getStatus, UserConstants.MENU_NORMAL)
+                .eq(StrUtil.isNotBlank(bo.getSystemCode()), SysMenu::getSystemCode, bo.getSystemCode())
+                .orderByAsc(SysMenu::getParentId)
+                .orderByAsc(SysMenu::getOrderNum);
+            menus= baseMapper.selectList(lqw);
+        } else if(StrUtil.isNotBlank(bo.getSystemCode())) {
+            menus = baseMapper.selectMenuTreeByUserSysCode(userId, bo.getSystemCode());
+        } else {
+            menus = baseMapper.selectMenuTreeByUserId(userId);
+        }
+        return getChildPerms(menus, 0);
     }
 
     /**

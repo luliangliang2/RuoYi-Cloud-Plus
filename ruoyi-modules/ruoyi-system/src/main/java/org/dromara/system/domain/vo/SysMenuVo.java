@@ -104,6 +104,11 @@ public class SysMenuVo implements Serializable {
     private String remark;
 
     /**
+     * 系统编码
+     */
+    private String systemCode;
+
+    /**
      * 创建时间
      */
     private Date createTime;

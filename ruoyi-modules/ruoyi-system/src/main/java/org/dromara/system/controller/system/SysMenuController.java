@@ -171,4 +171,14 @@ public class SysMenuController extends BaseController {
         return toAjax(menuService.deleteMenuById(menuId));
     }
 
+    /**
+     * 获取路由信息_系统菜单
+     *
+     * @return 路由信息
+     */
+    @GetMapping("/getRoutersMenu")
+    public R<List<RouterVo>> getRoutersMenu(SysMenuBo bo) {
+        List<SysMenu> menus = menuService.selectMenuTree(bo);
+        return R.ok(menuService.buildMenus(menus));
+    }
 }
