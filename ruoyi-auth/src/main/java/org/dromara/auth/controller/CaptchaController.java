@@ -1,7 +1,6 @@
 package org.dromara.auth.controller;
 
 import cloud.tianai.captcha.application.ImageCaptchaApplication;
-import cloud.tianai.captcha.application.ImageCaptchaProperties;
 import cloud.tianai.captcha.application.vo.CaptchaResponse;
 import cloud.tianai.captcha.application.vo.ImageCaptchaVO;
 import cloud.tianai.captcha.common.constant.CaptchaTypeConstant;
@@ -16,10 +15,12 @@ import org.dromara.auth.domain.bo.ActCaptchaBo;
 import org.dromara.auth.domain.vo.CaptchaConfigVo;
 import org.dromara.auth.domain.vo.CaptchaVo;
 import org.dromara.auth.enums.CaptchaType;
+import org.dromara.auth.enums.InputCaptchaType;
 import org.dromara.auth.properties.CaptchaProperties;
 import org.dromara.common.core.constant.Constants;
 import org.dromara.common.core.constant.GlobalConstants;
 import org.dromara.common.core.domain.R;
+import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.reflect.ReflectUtils;
@@ -33,6 +34,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -63,15 +65,16 @@ public class CaptchaController {
             captchaVo.setCaptchaEnabled(false);
             return R.ok(captchaVo);
         }
+        CaptchaProperties.InputCaptchaProperties inputCaptchaProperties = captchaProperties.getInput();
         // 保存验证码信息
         String uuid = IdUtil.simpleUUID();
         String verifyKey = GlobalConstants.CAPTCHA_CODE_KEY + uuid;
         // 生成验证码
-        CaptchaType captchaType = captchaProperties.getType();
-        boolean isMath = CaptchaType.MATH == captchaType;
-        Integer length = isMath ? captchaProperties.getNumberLength() : captchaProperties.getCharLength();
-        CodeGenerator codeGenerator = ReflectUtils.newInstance(captchaType.getClazz(), length);
-        AbstractCaptcha captcha = SpringUtils.getBean(captchaProperties.getCategory().getClazz());
+        InputCaptchaType inputCaptchaType = inputCaptchaProperties.getType();
+        boolean isMath = InputCaptchaType.MATH == inputCaptchaType;
+        Integer length = isMath ? inputCaptchaProperties.getNumberLength() : inputCaptchaProperties.getCharLength();
+        CodeGenerator codeGenerator = ReflectUtils.newInstance(inputCaptchaType.getClazz(), length);
+        AbstractCaptcha captcha = SpringUtils.getBean(inputCaptchaProperties.getCategory().getClazz());
         captcha.setGenerator(codeGenerator);
         captcha.createCode();
         // 如果是数学验证码，使用SpEL表达式处理验证码结果
@@ -91,23 +94,16 @@ public class CaptchaController {
      * 生成行为验证码
      */
     @RateLimiter(time = 60, count = 10, limitType = LimitType.IP)
-    @GetMapping("/act")
-    public CaptchaResponse<ImageCaptchaVO> getActCode(String type) {
-        if (StringUtils.isBlank(type)) {
-            type = CaptchaTypeConstant.SLIDER;
+    @GetMapping("/captcha")
+    public CaptchaResponse<ImageCaptchaVO> getActCaptcha() {
+        if (!captchaProperties.getEnabled() || !CaptchaType.ACT.getType().equalsIgnoreCase(captchaProperties.getType())) {
+            throw new ServiceException("验证码未开启");
         }
-        if ("RANDOM".equals(type)) {
-            int i = ThreadLocalRandom.current().nextInt(0, 4);
-            if (i == 0) {
-                type = CaptchaTypeConstant.SLIDER;
-            } else if (i == 1) {
-                type = CaptchaTypeConstant.CONCAT;
-            } else if (i == 2) {
-                type = CaptchaTypeConstant.ROTATE;
-            } else{
-                type = CaptchaTypeConstant.WORD_IMAGE_CLICK;
-            }
-
+        String type = captchaProperties.getAct().getType();
+        if ("RANDOM".equalsIgnoreCase(type)) {
+            // 随机选择一个类型
+            type = Arrays.asList(CaptchaTypeConstant.SLIDER, CaptchaTypeConstant.CONCAT, CaptchaTypeConstant.ROTATE, CaptchaTypeConstant.WORD_IMAGE_CLICK)
+                .get(ThreadLocalRandom.current().nextInt(4));
         }
         return imageCaptchaApplication.generateCaptcha(type);
     }
@@ -115,7 +111,7 @@ public class CaptchaController {
     /**
      * 校验行为验证码
      */
-    @PostMapping("/act")
+    @PostMapping("/verify")
     public ApiResponse<?> actCheck(@RequestBody ActCaptchaBo data) {
         ApiResponse<?> response = imageCaptchaApplication.matching(data.getId(), data.getData());
         if (response.isSuccess()) {
@@ -135,7 +131,7 @@ public class CaptchaController {
             captchaConfigVo.setCaptchaEnabled(false);
             return R.ok(captchaConfigVo);
         }
-        captchaConfigVo.setCaptchaEnabled(captchaProperties.getEnabled());
+        captchaConfigVo.setType(captchaProperties.getType());
         return R.ok(captchaConfigVo);
     }
 
