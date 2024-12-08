@@ -24,6 +24,6 @@ public class CaptureOriginaFilter implements WebFilter, Ordered {
 
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE + 1;
+        return 0;
     }
 }

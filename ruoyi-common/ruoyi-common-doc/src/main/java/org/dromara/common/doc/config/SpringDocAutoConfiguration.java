@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.doc.config.properties.SpringDocProperties;
 import org.dromara.common.doc.handler.OpenApiHandler;
@@ -111,16 +112,13 @@ public class SpringDocAutoConfiguration {
     }
 
     private String getOriginalContextPathFromHeader() {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            HttpServletRequest request = attributes.getRequest();
-            String originalPath = request.getHeader("X-Original-Path");
-            if (StringUtils.isNotBlank(originalPath)) {
-                // 提取原始路径中的前缀
-                String[] parts = originalPath.split("/");
-                if (parts.length > 1) {
-                    return "/" + parts[1];
-                }
+        HttpServletRequest request  = ServletUtils.getRequest();
+        String originalPath = request.getHeader("X-Original-Path");
+        if (StringUtils.isNotBlank(originalPath)) {
+            // 提取原始路径中的前缀
+            String[] parts = originalPath.split("/");
+            if (parts.length > 1) {
+                return "/" + parts[1];
             }
         }
         // 默认返回空字符串
