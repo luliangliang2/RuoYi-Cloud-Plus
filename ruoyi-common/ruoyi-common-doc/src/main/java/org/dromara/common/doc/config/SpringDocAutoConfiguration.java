@@ -4,7 +4,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.doc.config.properties.SpringDocProperties;
 import org.dromara.common.doc.handler.OpenApiHandler;
@@ -24,6 +26,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.*;
 
@@ -88,30 +92,37 @@ public class SpringDocAutoConfiguration {
         return new OpenApiHandler(openAPI, securityParser, springDocConfigProperties, propertyResolverUtils, openApiBuilderCustomisers, serverBaseUrlCustomisers, javadocProvider);
     }
 
+
     /**
      * 对已经生成好的 OpenApi 进行自定义操作
      */
     @Bean
     public OpenApiCustomizer openApiCustomizer() {
-        // 拼接服务路径
-        String appPath = "/" + StringUtils.substring(appName, appName.indexOf("-") + 1);
-        String contextPath = serverProperties.getServlet().getContextPath();
-        String finalContextPath;
-        if (StringUtils.isBlank(contextPath) || "/".equals(contextPath)) {
-            finalContextPath = appPath;
-        } else {
-            finalContextPath = appPath + contextPath;
-        }
-        // 对所有路径增加前置上下文路径
         return openApi -> {
+            String contextPath = getOriginalContextPathFromHeader();
+            // 对所有路径增加前置上下文路径
             Paths oldPaths = openApi.getPaths();
             if (oldPaths instanceof PlusPaths) {
                 return;
             }
             PlusPaths newPaths = new PlusPaths();
-            oldPaths.forEach((k, v) -> newPaths.addPathItem(finalContextPath + k, v));
+            oldPaths.forEach((k, v) -> newPaths.addPathItem(contextPath + k, v));
             openApi.setPaths(newPaths);
         };
+    }
+
+    private String getOriginalContextPathFromHeader() {
+        HttpServletRequest request  = ServletUtils.getRequest();
+        String originalPath = request.getHeader("X-Original-Path");
+        if (StringUtils.isNotBlank(originalPath)) {
+            // 提取原始路径中的前缀
+            String[] parts = originalPath.split("/");
+            if (parts.length > 1) {
+                return "/" + parts[1];
+            }
+        }
+        // 默认返回空字符串
+        return "";
     }
 
 }
