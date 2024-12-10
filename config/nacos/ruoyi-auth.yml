@@ -5,7 +5,7 @@ security:
     # 是否开启验证码
     enabled: true
     # 验证码类型 input 输入验证码 act 行为验证码
-    type: input
+    type: act
     input:
       # 验证码类型 math 数组计算 char 字符验证
       type: char
@@ -16,8 +16,8 @@ security:
       # 字符验证码长度
       charLength: 4
     act:
-      # random 随机行为验证码
-      type: random
+      # RANDOM 随机 SLIDER 滑块验证 ROTATE 旋转验证 CONCAT 滑动还原 WORD_IMAGE_CLICK 文字点选
+      type: RANDOM
 
 # 滑块验证码配置， 详细请看 cloud.tianai.captcha.autoconfiguration.ImageCaptchaProperties 类
 captcha:

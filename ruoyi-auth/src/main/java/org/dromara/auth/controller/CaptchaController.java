@@ -5,14 +5,12 @@ import cloud.tianai.captcha.application.vo.CaptchaResponse;
 import cloud.tianai.captcha.application.vo.ImageCaptchaVO;
 import cloud.tianai.captcha.common.constant.CaptchaTypeConstant;
 import cloud.tianai.captcha.common.response.ApiResponse;
-import cloud.tianai.captcha.spring.plugins.secondary.SecondaryVerificationApplication;
 import cn.hutool.captcha.AbstractCaptcha;
 import cn.hutool.captcha.generator.CodeGenerator;
 import cn.hutool.core.util.IdUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.auth.domain.bo.ActCaptchaBo;
-import org.dromara.auth.domain.vo.CaptchaConfigVo;
 import org.dromara.auth.domain.vo.CaptchaVo;
 import org.dromara.auth.enums.CaptchaType;
 import org.dromara.auth.enums.InputCaptchaType;
@@ -65,6 +63,10 @@ public class CaptchaController {
             captchaVo.setCaptchaEnabled(false);
             return R.ok(captchaVo);
         }
+        captchaVo.setType(captchaProperties.getType());
+        if (CaptchaType.ACT.getType().equalsIgnoreCase(captchaProperties.getType())) {
+            return R.ok(captchaVo);
+        }
         CaptchaProperties.InputCaptchaProperties inputCaptchaProperties = captchaProperties.getInput();
         // 保存验证码信息
         String uuid = IdUtil.simpleUUID();
@@ -94,14 +96,13 @@ public class CaptchaController {
      * 生成行为验证码
      */
     @RateLimiter(time = 60, count = 10, limitType = LimitType.IP)
-    @GetMapping("/captcha")
-    public CaptchaResponse<ImageCaptchaVO> getActCaptcha() {
+    @PostMapping("/captcha")
+    public CaptchaResponse<ImageCaptchaVO> getCaptcha() {
         if (!captchaProperties.getEnabled() || !CaptchaType.ACT.getType().equalsIgnoreCase(captchaProperties.getType())) {
             throw new ServiceException("验证码未开启");
         }
         String type = captchaProperties.getAct().getType();
         if ("RANDOM".equalsIgnoreCase(type)) {
-            // 随机选择一个类型
             type = Arrays.asList(CaptchaTypeConstant.SLIDER, CaptchaTypeConstant.CONCAT, CaptchaTypeConstant.ROTATE, CaptchaTypeConstant.WORD_IMAGE_CLICK)
                 .get(ThreadLocalRandom.current().nextInt(4));
         }
@@ -112,35 +113,12 @@ public class CaptchaController {
      * 校验行为验证码
      */
     @PostMapping("/verify")
-    public ApiResponse<?> actCheck(@RequestBody ActCaptchaBo data) {
+    public ApiResponse<?> verify(@RequestBody ActCaptchaBo data) {
         ApiResponse<?> response = imageCaptchaApplication.matching(data.getId(), data.getData());
         if (response.isSuccess()) {
             return ApiResponse.ofSuccess(Collections.singletonMap("id", data.getId()));
         }
         return response;
-    }
-
-    /**
-     * 获取验证码配置
-     */
-    @GetMapping("/config")
-    public R<CaptchaConfigVo> getCaptchaConfig() {
-        CaptchaConfigVo captchaConfigVo = new CaptchaConfigVo();
-        boolean captchaEnabled = captchaProperties.getEnabled();
-        if (!captchaEnabled) {
-            captchaConfigVo.setCaptchaEnabled(false);
-            return R.ok(captchaConfigVo);
-        }
-        captchaConfigVo.setType(captchaProperties.getType());
-        return R.ok(captchaConfigVo);
-    }
-
-    public boolean check2Captcha(String id) {
-        // 如果开启了二次验证
-        if (imageCaptchaApplication instanceof SecondaryVerificationApplication) {
-            return ((SecondaryVerificationApplication) imageCaptchaApplication).secondaryVerification(id);
-        }
-        return false;
     }
 
 }

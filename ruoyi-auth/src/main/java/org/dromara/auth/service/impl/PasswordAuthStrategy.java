@@ -1,5 +1,7 @@
 package org.dromara.auth.service.impl;
 
+import cloud.tianai.captcha.application.ImageCaptchaApplication;
+import cloud.tianai.captcha.spring.plugins.secondary.SecondaryVerificationApplication;
 import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
@@ -7,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.auth.domain.vo.LoginVo;
+import org.dromara.auth.enums.CaptchaType;
 import org.dromara.auth.form.PasswordLoginBody;
 import org.dromara.auth.properties.CaptchaProperties;
 import org.dromara.auth.service.IAuthStrategy;
@@ -37,6 +40,8 @@ import org.springframework.stereotype.Service;
 @Service("password" + IAuthStrategy.BASE_NAME)
 @RequiredArgsConstructor
 public class PasswordAuthStrategy implements IAuthStrategy {
+
+    private final ImageCaptchaApplication imageCaptchaApplication;
 
     private final CaptchaProperties captchaProperties;
 
@@ -91,6 +96,13 @@ public class PasswordAuthStrategy implements IAuthStrategy {
      * @param uuid     唯一标识
      */
     private void validateCaptcha(String tenantId, String username, String code, String uuid) {
+        if (CaptchaType.ACT.getType().equalsIgnoreCase(captchaProperties.getType()) && imageCaptchaApplication instanceof SecondaryVerificationApplication) {
+            if (!((SecondaryVerificationApplication) imageCaptchaApplication).secondaryVerification(uuid)) {
+                loginService.recordLogininfor(tenantId, username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error"));
+                throw new CaptchaException();
+            }
+            return;
+        }
         String verifyKey = GlobalConstants.CAPTCHA_CODE_KEY + StringUtils.blankToDefault(uuid, "");
         String captcha = RedisUtils.getCacheObject(verifyKey);
         RedisUtils.deleteObject(verifyKey);

@@ -15,6 +15,11 @@ public class CaptchaVo {
      */
     private Boolean captchaEnabled = true;
 
+    /**
+     * 验证码类型
+     */
+    private String type;
+
     private String uuid;
 
     /**
