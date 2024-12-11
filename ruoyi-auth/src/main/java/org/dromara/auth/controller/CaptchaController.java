@@ -10,7 +10,7 @@ import cn.hutool.captcha.generator.CodeGenerator;
 import cn.hutool.core.util.IdUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dromara.auth.domain.bo.ActCaptchaBo;
+import org.dromara.auth.domain.bo.CaptchaBo;
 import org.dromara.auth.domain.vo.CaptchaVo;
 import org.dromara.auth.enums.CaptchaType;
 import org.dromara.auth.enums.InputCaptchaType;
@@ -113,7 +113,7 @@ public class CaptchaController {
      * 校验行为验证码
      */
     @PostMapping("/verify")
-    public ApiResponse<?> verify(@RequestBody ActCaptchaBo data) {
+    public ApiResponse<?> verify(@RequestBody CaptchaBo data) {
         ApiResponse<?> response = imageCaptchaApplication.matching(data.getId(), data.getData());
         if (response.isSuccess()) {
             return ApiResponse.ofSuccess(Collections.singletonMap("id", data.getId()));

@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 
 @Configuration
 @RequiredArgsConstructor
-public class ActCaptchaResourceConfig {
+public class CaptchaResourceConfig {
 
     private final ResourceStore resourceStore;
 

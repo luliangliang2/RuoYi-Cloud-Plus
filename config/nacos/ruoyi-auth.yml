@@ -26,9 +26,9 @@ captcha:
   # 验证码过期时间，默认是2分钟,单位毫秒， 可以根据自身业务进行调整
   expire:
     # 默认缓存时间 2分钟
-    default: 10000
+    default: 20000
     # 针对 点选验证码 过期时间设置为 2分钟， 因为点选验证码验证比较慢，把过期时间调整大一些
-    WORD_IMAGE_CLICK: 20000
+    WORD_IMAGE_CLICK: 30000
   # 使用加载系统自带的资源， 默认是 false(这里系统的默认资源包含 滑动验证码模板/旋转验证码模板,如果想使用系统的模板，这里设置为true)
   init-default-resource: true
   # 缓存控制， 默认为false不开启
@@ -41,10 +41,10 @@ captcha:
   local-cache-period: 2000
   # 配置字体包，供文字点选验证码使用,可以配置多个，不配置使用默认的字体
   font-path:
-    - classpath:font/SimHei.ttf
+#    - classpath:font/SimHei.ttf
   secondary:
     # 二次验证， 默认false 不开启
-    enabled: false
+    enabled: true
     # 二次验证过期时间， 默认 2分钟
     expire: 120000
     # 二次验证缓存key前缀，默认是 captcha:secondary

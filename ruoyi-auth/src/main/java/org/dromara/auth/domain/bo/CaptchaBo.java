@@ -4,7 +4,7 @@ import cloud.tianai.captcha.validator.common.model.dto.ImageCaptchaTrack;
 import lombok.Data;
 
 @Data
-public class ActCaptchaBo {
+public class CaptchaBo {
 
     private String id;
 
