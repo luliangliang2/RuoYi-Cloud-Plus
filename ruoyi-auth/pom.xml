@@ -17,6 +17,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>cloud.tianai.captcha</groupId>
+            <artifactId>tianai-captcha-springboot-starter</artifactId>
+            <version>${tianai-captcha.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.dromara</groupId>
             <artifactId>ruoyi-common-nacos</artifactId>
         </dependency>

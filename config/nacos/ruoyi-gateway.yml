@@ -4,6 +4,8 @@ security:
   ignore:
     whites:
       - /auth/code
+      - /auth/captcha
+      - /auth/verify
       - /auth/logout
       - /auth/login
       - /auth/binding/*

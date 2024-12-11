@@ -60,6 +60,8 @@
         <flowable.version>7.0.1</flowable.version>
         <!-- mq配置 -->
         <rocketmq.version>2.3.0</rocketmq.version>
+        <!-- 行为验证码配置 -->
+        <tianai-captcha.version>1.5.1</tianai-captcha.version>
 
         <!-- 插件版本 -->
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>

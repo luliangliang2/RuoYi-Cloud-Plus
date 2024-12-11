@@ -2,9 +2,9 @@ package org.dromara.auth.enums;
 
 import cn.hutool.captcha.generator.CodeGenerator;
 import cn.hutool.captcha.generator.RandomGenerator;
+import org.dromara.auth.captcha.UnsignedMathGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.dromara.auth.captcha.UnsignedMathGenerator;
 
 /**
  * 验证码类型
@@ -13,17 +13,17 @@ import org.dromara.auth.captcha.UnsignedMathGenerator;
  */
 @Getter
 @AllArgsConstructor
-public enum CaptchaType {
+public enum InputCaptchaType {
 
     /**
      * 数字
      */
-    INPUT("INPUT"),
+    MATH(UnsignedMathGenerator.class),
 
     /**
      * 字符
      */
-    ACT("ACT");
+    CHAR(RandomGenerator.class);
 
-    private final String type;
+    private final Class<? extends CodeGenerator> clazz;
 }
