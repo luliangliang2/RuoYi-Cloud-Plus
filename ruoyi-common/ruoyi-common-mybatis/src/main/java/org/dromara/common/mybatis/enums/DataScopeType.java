@@ -38,7 +38,7 @@ public enum DataScopeType {
     /**
      * 部门数据权限
      */
-    DEPT("3", " #{#deptName} = #{#user.deptId} ", " 1 = 0 "),
+    DEPT("3", " #{#deptName} = #{#user.deptId != null ? #user.deptId : -1} ", " 1 = 0 "),
 
     /**
      * 部门及以下数据权限
