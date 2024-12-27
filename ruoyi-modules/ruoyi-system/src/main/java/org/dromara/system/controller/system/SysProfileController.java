@@ -3,6 +3,7 @@ package org.dromara.system.controller.system;
 import cn.dev33.satoken.secure.BCrypt;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.UUID;
 import io.seata.spring.annotation.GlobalTransactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * 个人信息 业务处理
@@ -122,10 +124,14 @@ public class SysProfileController extends BaseController {
     public R<AvatarVo> avatar(@RequestPart("avatarfile") MultipartFile avatarfile) throws IOException {
         if (!avatarfile.isEmpty()) {
             String extension = FileUtil.extName(avatarfile.getOriginalFilename());
-            if (!StringUtils.equalsAnyIgnoreCase(extension, MimeTypeUtils.IMAGE_EXTENSION)) {
+            String[] image_extension_content_type = Arrays.stream(MimeTypeUtils.IMAGE_EXTENSION).map(image_extension -> "image/" + image_extension).toArray(String[]::new);
+            if (!StringUtils.equalsAnyIgnoreCase(extension, MimeTypeUtils.IMAGE_EXTENSION) && !StringUtils.equalsAnyIgnoreCase(avatarfile.getContentType(), image_extension_content_type)) {
                 return R.fail("文件格式不正确，请上传" + Arrays.toString(MimeTypeUtils.IMAGE_EXTENSION) + "格式");
             }
-            RemoteFile oss = remoteFileService.upload(avatarfile.getName(), avatarfile.getOriginalFilename(), avatarfile.getContentType(), avatarfile.getBytes());
+            RemoteFile oss = remoteFileService.upload(avatarfile.getName(),
+                StringUtils.isNotBlank(avatarfile.getOriginalFilename()) ? avatarfile.getOriginalFilename() : StringUtils.format("{}.{}",
+                    UUID.randomUUID().toString(), StringUtils.replace(avatarfile.getContentType(), "image/", "")),
+                avatarfile.getContentType(), avatarfile.getBytes());
             String avatar = oss.getUrl();
             boolean updateSuccess = DataPermissionHelper.ignore(() -> userService.updateUserAvatar(LoginHelper.getUserId(), oss.getOssId()));
             if (updateSuccess) {
