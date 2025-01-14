@@ -312,7 +312,7 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     @Override
     public List<RemoteUserVo> selectListByIds(List<Long> userIds) {
         if (CollUtil.isEmpty(userIds)) {
-            return Lists.newArrayList();
+            return new ArrayList<>();
         }
         List<SysUserVo> sysUserVos = userService.selectUserByIds(userIds, null);
         return MapstructUtils.convert(sysUserVos, RemoteUserVo.class);
@@ -327,7 +327,7 @@ public class RemoteUserServiceImpl implements RemoteUserService {
     @Override
     public List<Long> selectUserIdsByRoleIds(List<Long> roleIds) {
         if (CollUtil.isEmpty(roleIds)) {
-            return Lists.newArrayList();
+            return new ArrayList<>();
         }
         return userService.selectUserIdsByRoleIds(roleIds);
     }
