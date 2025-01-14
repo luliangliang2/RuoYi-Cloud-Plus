@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Opt;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.dromara.common.core.constant.SystemConstants;
@@ -310,6 +311,9 @@ public class RemoteUserServiceImpl implements RemoteUserService {
      */
     @Override
     public List<RemoteUserVo> selectListByIds(List<Long> userIds) {
+        if (CollUtil.isEmpty(userIds)) {
+            return Lists.newArrayList();
+        }
         List<SysUserVo> sysUserVos = userService.selectUserByIds(userIds, null);
         return MapstructUtils.convert(sysUserVos, RemoteUserVo.class);
     }
@@ -322,6 +326,9 @@ public class RemoteUserServiceImpl implements RemoteUserService {
      */
     @Override
     public List<Long> selectUserIdsByRoleIds(List<Long> roleIds) {
+        if (CollUtil.isEmpty(roleIds)) {
+            return Lists.newArrayList();
+        }
         return userService.selectUserIdsByRoleIds(roleIds);
     }
 
