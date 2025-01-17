@@ -2,6 +2,7 @@ package org.dromara.common.oss.core;
 
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.dromara.common.core.constant.Constants;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.StringUtils;
@@ -239,11 +240,11 @@ public class OssClient {
      * 下载文件从 Amazon S3 到 输出流
      *
      * @param key 文件在 Amazon S3 中的对象键
-     * @param out 输出流
+     * @param response 响应头
      * @return 输出流中写入的字节数（长度）
      * @throws OssException 如果下载失败，抛出自定义异常
      */
-    public long download(String key, OutputStream out) {
+    public long download(String key, HttpServletResponse response) {
         try {
             // 构建下载请求
             DownloadRequest<ResponseInputStream<GetObjectResponse>> downloadRequest = DownloadRequest.builder()
@@ -259,7 +260,10 @@ public class OssClient {
             Download<ResponseInputStream<GetObjectResponse>> responseFuture = transferManager.download(downloadRequest);
             // 输出到流中
             try (ResponseInputStream<GetObjectResponse> responseStream = responseFuture.completionFuture().join().result()) { // auto-closeable stream
-                return responseStream.transferTo(out); // 阻塞调用线程 blocks the calling thread
+                GetObjectResponse objectResponse = responseStream.response();
+                // 设置文件大小到响应头（确保在传输文件之前设置 Content-Length）
+                response.setContentLengthLong(objectResponse.contentLength());
+                return responseStream.transferTo(response.getOutputStream()); // 阻塞调用线程 blocks the calling thread
             }
         } catch (Exception e) {
             throw new OssException("文件下载失败，错误信息:[" + e.getMessage() + "]");

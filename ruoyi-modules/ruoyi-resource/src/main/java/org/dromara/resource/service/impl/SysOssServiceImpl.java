@@ -147,7 +147,7 @@ public class SysOssServiceImpl implements ISysOssService {
      * @param response HttpServletResponse对象，用于设置响应头和向客户端发送文件内容
      */
     @Override
-    public void download(Long ossId, HttpServletResponse response) throws IOException {
+    public void download(Long ossId, HttpServletResponse response) {
         SysOssVo sysOss = SpringUtils.getAopProxy(this).getById(ossId);
         if (ObjectUtil.isNull(sysOss)) {
             throw new ServiceException("文件数据不存在!");
@@ -155,8 +155,7 @@ public class SysOssServiceImpl implements ISysOssService {
         FileUtils.setAttachmentResponseHeader(response, sysOss.getOriginalName());
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE + "; charset=UTF-8");
         OssClient storage = OssFactory.instance(sysOss.getService());
-        long contentLength = storage.download(sysOss.getFileName(), response.getOutputStream());
-        response.setContentLengthLong(contentLength);
+        storage.download(sysOss.getFileName(), response);
     }
 
     /**
