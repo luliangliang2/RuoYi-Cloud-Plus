@@ -24,6 +24,10 @@ spring:
 #          username: ${datasource.system-postgres.username}
 #          password: ${datasource.system-postgres.password}
 
+sse:
+  enabled: true
+  path: /sse
+
 # warm-flow工作流配置
 warm-flow:
   # 是否开启工作流，默认true
