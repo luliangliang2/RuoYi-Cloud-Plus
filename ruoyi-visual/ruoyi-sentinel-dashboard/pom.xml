@@ -116,8 +116,10 @@
             <artifactId>httpcore-nio</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <!-- 修改为 fastjson2 并更新到最新版本 2.0.56 -->
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>2.0.56</version>
         </dependency>
         <!-- logback -->
         <dependency>
