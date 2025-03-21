@@ -48,7 +48,9 @@ public class PlusTenantLineHandler implements TenantLineHandler {
                 "gen_table_column"
             );
             tables.addAll(excludes);
-            return tables.contains(tableName);
+            // 去除表名的反引号
+            String processedName = tableName.replaceAll("^`|`$", "");
+            return tables.contains(processedName);
         }
         return true;
     }
