@@ -215,6 +215,9 @@ public class ExcelUtil {
      */
     public static <T> void exportTemplate(List<T> data, String filename, String templatePath, HttpServletResponse response) {
         try {
+            if (CollUtil.isEmpty(data)) {
+                throw new IllegalArgumentException("数据为空");
+            }
             resetResponse(filename, response);
             ServletOutputStream os = response.getOutputStream();
             exportTemplate(data, templatePath, os);
@@ -233,9 +236,6 @@ public class ExcelUtil {
      * @param os           输出流
      */
     public static <T> void exportTemplate(List<T> data, String templatePath, OutputStream os) {
-        if (CollUtil.isEmpty(data)) {
-            throw new IllegalArgumentException("数据为空");
-        }
         ClassPathResource templateResource = new ClassPathResource(templatePath);
         ExcelWriter excelWriter = EasyExcel.write(os)
             .withTemplate(templateResource.getStream())
@@ -245,9 +245,10 @@ public class ExcelUtil {
             .registerWriteHandler(new DataWriteHandler(data.get(0).getClass()))
             .build();
         WriteSheet writeSheet = EasyExcel.writerSheet().build();
+        FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
         // 单表多数据导出 模板格式为 {.属性}
         for (T d : data) {
-            excelWriter.fill(d, writeSheet);
+            excelWriter.fill(d, fillConfig, writeSheet);
         }
         excelWriter.finish();
     }
@@ -264,6 +265,9 @@ public class ExcelUtil {
      */
     public static void exportTemplateMultiList(Map<String, Object> data, String filename, String templatePath, HttpServletResponse response) {
         try {
+            if (CollUtil.isEmpty(data)) {
+                throw new IllegalArgumentException("数据为空");
+            }
             resetResponse(filename, response);
             ServletOutputStream os = response.getOutputStream();
             exportTemplateMultiList(data, templatePath, os);
@@ -284,6 +288,9 @@ public class ExcelUtil {
      */
     public static void exportTemplateMultiSheet(List<Map<String, Object>> data, String filename, String templatePath, HttpServletResponse response) {
         try {
+            if (CollUtil.isEmpty(data)) {
+                throw new IllegalArgumentException("数据为空");
+            }
             resetResponse(filename, response);
             ServletOutputStream os = response.getOutputStream();
             exportTemplateMultiSheet(data, templatePath, os);
@@ -302,9 +309,6 @@ public class ExcelUtil {
      * @param os           输出流
      */
     public static void exportTemplateMultiList(Map<String, Object> data, String templatePath, OutputStream os) {
-        if (CollUtil.isEmpty(data)) {
-            throw new IllegalArgumentException("数据为空");
-        }
         ClassPathResource templateResource = new ClassPathResource(templatePath);
         ExcelWriter excelWriter = EasyExcel.write(os)
             .withTemplate(templateResource.getStream())
@@ -320,7 +324,7 @@ public class ExcelUtil {
                 // 多表导出必须使用 FillWrapper
                 excelWriter.fill(new FillWrapper(map.getKey(), (Collection<?>) map.getValue()), fillConfig, writeSheet);
             } else {
-                excelWriter.fill(map.getValue(), writeSheet);
+                excelWriter.fill(map.getValue(), fillConfig, writeSheet);
             }
         }
         excelWriter.finish();
@@ -336,9 +340,6 @@ public class ExcelUtil {
      * @param os           输出流
      */
     public static void exportTemplateMultiSheet(List<Map<String, Object>> data, String templatePath, OutputStream os) {
-        if (CollUtil.isEmpty(data)) {
-            throw new IllegalArgumentException("数据为空");
-        }
         ClassPathResource templateResource = new ClassPathResource(templatePath);
         ExcelWriter excelWriter = EasyExcel.write(os)
             .withTemplate(templateResource.getStream())
