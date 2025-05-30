@@ -23,7 +23,6 @@ import org.dromara.system.api.domain.vo.RemoteUserVo;
 import org.dromara.system.api.model.LoginUser;
 import org.dromara.system.api.model.PostDTO;
 import org.dromara.system.api.model.RoleDTO;
-import org.dromara.system.api.model.XcxLoginUser;
 import org.dromara.system.domain.*;
 import org.dromara.system.domain.bo.SysUserBo;
 import org.dromara.system.domain.vo.SysDeptVo;
@@ -159,7 +158,7 @@ public class RemoteUserServiceImpl implements RemoteUserService {
      * @return 结果
      */
     @Override
-    public XcxLoginUser getUserInfoByOpenid(String openid) throws UserException {
+    public LoginUser getUserInfoByOpenid(String openid) throws UserException {
         // todo 自行实现 userService.selectUserByOpenid(openid);
         SysUser sysUser = new SysUser();
         if (ObjectUtil.isNull(sysUser)) {
@@ -170,7 +169,7 @@ public class RemoteUserServiceImpl implements RemoteUserService {
         }
         // 框架登录不限制从什么表查询 只要最终构建出 LoginUser 即可
         // 此处可根据登录用户的数据不同 自行创建 loginUser 属性不够用继承扩展就行了
-        XcxLoginUser loginUser = new XcxLoginUser();
+        LoginUser loginUser = new LoginUser();
         loginUser.setUserId(sysUser.getUserId());
         loginUser.setUsername(sysUser.getUserName());
         loginUser.setNickname(sysUser.getNickName());

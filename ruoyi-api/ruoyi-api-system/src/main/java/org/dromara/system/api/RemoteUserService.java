@@ -5,7 +5,6 @@ import org.dromara.common.core.exception.user.UserException;
 import org.dromara.system.api.domain.bo.RemoteUserBo;
 import org.dromara.system.api.domain.vo.RemoteUserVo;
 import org.dromara.system.api.model.LoginUser;
-import org.dromara.system.api.model.XcxLoginUser;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +58,7 @@ public interface RemoteUserService {
      * @param openid openid
      * @return 结果
      */
-    XcxLoginUser getUserInfoByOpenid(String openid) throws UserException;
+    LoginUser getUserInfoByOpenid(String openid) throws UserException;
 
     /**
      * 注册用户信息

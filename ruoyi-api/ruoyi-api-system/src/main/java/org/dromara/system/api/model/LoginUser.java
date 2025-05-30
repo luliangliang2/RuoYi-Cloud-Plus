@@ -148,4 +148,8 @@ public class LoginUser implements Serializable {
         return userType + ":" + userId;
     }
 
+    /**
+     * openid(仅小程序登录使用)
+     */
+    private String openid;
 }
