@@ -570,6 +570,30 @@ public class SysUserServiceImpl implements ISysUserService {
         return StreamUtils.toList(userRoles, SysUserRole::getUserId);
     }
 
+    @Override
+    public Map<String, String> selectNicknameMapByIds(List<String> userIds) {
+        if(CollUtil.isEmpty(userIds)){
+            return Map.of();
+        }
+        List<SysUser>  sysUsers =     baseMapper.selectByIds(userIds);
+        if(CollUtil.isEmpty(sysUsers)){
+            return Map.of();
+        }
+        return StreamUtils.toMap(sysUsers,r-> String.valueOf(r.getUserId()),SysUser::getNickName);
+    }
+
+    @Override
+    public Map<String, String> selectUserNameMapByIds(List<String> userIds) {
+        if(CollUtil.isEmpty(userIds)){
+            return Map.of();
+        }
+        List<SysUser>  sysUsers =     baseMapper.selectByIds(userIds);
+        if(CollUtil.isEmpty(sysUsers)){
+            return Map.of();
+        }
+        return StreamUtils.toMap(sysUsers,r-> String.valueOf(r.getUserId()),SysUser::getUserName);
+    }
+
     /**
      * 通过用户ID查询用户账户
      *

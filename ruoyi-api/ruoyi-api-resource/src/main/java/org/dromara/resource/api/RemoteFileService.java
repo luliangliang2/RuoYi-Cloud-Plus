@@ -4,6 +4,7 @@ import org.dromara.common.core.exception.ServiceException;
 import org.dromara.resource.api.domain.RemoteFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件服务
@@ -27,6 +28,9 @@ public interface RemoteFileService {
      * @return url串逗号分隔
      */
     String selectUrlByIds(String ossIds);
+
+
+    Map<String,String> selectUrlMapByIds(List<String> ossIds);
 
     /**
      * 通过ossId查询列表

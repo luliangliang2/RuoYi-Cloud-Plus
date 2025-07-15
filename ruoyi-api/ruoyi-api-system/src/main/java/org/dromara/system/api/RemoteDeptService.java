@@ -3,6 +3,7 @@ package org.dromara.system.api;
 import org.dromara.system.api.domain.vo.RemoteDeptVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 部门服务
@@ -18,6 +19,15 @@ public interface RemoteDeptService {
      * @return 部门名称串逗号分隔
      */
     String selectDeptNameByIds(String deptIds);
+
+
+    /**
+     * 通过部门ID查询部门名称
+     *
+     * @param deptIds 部门ID串逗号分隔
+     * @return 部门名称串逗号分隔
+     */
+    Map<String,String> selectDeptNameMapByIds(List<String> deptIds);
 
     /**
      * 根据部门ID查询部门负责人

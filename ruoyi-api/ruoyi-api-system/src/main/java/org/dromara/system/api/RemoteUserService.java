@@ -93,6 +93,9 @@ public interface RemoteUserService {
      */
     String selectNicknameByIds(String userIds);
 
+
+    Map<String,String> selectNicknameMapByIds(List<String> userIds);
+
     /**
      * 通过用户ID查询用户手机号
      *
@@ -188,5 +191,8 @@ public interface RemoteUserService {
      * @return Map，其中 key 为岗位 ID，value 为对应的岗位名称
      */
     Map<Long, String> selectPostNamesByIds(List<Long> postIds);
+
+
+    Map<String,String> selectUserNameMapByIds(List<String> userIds);
 
 }

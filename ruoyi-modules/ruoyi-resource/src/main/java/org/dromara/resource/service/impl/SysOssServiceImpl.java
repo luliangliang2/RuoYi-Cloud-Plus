@@ -1,6 +1,7 @@
 package org.dromara.resource.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -12,6 +13,7 @@ import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.SpringUtils;
+import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.file.FileUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
@@ -38,6 +40,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 文件上传 服务层实现
@@ -243,6 +246,18 @@ public class SysOssServiceImpl implements ISysOssService {
             storage.delete(sysOss.getUrl());
         }
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    @Override
+    public Map<String, String> selectUrlByIds(List<String> ids) {
+        if(CollUtil.isEmpty(ids)){
+             return  Map.of();
+        }
+        List<SysOss> list = baseMapper.selectByIds(ids);
+        if(CollUtil.isEmpty(list)){
+            return  Map.of();
+        }
+        return StreamUtils.toMap(list,r->String.valueOf(r.getOssId()),SysOss::getUrl);
     }
 
     /**

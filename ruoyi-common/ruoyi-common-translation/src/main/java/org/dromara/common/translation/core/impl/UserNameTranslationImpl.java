@@ -7,6 +7,9 @@ import org.dromara.system.api.RemoteUserService;
 import lombok.AllArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboReference;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 用户名翻译实现
  *
@@ -22,5 +25,10 @@ public class UserNameTranslationImpl implements TranslationInterface<String> {
     @Override
     public String translation(Object key, String other) {
         return remoteUserService.selectUserNameById((Long) key);
+    }
+
+    @Override
+    public Map<String, String> batchTranslation(List<String> keys, String other) {
+        return remoteUserService.selectUserNameMapByIds(keys);
     }
 }

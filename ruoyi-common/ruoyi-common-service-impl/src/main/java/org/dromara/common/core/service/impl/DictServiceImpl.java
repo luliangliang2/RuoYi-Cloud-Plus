@@ -1,5 +1,7 @@
 package org.dromara.common.core.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.common.core.constant.CacheConstants;
@@ -27,6 +29,15 @@ public class DictServiceImpl implements DictService {
 
     @DubboReference
     private RemoteDictService remoteDictService;
+
+    @Override
+    public Map<String, String> getDictLabel(String dictType) {
+        List<RemoteDictDataVo> remoteDictDataVos = remoteDictService.selectDictDataByType(dictType);
+        if (CollUtil.isEmpty(remoteDictDataVos)) {
+            return Map.of();
+        }
+        return StreamUtils.toMap(remoteDictDataVos, RemoteDictDataVo::getDictValue, RemoteDictDataVo::getDictLabel);
+    }
 
     /**
      * 根据字典类型和字典值获取字典标签
