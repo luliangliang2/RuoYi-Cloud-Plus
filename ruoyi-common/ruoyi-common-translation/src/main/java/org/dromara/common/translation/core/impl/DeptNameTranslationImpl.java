@@ -7,6 +7,9 @@ import org.dromara.system.api.RemoteDeptService;
 import lombok.AllArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboReference;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 部门翻译实现
  *
@@ -22,5 +25,10 @@ public class DeptNameTranslationImpl implements TranslationInterface<String> {
     @Override
     public String translation(Object key, String other) {
         return remoteDeptService.selectDeptNameByIds(key.toString());
+    }
+
+    @Override
+    public Map<String, String> batchTranslation(List<String> keys, String other) {
+        return remoteDeptService.selectDeptNameMapByIds(keys);
     }
 }

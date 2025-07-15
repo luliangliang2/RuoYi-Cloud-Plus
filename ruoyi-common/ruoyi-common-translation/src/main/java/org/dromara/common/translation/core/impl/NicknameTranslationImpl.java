@@ -7,6 +7,9 @@ import org.dromara.common.translation.constant.TransConstant;
 import org.dromara.common.translation.core.TranslationInterface;
 import org.dromara.system.api.RemoteUserService;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 用户昵称翻译实现
  *
@@ -27,5 +30,10 @@ public class NicknameTranslationImpl implements TranslationInterface<String> {
             return remoteUserService.selectNicknameByIds(ids);
         }
         return null;
+    }
+
+    @Override
+    public Map<String, String> batchTranslation(List<String> keys, String other) {
+        return remoteUserService.selectNicknameMapByIds(keys);
     }
 }

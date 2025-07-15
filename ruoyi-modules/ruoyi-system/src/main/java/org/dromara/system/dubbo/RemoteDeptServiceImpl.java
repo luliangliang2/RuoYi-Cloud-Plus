@@ -1,15 +1,21 @@
 package org.dromara.system.dubbo;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.system.api.RemoteDeptService;
 import org.dromara.system.api.domain.vo.RemoteDeptVo;
 import org.dromara.system.domain.vo.SysDeptVo;
 import org.dromara.system.service.ISysDeptService;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 部门服务
@@ -32,6 +38,18 @@ public class RemoteDeptServiceImpl implements RemoteDeptService {
     @Override
     public String selectDeptNameByIds(String deptIds) {
         return sysDeptService.selectDeptNameByIds(deptIds);
+    }
+
+    @Override
+    public Map<String, String> selectDeptNameMapByIds(List<String> deptIds) {
+        if(CollUtil.isEmpty(deptIds)){
+            return Map.of();
+        }
+        List<SysDeptVo> sysDeptVos =  sysDeptService.selectDeptByIds(deptIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+       if(CollUtil.isEmpty(sysDeptVos)){
+           return Map.of();
+       }
+        return StreamUtils.toMap(sysDeptVos,r->String.valueOf(r.getDeptId()),SysDeptVo::getDeptName);
     }
 
     /**

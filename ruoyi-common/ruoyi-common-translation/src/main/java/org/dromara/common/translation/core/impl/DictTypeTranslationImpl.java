@@ -7,6 +7,9 @@ import org.dromara.common.translation.constant.TransConstant;
 import org.dromara.common.translation.core.TranslationInterface;
 import lombok.AllArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 字典翻译实现
  *
@@ -24,5 +27,10 @@ public class DictTypeTranslationImpl implements TranslationInterface<String> {
             return dictService.getDictLabel(other, key.toString());
         }
         return null;
+    }
+
+    @Override
+    public Map<String, String> batchTranslation(List<String> keys, String other) {
+        return dictService.getDictLabel(other);
     }
 }
