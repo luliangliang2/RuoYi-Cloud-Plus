@@ -302,3 +302,5 @@ tenant:
     - sys_client
     - sys_oss_config
     - flow_spel
+translation:
+  package: org.dromara

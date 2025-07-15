@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 流程分类Service业务层处理
@@ -74,6 +75,19 @@ public class FlwCategoryServiceImpl implements IFlwCategoryService {
         FlowCategory category = baseMapper.selectOne(new LambdaQueryWrapper<FlowCategory>()
             .select(FlowCategory::getCategoryName).eq(FlowCategory::getCategoryId, categoryId));
         return ObjectUtils.notNullGetter(category, FlowCategory::getCategoryName);
+    }
+
+    @Override
+    public Map<String, String> selectCategoryNameMapById(List<String> categoryId) {
+        if (CollUtil.isEmpty(categoryId)) {
+            return Map.of();
+        }
+        List<FlowCategory> list = baseMapper.selectByIds(categoryId);
+        if (CollUtil.isEmpty(list)) {
+            return Map.of();
+        }
+        return StreamUtils.toMap(list, r -> String.valueOf(r.getCategoryId()), FlowCategory::getCategoryName);
+
     }
 
     /**

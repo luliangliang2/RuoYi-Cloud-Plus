@@ -17,10 +17,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-json</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.dromara</groupId>
@@ -35,6 +31,12 @@
         <dependency>
             <groupId>org.dromara</groupId>
             <artifactId>ruoyi-api-resource</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

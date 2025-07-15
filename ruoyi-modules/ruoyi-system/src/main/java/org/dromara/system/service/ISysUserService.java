@@ -7,6 +7,7 @@ import org.dromara.system.domain.vo.SysUserExportVo;
 import org.dromara.system.domain.vo.SysUserVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户 业务层
@@ -273,5 +274,11 @@ public interface ISysUserService {
      * @return 用户ids
      */
     List<Long> selectUserIdsByRoleIds(List<Long> roleIds);
+
+
+    Map<String,String> selectNicknameMapByIds(List<String> userIds);
+
+
+    Map<String,String> selectUserNameMapByIds(List<String> userIds);
 
 }

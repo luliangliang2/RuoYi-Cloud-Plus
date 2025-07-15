@@ -235,6 +235,11 @@ public class RemoteUserServiceImpl implements RemoteUserService {
         return userService.selectNicknameByIds(userIds);
     }
 
+    @Override
+    public Map<String, String> selectNicknameMapByIds(List<String> userIds) {
+        return userService.selectNicknameMapByIds(userIds);
+    }
+
     /**
      * 通过用户ID查询用户手机号
      *
@@ -413,6 +418,11 @@ public class RemoteUserServiceImpl implements RemoteUserService {
                 .in(SysUser::getUserId, userIds)
         );
         return StreamUtils.toMap(list, SysUser::getUserId, SysUser::getNickName);
+    }
+
+    @Override
+    public Map<String, String> selectUserNameMapByIds(List<String> userIds) {
+        return userService.selectUserNameMapByIds(userIds);
     }
 
 }
