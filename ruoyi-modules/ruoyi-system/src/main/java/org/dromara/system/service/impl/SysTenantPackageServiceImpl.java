@@ -2,29 +2,36 @@ package org.dromara.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.SystemConstants;
+import org.dromara.common.core.constant.TenantConstants;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.tenant.helper.TenantHelper;
+import org.dromara.system.domain.SysRole;
+import org.dromara.system.domain.SysRoleMenu;
 import org.dromara.system.domain.SysTenant;
 import org.dromara.system.domain.SysTenantPackage;
 import org.dromara.system.domain.bo.SysTenantPackageBo;
 import org.dromara.system.domain.vo.SysTenantPackageVo;
+import org.dromara.system.mapper.SysRoleMapper;
+import org.dromara.system.mapper.SysRoleMenuMapper;
 import org.dromara.system.mapper.SysTenantMapper;
 import org.dromara.system.mapper.SysTenantPackageMapper;
 import org.dromara.system.service.ISysTenantPackageService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 租户套餐Service业务层处理
@@ -37,20 +44,19 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
 
     private final SysTenantPackageMapper baseMapper;
     private final SysTenantMapper tenantMapper;
+    private final SysRoleMapper roleMapper;
+    private final SysRoleMenuMapper roleMenuMapper;
 
-    /**
-     * 查询租户套餐
-     */
+    /** 查询租户套餐 */
     @Override
-    public SysTenantPackageVo queryById(Long packageId){
+    public SysTenantPackageVo queryById(Long packageId) {
         return baseMapper.selectVoById(packageId);
     }
 
-    /**
-     * 查询租户套餐列表
-     */
+    /** 查询租户套餐列表 */
     @Override
-    public TableDataInfo<SysTenantPackageVo> queryPageList(SysTenantPackageBo bo, PageQuery pageQuery) {
+    public TableDataInfo<SysTenantPackageVo> queryPageList(
+        SysTenantPackageBo bo, PageQuery pageQuery) {
         LambdaQueryWrapper<SysTenantPackage> lqw = buildQueryWrapper(bo);
         Page<SysTenantPackageVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
         return TableDataInfo.build(result);
@@ -58,13 +64,12 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
 
     @Override
     public List<SysTenantPackageVo> selectList() {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<SysTenantPackage>()
+        return baseMapper.selectVoList(
+            new LambdaQueryWrapper<SysTenantPackage>()
                 .eq(SysTenantPackage::getStatus, SystemConstants.NORMAL));
     }
 
-    /**
-     * 查询租户套餐列表
-     */
+    /** 查询租户套餐列表 */
     @Override
     public List<SysTenantPackageVo> queryList(SysTenantPackageBo bo) {
         LambdaQueryWrapper<SysTenantPackage> lqw = buildQueryWrapper(bo);
@@ -73,15 +78,16 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
 
     private LambdaQueryWrapper<SysTenantPackage> buildQueryWrapper(SysTenantPackageBo bo) {
         LambdaQueryWrapper<SysTenantPackage> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getPackageName()), SysTenantPackage::getPackageName, bo.getPackageName());
+        lqw.like(
+            StringUtils.isNotBlank(bo.getPackageName()),
+            SysTenantPackage::getPackageName,
+            bo.getPackageName());
         lqw.eq(StringUtils.isNotBlank(bo.getStatus()), SysTenantPackage::getStatus, bo.getStatus());
         lqw.orderByAsc(SysTenantPackage::getPackageId);
         return lqw;
     }
 
-    /**
-     * 新增租户套餐
-     */
+    /** 新增租户套餐 */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(SysTenantPackageBo bo) {
@@ -100,9 +106,7 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
         return flag;
     }
 
-    /**
-     * 修改租户套餐
-     */
+    /** 修改租户套餐 */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(SysTenantPackageBo bo) {
@@ -114,17 +118,64 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
         } else {
             update.setMenuIds("");
         }
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            TenantHelper.ignore(
+                () -> {
+                    // 忽略租户环境下执行
+                    List<String> tenantIds =
+                        tenantMapper
+                            .selectList(
+                                new LambdaQueryWrapper<SysTenant>()
+                                    .eq(SysTenant::getPackageId, bo.getPackageId())
+                                    .select(SysTenant::getTenantId)
+                                    .groupBy(SysTenant::getTenantId))
+                            .stream()
+                            .map(SysTenant::getTenantId)
+                            .collect(Collectors.toList());
+                    updateTenantRoleMenu(tenantIds, List.of(bo.getMenuIds()));
+                });
+        }
+        return flag;
     }
 
-    /**
-     * 校验套餐名称是否唯一
-     */
+    private void updateTenantRoleMenu(List<String> tenantIds, List<Long> menuIds) {
+        List<Long> roleIds =
+            roleMapper
+                .selectList(
+                    new LambdaQueryWrapper<SysRole>()
+                        .eq(SysRole::getTenantId, tenantIds)
+                        .eq(SysRole::getRoleKey, TenantConstants.TENANT_ADMIN_ROLE_KEY)
+                        .select(SysRole::getRoleId))
+                .stream()
+                .map(SysRole::getRoleId)
+                .collect(Collectors.toList());
+
+        roleIds.forEach(
+            roleId -> {
+                List<SysRoleMenu> roleMenus = new ArrayList<>(menuIds.size());
+                menuIds.forEach(
+                    menuId -> {
+                        SysRoleMenu roleMenu = new SysRoleMenu();
+                        roleMenu.setRoleId(roleId);
+                        roleMenu.setMenuId(menuId);
+                        roleMenus.add(roleMenu);
+                    });
+                roleMenuMapper.insertBatch(roleMenus);
+            });
+    }
+
+    /** 校验套餐名称是否唯一 */
     @Override
     public boolean checkPackageNameUnique(SysTenantPackageBo bo) {
-        boolean exist = baseMapper.exists(new LambdaQueryWrapper<SysTenantPackage>()
-            .eq(SysTenantPackage::getPackageName, bo.getPackageName())
-            .ne(ObjectUtil.isNotNull(bo.getPackageId()), SysTenantPackage::getPackageId, bo.getPackageId()));
+        boolean exist =
+            baseMapper.exists(
+                new LambdaQueryWrapper<SysTenantPackage>()
+                    .eq(SysTenantPackage::getPackageName, bo.getPackageName())
+                    .ne(
+                        ObjectUtil.isNotNull(bo.getPackageId()),
+                        SysTenantPackage::getPackageId,
+                        bo.getPackageId()));
         return !exist;
     }
 
@@ -140,14 +191,13 @@ public class SysTenantPackageServiceImpl implements ISysTenantPackageService {
         return baseMapper.updateById(tenantPackage);
     }
 
-    /**
-     * 批量删除租户套餐
-     */
+    /** 批量删除租户套餐 */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if(isValid){
-            boolean exists = tenantMapper.exists(new LambdaQueryWrapper<SysTenant>().in(SysTenant::getPackageId, ids));
+        if (isValid) {
+            boolean exists =
+                tenantMapper.exists(new LambdaQueryWrapper<SysTenant>().in(SysTenant::getPackageId, ids));
             if (exists) {
                 throw new ServiceException("租户套餐已被使用");
             }
