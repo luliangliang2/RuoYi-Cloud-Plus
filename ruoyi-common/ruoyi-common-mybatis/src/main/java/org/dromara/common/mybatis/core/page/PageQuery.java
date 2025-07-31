@@ -2,17 +2,21 @@ package org.dromara.common.mybatis.core.page;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dromara.common.core.constant.GlobalConstants;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.sql.SqlUtil;
+import org.dromara.common.redis.utils.RedisUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +63,12 @@ public class PageQuery implements Serializable {
     public static final int DEFAULT_PAGE_SIZE = Integer.MAX_VALUE;
 
     /**
+     * 构建排序缓存key
+     */
+    String cacheKeyPrefix = GlobalConstants.GLOBAL_REDIS_KEY + "buildOrderItem" + ":" ;
+
+
+    /**
      * 构建分页对象
      */
     public <T> Page<T> build() {
@@ -88,23 +98,28 @@ public class PageQuery implements Serializable {
         if (StringUtils.isBlank(orderByColumn) || StringUtils.isBlank(isAsc)) {
             return null;
         }
+        String cacheKey = cacheKeyPrefix     + orderByColumn + ":" + isAsc;
+        List<OrderItem> list  = RedisUtils.getCacheObject(cacheKey);
+        if( CollUtil.isNotEmpty(list)){
+            return list;
+        }else{
+            list = new ArrayList<>();
+        }
         String orderBy = SqlUtil.escapeOrderBySql(orderByColumn);
         orderBy = StringUtils.toUnderScoreCase(orderBy);
 
         // 兼容前端排序类型
-        isAsc = StringUtils.replaceEach(isAsc, new String[]{"ascending", "descending"}, new String[]{"asc", "desc"});
-
-        String[] orderByArr = orderBy.split(StringUtils.SEPARATOR);
-        String[] isAscArr = isAsc.split(StringUtils.SEPARATOR);
-        if (isAscArr.length != 1 && isAscArr.length != orderByArr.length) {
+        isAsc = StrUtil.replaceIgnoreCase(isAsc, "ascending", "asc");
+        isAsc = StrUtil.replaceIgnoreCase(isAsc, "descending", "desc");
+        List<String> orderByArr = StrUtil.split(orderBy,StringUtils.SEPARATOR);
+        List<String> isAscArr = StrUtil.split(isAsc,StringUtils.SEPARATOR);
+        if (isAscArr.size() != 1 && isAscArr.size() != orderByArr.size()) {
             throw new ServiceException("排序参数有误");
         }
-
-        List<OrderItem> list = new ArrayList<>();
         // 每个字段各自排序
-        for (int i = 0; i < orderByArr.length; i++) {
-            String orderByStr = orderByArr[i];
-            String isAscStr = isAscArr.length == 1 ? isAscArr[0] : isAscArr[i];
+        for (int i = 0; i < orderByArr.size(); i++) {
+            String orderByStr = orderByArr.get(i);
+            String isAscStr = isAscArr.size() == 1 ? isAscArr.get(0) : isAscArr.get(i);
             if ("asc".equals(isAscStr)) {
                 list.add(OrderItem.asc(orderByStr));
             } else if ("desc".equals(isAscStr)) {
@@ -113,6 +128,7 @@ public class PageQuery implements Serializable {
                 throw new ServiceException("排序参数有误");
             }
         }
+        RedisUtils.setCacheObject(cacheKey, list, Duration.ofDays(15));
         return list;
     }
 
