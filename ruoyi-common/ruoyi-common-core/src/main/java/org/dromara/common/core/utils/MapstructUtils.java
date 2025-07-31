@@ -19,6 +19,7 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MapstructUtils {
 
+    //io.github.linpeilie.Converter组件属于MapStruct生态的增强工具，其核心实现是通过‌编译期代码生成‌而非运行时反射,性能高，比MapStruct灵活。
     private final static Converter CONVERTER = SpringUtils.getBean(Converter.class);
 
     /**
@@ -29,10 +30,7 @@ public class MapstructUtils {
      * @return desc
      */
     public static <T, V> V convert(T source, Class<V> desc) {
-        if (ObjectUtil.isNull(source)) {
-            return null;
-        }
-        if (ObjectUtil.isNull(desc)) {
+        if (ObjectUtil.isNull(source) || ObjectUtil.isNull(desc)) {
             return null;
         }
         return CONVERTER.convert(source, desc);
