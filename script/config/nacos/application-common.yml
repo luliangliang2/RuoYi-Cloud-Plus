@@ -46,8 +46,28 @@ spring:
       enabled: false
   task:
     execution:
-      # 从 springboot 3.5 开始 spring自带线程池
-      # 不再需要 AsyncConfig与ThreadPoolConfig 可直接注入线程池使用
+      # Spring Boot 3.5 TaskExecutor 自动配置机制：
+      #
+      # @Async 执行器查找顺序：AsyncConfigurer > taskExecutor bean > 唯一TaskExecutor > SimpleAsyncTaskExecutor
+      #
+      # 场景一：无自定义 Executor
+      #   - 自动配置 applicationTaskExecutor + 默认 AsyncConfigurer
+      #   - @Async 使用 applicationTaskExecutor
+      #
+      # 场景二：有自定义 Executor 但无 AsyncConfigurer
+      #   - 自动配置退让，@Async 降级为 SimpleAsyncTaskExecutor
+      #   - 性能问题：每次创建新线程，无复用
+      #
+      # 场景三：有自定义 AsyncConfigurer
+      #   - 用户完全控制，Spring 不干预异步执行逻辑
+      #
+      # 场景四：强制模式（推荐）
+      #   - mode=force 强制创建 applicationTaskExecutor，但不覆盖用户的 AsyncConfigurer
+      #   - 与自定义 Executor 共存
+      #   - 若无用户 AsyncConfigurer，@Async 使用 applicationTaskExecutor
+      #   - 若有用户 AsyncConfigurer，@Async 仍遵循用户配置
+      #
+      # mode: force
       thread-name-prefix: async-
   # 资源信息
   messages:
