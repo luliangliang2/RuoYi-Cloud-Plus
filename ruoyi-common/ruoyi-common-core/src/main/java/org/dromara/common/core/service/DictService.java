@@ -2,6 +2,7 @@ package org.dromara.common.core.service;
 
 import org.dromara.common.core.utils.StringUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +22,22 @@ public interface DictService {
     default String getDictLabel(String dictType, String dictValue) {
         return getDictLabel(dictType, dictValue, StringUtils.SEPARATOR);
     }
+
+    /**
+     * 根据字典类型和字典值获取字典标签
+     *
+     * @param dictType  字典类型
+     * @param dictValue 字典值
+     * @return 字典标签
+     */
+
+    /**
+     * 根据字典类型和字典值获取字典标签
+     * @param dictType  字典类型
+     * @return map
+     */
+     Map<String,String> getDictLabel(String dictType);
+
 
     /**
      * 根据字典类型和字典标签获取字典值

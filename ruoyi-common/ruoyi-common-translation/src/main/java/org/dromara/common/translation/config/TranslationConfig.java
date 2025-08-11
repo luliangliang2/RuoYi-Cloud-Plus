@@ -3,10 +3,9 @@ package org.dromara.common.translation.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dromara.common.translation.annotation.TranslationType;
 import org.dromara.common.translation.core.TranslationInterface;
-import org.dromara.common.translation.core.handler.TranslationBeanSerializerModifier;
-import org.dromara.common.translation.core.handler.TranslationHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.translation.core.cache.TranslationCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 
@@ -26,8 +25,6 @@ public class TranslationConfig {
     @Autowired
     private List<TranslationInterface<?>> list;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @PostConstruct
     public void init() {
@@ -40,11 +37,7 @@ public class TranslationConfig {
                 log.warn(trans.getClass().getName() + " 翻译实现类未标注 TranslationType 注解!");
             }
         }
-        TranslationHandler.TRANSLATION_MAPPER.putAll(map);
-        // 设置 Bean 序列化修改器
-        objectMapper.setSerializerFactory(
-            objectMapper.getSerializerFactory()
-                .withSerializerModifier(new TranslationBeanSerializerModifier()));
+        TranslationCache.TRANSLATION_MAPPER.putAll(map);
     }
 
 }

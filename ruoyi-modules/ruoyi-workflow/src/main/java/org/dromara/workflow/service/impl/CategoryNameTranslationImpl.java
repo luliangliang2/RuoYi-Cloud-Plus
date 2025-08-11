@@ -10,6 +10,9 @@ import org.dromara.workflow.common.constant.FlowConstant;
 import org.dromara.workflow.service.IFlwCategoryService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 流程分类名称翻译实现
  *
@@ -27,5 +30,10 @@ public class CategoryNameTranslationImpl implements TranslationInterface<String>
     @Override
     public String translation(Object key, String other) {
         return flwCategoryService.selectCategoryNameById(Convert.toLong(key));
+    }
+
+    @Override
+    public Map<String, String> batchTranslation(List<String> keys, String other) {
+        return Map.of();
     }
 }

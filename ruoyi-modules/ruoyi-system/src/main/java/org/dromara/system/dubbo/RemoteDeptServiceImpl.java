@@ -14,10 +14,11 @@ import org.dromara.system.domain.vo.SysDeptVo;
 import org.dromara.system.mapper.SysDeptMapper;
 import org.dromara.system.service.ISysDeptService;
 import org.springframework.stereotype.Service;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 
 /**
  * 部门服务
@@ -41,6 +42,18 @@ public class RemoteDeptServiceImpl implements RemoteDeptService {
     @Override
     public String selectDeptNameByIds(String deptIds) {
         return deptService.selectDeptNameByIds(deptIds);
+    }
+
+    @Override
+    public Map<String, String> selectDeptNameMapByIds(List<String> deptIds) {
+        if(CollUtil.isEmpty(deptIds)){
+            return Map.of();
+        }
+        List<SysDeptVo> sysDeptVos =  deptService.selectDeptByIds(deptIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+       if(CollUtil.isEmpty(sysDeptVos)){
+           return Map.of();
+       }
+        return StreamUtils.toMap(sysDeptVos,r->String.valueOf(r.getDeptId()),SysDeptVo::getDeptName);
     }
 
     /**

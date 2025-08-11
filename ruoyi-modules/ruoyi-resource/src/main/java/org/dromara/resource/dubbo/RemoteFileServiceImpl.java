@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件请求处理
@@ -72,6 +73,11 @@ public class RemoteFileServiceImpl implements RemoteFileService {
      */
     @Override
     public String selectUrlByIds(String ossIds) {
+        return sysOssService.selectUrlByIds(ossIds);
+    }
+
+    @Override
+    public Map<String, String> selectUrlMapByIds(List<String> ossIds) {
         return sysOssService.selectUrlByIds(ossIds);
     }
 
