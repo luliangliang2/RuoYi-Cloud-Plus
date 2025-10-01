@@ -314,3 +314,10 @@ nbdist/
 /script/docker/redis/data/appendonlydir/appendonly.aof.1.incr.aof
 /script/docker/redis/data/appendonlydir/appendonly.aof.manifest
 /script/docker/redis/data/dump.rdb
+/script/docker/minio/data/.minio.sys/buckets/.heal/mrf/list.bin
+/script/docker/rabbitmq/data/mnesia/rabbit@fa0a20b7ce0e/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/clean.dot
+/script/docker/rabbitmq/data/mnesia/rabbit@fa0a20b7ce0e/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/file_summary.ets
+/script/docker/rabbitmq/data/mnesia/rabbit@fa0a20b7ce0e/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent/msg_store_index.ets
+/script/docker/rabbitmq/data/mnesia/rabbit@fa0a20b7ce0e/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/clean.dot
+/script/docker/rabbitmq/data/mnesia/rabbit@fa0a20b7ce0e/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/file_summary.ets
+/script/docker/rabbitmq/data/mnesia/rabbit@fa0a20b7ce0e/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L/msg_store_transient/msg_store_index.ets
