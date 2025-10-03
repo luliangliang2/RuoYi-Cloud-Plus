@@ -13,7 +13,7 @@ import jakarta.validation.constraints.*;
  * 用户场景学习进度业务对象 cognition_user_progress
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -42,7 +42,7 @@ public class CognitionUserProgressBo extends BaseEntity {
     private Long userId;
 
     /**
-     * 完成训练
+     * 是否完成
      */
     private Long isCompleted;
 

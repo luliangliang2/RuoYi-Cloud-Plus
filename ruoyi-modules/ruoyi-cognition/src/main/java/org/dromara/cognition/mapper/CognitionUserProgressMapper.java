@@ -8,7 +8,7 @@ import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
  * 用户场景学习进度Mapper接口
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 public interface CognitionUserProgressMapper extends BaseMapperPlus<CognitionUserProgress, CognitionUserProgressVo> {
 

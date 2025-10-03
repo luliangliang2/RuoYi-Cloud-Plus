@@ -18,7 +18,7 @@ import java.util.Date;
  * 用户场景学习进度视图对象 cognition_user_progress
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 @Data
 @ExcelIgnoreUnannotated
@@ -53,9 +53,9 @@ public class CognitionUserProgressVo implements Serializable {
     private Long userId;
 
     /**
-     * 完成训练
+     * 是否完成
      */
-    @ExcelProperty(value = "完成训练", converter = ExcelDictConvert.class)
+    @ExcelProperty(value = "是否完成", converter = ExcelDictConvert.class)
     @ExcelDictFormat(dictType = "sys_yes_no")
     private Long isCompleted;
 

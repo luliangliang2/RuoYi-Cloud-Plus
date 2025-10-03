@@ -11,7 +11,7 @@ import java.io.Serial;
  * 用户场景学习进度对象 cognition_user_progress
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -43,9 +43,15 @@ public class CognitionUserProgress extends TenantEntity {
     private Long userId;
 
     /**
-     * 完成训练
+     * 是否完成
      */
     private Long isCompleted;
+
+    /**
+     * 删除标志
+     */
+    @TableLogic
+    private Long delFlag;
 
 
 }

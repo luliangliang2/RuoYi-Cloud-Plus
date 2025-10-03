@@ -48,9 +48,13 @@ CREATE TABLE cognition_user_progress
     user_id      BIGINT NOT NULL COMMENT '用户ID',
     is_completed TINYINT     DEFAULT 0 COMMENT '是否完成整个场景 0未完成 1已完成',
 
-    tenant_id    VARCHAR(20) DEFAULT '000000' COMMENT '租户编号',
-    create_time  DATETIME NULL DEFAULT NULL COMMENT '创建时间',
-    update_time  DATETIME NULL DEFAULT NULL COMMENT '更新时间',
+    tenant_id      VARCHAR(20) DEFAULT '000000' COMMENT '租户编号',
+    create_dept    BIGINT NULL DEFAULT NULL COMMENT '创建部门',
+    create_time    DATETIME NULL DEFAULT NULL COMMENT '创建时间',
+    create_by      BIGINT NULL DEFAULT NULL COMMENT '创建人',
+    update_time    DATETIME NULL DEFAULT NULL COMMENT '更新时间',
+    update_by      BIGINT NULL DEFAULT NULL COMMENT '更新人',
+    del_flag       INT         DEFAULT 0 COMMENT '删除标志',
 
     PRIMARY KEY (id) USING BTREE,
     KEY          idx_user_scene (user_id, scene_id)

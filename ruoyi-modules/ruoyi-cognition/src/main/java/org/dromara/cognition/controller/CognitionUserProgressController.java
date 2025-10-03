@@ -27,7 +27,7 @@ import org.dromara.common.mybatis.core.page.TableDataInfo;
  * 前端访问路由地址为:/cognition/userProgress
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 @Validated
 @RequiredArgsConstructor
@@ -89,6 +89,17 @@ public class CognitionUserProgressController extends BaseController {
     @PutMapping()
     public R<Void> edit(@Validated(EditGroup.class) @RequestBody CognitionUserProgressBo bo) {
         return toAjax(cognitionUserProgressService.updateByBo(bo));
+    }
+
+    /**
+     * 修改用户场景学习进度
+     */
+    @SaCheckPermission("cognition:userProgress:edit")
+    @Log(title = "用户场景学习进度", businessType = BusinessType.UPDATE)
+    @RepeatSubmit()
+    @PutMapping("/changeUserProgress")
+    public R<Void> changeUserProgress(@RequestBody CognitionUserProgressBo bo) {
+        return toAjax(cognitionUserProgressService.changeUserProgress(bo));
     }
 
     /**

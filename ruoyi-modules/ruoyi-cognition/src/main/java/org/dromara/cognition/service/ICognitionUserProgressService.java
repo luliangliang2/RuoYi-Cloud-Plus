@@ -1,19 +1,17 @@
 package org.dromara.cognition.service;
 
-import org.dromara.cognition.domain.CognitionUserProgress;
-import org.dromara.cognition.domain.vo.CognitionUserProgressVo;
-import org.dromara.cognition.domain.bo.CognitionUserProgressBo;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
-import org.dromara.common.mybatis.core.page.PageQuery;
-
 import java.util.Collection;
 import java.util.List;
+import org.dromara.cognition.domain.bo.CognitionUserProgressBo;
+import org.dromara.cognition.domain.vo.CognitionUserProgressVo;
+import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.page.TableDataInfo;
 
 /**
  * 用户场景学习进度Service接口
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 public interface ICognitionUserProgressService {
 
@@ -57,6 +55,14 @@ public interface ICognitionUserProgressService {
      * @return 是否修改成功
      */
     Boolean updateByBo(CognitionUserProgressBo bo);
+
+    /**
+     * 修改用户场景学习进度
+     *
+     * @param bo 用户场景学习进度
+     * @return 是否修改成功
+     */
+    Boolean changeUserProgress(CognitionUserProgressBo bo);
 
     /**
      * 校验并批量删除用户场景学习进度信息

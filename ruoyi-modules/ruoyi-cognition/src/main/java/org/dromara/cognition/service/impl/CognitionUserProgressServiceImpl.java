@@ -1,30 +1,29 @@
 package org.dromara.cognition.service.impl;
 
-import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
-import org.dromara.common.mybatis.core.page.PageQuery;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.dromara.cognition.domain.bo.CognitionUserProgressBo;
-import org.dromara.cognition.domain.vo.CognitionUserProgressVo;
-import org.dromara.cognition.domain.CognitionUserProgress;
-import org.dromara.cognition.mapper.CognitionUserProgressMapper;
-import org.dromara.cognition.service.ICognitionUserProgressService;
-
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.dromara.cognition.domain.CognitionUserProgress;
+import org.dromara.cognition.domain.bo.CognitionUserProgressBo;
+import org.dromara.cognition.domain.vo.CognitionUserProgressVo;
+import org.dromara.cognition.mapper.CognitionUserProgressMapper;
+import org.dromara.cognition.service.ICognitionUserProgressService;
+import org.dromara.common.core.utils.MapstructUtils;
+import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.springframework.stereotype.Service;
 
 /**
  * 用户场景学习进度Service业务层处理
  *
  * @author zhang
- * @date 2025-10-02
+ * @date 2025-10-03
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -40,7 +39,7 @@ public class CognitionUserProgressServiceImpl implements ICognitionUserProgressS
      * @return 用户场景学习进度
      */
     @Override
-    public CognitionUserProgressVo queryById(Long id){
+    public CognitionUserProgressVo queryById(Long id) {
         return baseMapper.selectVoById(id);
     }
 
@@ -110,10 +109,40 @@ public class CognitionUserProgressServiceImpl implements ICognitionUserProgressS
         return baseMapper.updateById(update) > 0;
     }
 
+    @Override
+    public Boolean changeUserProgress(CognitionUserProgressBo bo) {
+        CognitionUserProgress update = MapstructUtils.convert(bo, CognitionUserProgress.class);
+        CognitionUserProgress cognitionUserProgress = baseMapper.selectById(bo.getId());
+        if (ObjectUtils.isEmpty(cognitionUserProgress)) {
+            return baseMapper.insert(update) > 0;
+        }
+        isCompleted(bo.getSceneId(),bo.getStepId());
+        return baseMapper.updateById(update) > 0;
+    }
+
+    public Boolean isCompleted(Long sceneId, Long stepId) {
+        LambdaQueryWrapper<CognitionUserProgress> lqw = Wrappers.lambdaQuery();
+        lqw.eq(CognitionUserProgress::getSceneId, sceneId);
+
+        Long maxStepId = baseMapper.selectList(lqw).stream().map(CognitionUserProgress::getStepId).max(Long::compareTo)
+            .orElse(null);
+
+        if (stepId.equals(maxStepId)) {
+            CognitionUserProgress update = new CognitionUserProgress();
+            update.setIsCompleted(1L);
+            baseMapper.update(update,
+                Wrappers.lambdaUpdate(CognitionUserProgress.class).eq(CognitionUserProgress::getSceneId, sceneId));
+            return true;
+        }
+
+        return false;
+    }
+
+
     /**
      * 保存前的数据校验
      */
-    private void validEntityBeforeSave(CognitionUserProgress entity){
+    private void validEntityBeforeSave(CognitionUserProgress entity) {
         //TODO 做一些数据校验,如唯一约束
     }
 
@@ -126,7 +155,7 @@ public class CognitionUserProgressServiceImpl implements ICognitionUserProgressS
      */
     @Override
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if(isValid){
+        if (isValid) {
             //TODO 做一些业务上的校验,判断是否需要校验
         }
         return baseMapper.deleteByIds(ids) > 0;
