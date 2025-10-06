@@ -37,6 +37,7 @@ nbdist/
 ######################################################################
 # Others
 *.log
+*.log.gz
 *.xml.versionsBackup
 *.swp
 
@@ -45,3 +46,4 @@ nbdist/
 !*/build/*.xml
 
 .flattened-pom.xml
+/script/docker/*
