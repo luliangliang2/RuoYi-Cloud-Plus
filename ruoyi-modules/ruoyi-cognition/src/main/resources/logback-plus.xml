@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="60 seconds">
+    <!-- 日志存放路径 -->
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="console">
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>${console.log.pattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- 日志输出格式 -->
+    <include resource="logback-common.xml"/>
+
+    <!-- 控制台输出 -->
+    <include resource="logback-logstash.xml"/>
+
+    <include resource="logback-skylog.xml"/>
+
+    <property name="log.path" value="logs/${project.artifactId}"/>
+
+    <!-- 开启 skywalking 日志收集 -->
+    <property name="console.log.pattern"
+        value="%cyan(%d{yyyy-MM-dd HH:mm:ss}) %green([%thread]) %highlight(%-5level) %boldMagenta(%logger{36}%n) - %msg%n"/>
+
+    <!--系统操作日志-->
+    <root level="info">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>

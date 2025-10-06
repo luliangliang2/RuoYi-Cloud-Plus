@@ -83,3 +83,10 @@ spring:
                 - Path=/test-mq/**
               filters:
                 - StripPrefix=1
+            # 认知服务
+            - id: ruoyi-cognition
+              uri: lb://ruoyi-cognition
+              predicates:
+                - Path=/cognition/**
+              filters:
+                - StripPrefix=1
