@@ -190,7 +190,12 @@ public class WorkflowGlobalListener implements GlobalListener {
         if (variable.containsKey(FlowConstant.MESSAGE_TYPE)) {
             List<String> messageType = MapUtil.get(variable, FlowConstant.MESSAGE_TYPE, new TypeReference<>() {});
             String notice = MapUtil.getStr(variable, FlowConstant.MESSAGE_NOTICE);
-            flwCommonService.sendMessage(definition.getFlowName(), instance.getId(), messageType, notice);
+            try {
+                flwCommonService.sendMessage(definition.getFlowName(), instance.getId(), messageType, notice);
+            }catch (Exception e){
+                log.error("发送消息失败，流程定义名称: {}, 实例id: {}, 消息类型: {}, 消息内容: {}",
+                    definition.getFlowName(), instance.getId(), messageType, notice, e);
+            }
         }
         FlowEngine.insService().removeVariables(instance.getId(),
             FlowConstant.FLOW_COPY_LIST,
