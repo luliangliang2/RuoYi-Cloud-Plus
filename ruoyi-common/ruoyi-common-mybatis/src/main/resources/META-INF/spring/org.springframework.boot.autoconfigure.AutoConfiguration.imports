@@ -1,1 +1,2 @@
 org.dromara.common.mybatis.config.MybatisPlusConfiguration
+org.dromara.common.mybatis.config.DataScopeConfig
