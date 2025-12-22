@@ -1,6 +1,7 @@
 package org.dromara.common.mybatis.service;
 
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.dromara.common.mybatis.helper.DataScopeCacheHelper;
 import org.dromara.system.api.RemoteDataScopeService;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,16 @@ public class SysDataScopeService {
      * @return 返回角色的自定义权限语句，如果没有找到则返回 null
      */
     public String getRoleCustom(Long roleId) {
-        return remoteDataScopeService.getRoleCustom(roleId);
+        // 先查缓存
+        String cacheValue = DataScopeCacheHelper.getCache("getRoleCustom", roleId);
+        if (cacheValue != null) {
+            return cacheValue;
+        }
+        // 缓存未命中才远程调用
+        String result = remoteDataScopeService.getRoleCustom(roleId);
+        // 存入缓存
+        DataScopeCacheHelper.setCache("getRoleCustom", roleId, result);
+        return result;
     }
 
     /**
@@ -35,7 +45,16 @@ public class SysDataScopeService {
      * @return 返回部门及其下级的权限语句，如果没有找到则返回 null
      */
     public String getDeptAndChild(Long deptId) {
-        return remoteDataScopeService.getDeptAndChild(deptId);
+        // 先查缓存
+        String cacheValue = DataScopeCacheHelper.getCache("getDeptAndChild", deptId);
+        if (cacheValue != null) {
+            return cacheValue;
+        }
+        // 缓存未命中才远程调用,不存在返回 "-1"
+        String result = remoteDataScopeService.getDeptAndChild(deptId);
+        // 存入缓存
+        DataScopeCacheHelper.setCache("getDeptAndChild", deptId, result);
+        return result;
     }
 
 }

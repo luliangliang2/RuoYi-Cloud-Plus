@@ -1,1 +1,2 @@
 dubboDataPermissionFilter=org.dromara.common.mybatis.filter.DubboDataPermissionFilter
+dubboDataScopeCacheFilter=org.dromara.common.mybatis.filter.DubboDataScopeCacheFilter
