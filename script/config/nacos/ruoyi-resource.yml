@@ -23,7 +23,16 @@ spring:
 #          url: ${datasource.system-postgres.url}
 #          username: ${datasource.system-postgres.username}
 #          password: ${datasource.system-postgres.password}
-
+  servlet:
+    multipart:
+      # 单个文件最大限制
+      max-file-size: 100MB
+      # 单次请求总文件大小
+      max-request-size: 100MB
+      # 超过5MB写入磁盘（核心）
+      file-size-threshold: 5MB
+      # 容器内的临时目录（docker部署必须和DockerCompose路径一致）
+      location: /home/ruoyi/resource/temp
 # 默认/推荐使用sse推送
 sse:
   enabled: true

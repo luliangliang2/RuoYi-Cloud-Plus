@@ -251,11 +251,15 @@ services:
     environment:
       # 时区上海
       TZ: Asia/Shanghai
+      JAVA_OPTS: >-
+        -Djava.io.tmpdir=/home/ruoyi/resource/temp
     ports:
       - "9204:9204"
     volumes:
       # 配置文件
       - /docker/ruoyi-resource/logs/:/ruoyi/resource/logs
+      # 上传文件缓存路径映射(注意是否有宿主机该文件夹权限)
+      - /docker/ruoyi-resource/temp/:/home/ruoyi/resource/temp
       # skywalking 探针
       - /docker/skywalking/agent/:/ruoyi/skywalking/agent
     privileged: true

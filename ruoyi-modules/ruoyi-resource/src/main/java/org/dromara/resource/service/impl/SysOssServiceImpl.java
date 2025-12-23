@@ -178,7 +178,12 @@ public class SysOssServiceImpl implements ISysOssService {
         OssClient storage = OssFactory.instance();
         UploadResult uploadResult;
         try {
-            uploadResult = storage.uploadSuffix(file.getBytes(), suffix, file.getContentType());
+            // 创建临时文件
+            File tempFile = File.createTempFile("oss_upload_", suffix);
+            // 将MultipartFile写入临时文件 避免全量加载到内存
+            file.transferTo(tempFile.toPath());
+            // 调用基于File的上传方法，S3TransferManager会分块上传
+            uploadResult = storage.uploadSuffix(tempFile, suffix);
         } catch (IOException e) {
             throw new ServiceException(e.getMessage());
         }
