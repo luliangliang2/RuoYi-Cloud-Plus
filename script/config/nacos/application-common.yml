@@ -38,7 +38,7 @@ dubbo:
     parameters:
       # 集群地址 cluster 为 true 生效
       # 集群把所有Redis集群节点写到这里就行了
-      backup: 127.0.0.1:6379,127.0.0.1:6381
+      backup: 10.211.55.19:6379
   # 自定义配置
   custom:
     # 全局请求log
@@ -110,10 +110,10 @@ spring:
   # redis通用配置 子服务可以自行配置进行覆盖
   data:
     redis:
-      host: localhost
+      host: 10.211.55.19
       port: 6379
       # redis 密码必须配置
-      password: ruoyi123
+      password: plusgo@2025.
       database: 0
       # 需要使用数字
       timeout: 10000
