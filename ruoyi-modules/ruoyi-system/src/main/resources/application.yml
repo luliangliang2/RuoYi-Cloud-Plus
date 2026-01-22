@@ -10,7 +10,7 @@ spring:
     name: ruoyi-system
   profiles:
     # 环境配置
-    active: dev
+    active: public
 
   cloud:
     nacos:
