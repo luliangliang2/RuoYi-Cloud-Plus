@@ -2,6 +2,7 @@
 server:
   port: 9201
 
+
 # Spring
 spring:
   application:
@@ -9,24 +10,22 @@ spring:
     name: ruoyi-system
   profiles:
     # 环境配置
-    active: @profiles.active@
+    active: public
 
---- # nacos 配置
-spring:
   cloud:
     nacos:
       # nacos 服务地址
-      server-addr: @nacos.server@
-      username: @nacos.username@
-      password: @nacos.password@
+      server-addr: 10.211.55.19:8848
+      username: nacos
+      password: nacos
       discovery:
         # 注册组
-        group: @nacos.discovery.group@
-        namespace: ${spring.profiles.active}
+        group: DEFAULT_GROUP
+        namespace: public
       config:
         # 配置组
-        group: @nacos.config.group@
-        namespace: ${spring.profiles.active}
+        group: DEFAULT_GROUP
+        namespace: public
   config:
     import:
       - optional:nacos:application-common.yml

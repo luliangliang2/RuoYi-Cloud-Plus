@@ -9,7 +9,7 @@ spring:
     name: ruoyi-resource
   profiles:
     # 环境配置
-    active: @profiles.active@
+    active: public
 
 --- # nacos 配置
 spring:
