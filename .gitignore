@@ -18,9 +18,10 @@ target/
 .project
 .settings
 .springBeans
-
+.gitignore
 ### IntelliJ IDEA ###
 .idea
+**/.run/
 *.iws
 *.iml
 *.ipr
