@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: ruoyi-manager
+    name: ruoyi-base-manager
   profiles:
     active: public
 
