@@ -15,6 +15,7 @@ import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.constant.SystemConstants;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
+import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
@@ -27,6 +28,7 @@ import org.dromara.system.domain.SysRoleMenu;
 import org.dromara.system.domain.SysUserRole;
 import org.dromara.system.domain.bo.SysRoleBo;
 import org.dromara.system.domain.vo.SysRoleVo;
+import org.dromara.system.event.OnlineUserCleanEvent;
 import org.dromara.system.mapper.SysRoleDeptMapper;
 import org.dromara.system.mapper.SysRoleMapper;
 import org.dromara.system.mapper.SysRoleMenuMapper;
@@ -454,7 +456,7 @@ public class SysRoleServiceImpl implements ISysRoleService {
             .eq(SysUserRole::getRoleId, userRole.getRoleId())
             .eq(SysUserRole::getUserId, userRole.getUserId()));
         if (rows > 0) {
-            cleanOnlineUser(List.of(userRole.getUserId()));
+            SpringUtils.context().publishEvent(OnlineUserCleanEvent.byUsers(List.of(userRole.getUserId())));
         }
         return rows;
     }
@@ -476,7 +478,7 @@ public class SysRoleServiceImpl implements ISysRoleService {
             .eq(SysUserRole::getRoleId, roleId)
             .in(SysUserRole::getUserId, ids));
         if (rows > 0) {
-            cleanOnlineUser(ids);
+            SpringUtils.context().publishEvent(OnlineUserCleanEvent.byUsers(ids));
         }
         return rows;
     }
@@ -506,7 +508,7 @@ public class SysRoleServiceImpl implements ISysRoleService {
             rows = userRoleMapper.insertBatch(list) ? list.size() : 0;
         }
         if (rows > 0) {
-            cleanOnlineUser(ids);
+            SpringUtils.context().publishEvent(OnlineUserCleanEvent.byUsers(ids));
         }
         return rows;
     }

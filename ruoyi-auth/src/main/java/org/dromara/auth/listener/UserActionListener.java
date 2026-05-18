@@ -1,79 +1,30 @@
 package org.dromara.auth.listener;
 
 import cn.dev33.satoken.listener.SaTokenListener;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
-import cn.hutool.core.convert.Convert;
-import cn.hutool.http.useragent.UserAgent;
-import cn.hutool.http.useragent.UserAgentUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.common.core.constant.CacheNames;
-import org.dromara.common.core.constant.Constants;
-import org.dromara.common.core.utils.MessageUtils;
-import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.core.utils.ip.AddressUtils;
-import org.dromara.common.log.event.LoginInfoEvent;
 import org.dromara.common.redis.utils.RedisUtils;
-import org.dromara.common.satoken.utils.LoginHelper;
-import org.dromara.resource.api.RemoteMessageService;
-import org.dromara.system.api.RemoteUserService;
-import org.dromara.system.api.domain.SysUserOnline;
+import org.dromara.auth.event.UserLoginSuccessEvent;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
 
 /**
  * 用户行为 侦听器的实现
  *
  * @author Lion Li
  */
-@RequiredArgsConstructor
 @Component
 @Slf4j
 public class UserActionListener implements SaTokenListener {
-
-    @DubboReference
-    private RemoteUserService remoteUserService;
-    @DubboReference
-    private RemoteMessageService remoteMessageService;
 
     /**
      * 每次登录时触发
      */
     @Override
     public void doLogin(String loginType, Object loginId, String tokenValue, SaLoginParameter loginParameter) {
-        UserAgent userAgent = UserAgentUtil.parse(ServletUtils.getRequest().getHeader("User-Agent"));
-        String ip = ServletUtils.getClientIP();
-        SysUserOnline userOnline = new SysUserOnline();
-        userOnline.setIpaddr(ip);
-        userOnline.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
-        userOnline.setBrowser(userAgent.getBrowser().getName());
-        userOnline.setOs(userAgent.getOs().getName());
-        userOnline.setLoginTime(System.currentTimeMillis());
-        userOnline.setTokenId(tokenValue);
-        String username = (String) loginParameter.getExtra(LoginHelper.USER_NAME_KEY);
-        userOnline.setUserName(username);
-        userOnline.setClientKey((String) loginParameter.getExtra(LoginHelper.CLIENT_KEY));
-        userOnline.setDeviceType(loginParameter.getDeviceType());
-        userOnline.setDeptName((String) loginParameter.getExtra(LoginHelper.DEPT_NAME_KEY));
-        if (loginParameter.getTimeout() == -1) {
-            RedisUtils.setCacheObject(CacheNames.ONLINE_TOKEN_KEY + tokenValue, userOnline);
-        } else {
-            RedisUtils.setCacheObject(CacheNames.ONLINE_TOKEN_KEY + tokenValue, userOnline, Duration.ofSeconds(loginParameter.getTimeout()));
-        }
-        // 记录登录日志
-        LoginInfoEvent loginInfoEvent = new LoginInfoEvent();
-        loginInfoEvent.setUsername(username);
-        loginInfoEvent.setStatus(Constants.LOGIN_SUCCESS);
-        loginInfoEvent.setMessage(MessageUtils.message("user.login.success"));
-        SpringUtils.context().publishEvent(loginInfoEvent);
-        // 更新登录信息
-        remoteUserService.recordLoginInfo((Long) loginParameter.getExtra(LoginHelper.USER_KEY), ip);
-        log.info("user doLogin, useId:{}, token:***{}", loginId, StringUtils.right(tokenValue, 8));
+        SpringUtils.context().publishEvent(new UserLoginSuccessEvent(loginId, tokenValue, loginParameter));
     }
 
     /**

@@ -11,7 +11,6 @@ import org.dromara.common.core.domain.R;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.exception.SseException;
 import org.dromara.common.core.exception.base.BaseException;
-import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.springframework.boot.json.JsonParseException;
@@ -212,7 +211,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleJsonParseException(JsonParseException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}' 发生 JSON 解析异常: {}", requestURI, e.getMessage());
-        return R.fail(HttpStatus.HTTP_BAD_REQUEST, "请求数据格式错误（JSON 解析失败）：" + e.getMessage());
+        return R.fail(HttpStatus.HTTP_BAD_REQUEST, "请求数据格式错误");
     }
 
     /**
@@ -221,7 +220,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public R<Void> handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest request) {
         log.error("请求地址'{}', 参数解析失败: {}", request.getRequestURI(), e.getMessage());
-        return R.fail(HttpStatus.HTTP_BAD_REQUEST, "请求参数格式错误：" + e.getMostSpecificCause().getMessage());
+        return R.fail(HttpStatus.HTTP_BAD_REQUEST, "请求参数格式错误");
     }
 
     /**

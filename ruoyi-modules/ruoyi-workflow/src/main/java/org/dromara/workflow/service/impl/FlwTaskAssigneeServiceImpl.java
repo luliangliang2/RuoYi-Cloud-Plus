@@ -12,6 +12,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.core.utils.ThreadUtils;
 import org.dromara.system.api.*;
 import org.dromara.system.api.domain.bo.RemoteTaskAssigneeBo;
 import org.dromara.system.api.domain.vo.RemoteDeptVo;
@@ -30,6 +31,7 @@ import org.dromara.workflow.service.IFlwTaskAssigneeService;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -111,8 +113,7 @@ public class FlwTaskAssigneeServiceImpl implements IFlwTaskAssigneeService, Hand
         }
 
         // 查询所有类型对应的 ID 名称映射
-        Map<TaskAssigneeEnum, Map<String, String>> nameMap = new EnumMap<>(TaskAssigneeEnum.class);
-        typeIdMap.forEach((type, ids) -> nameMap.put(type, this.getNamesByType(type, ids)));
+        Map<TaskAssigneeEnum, Map<String, String>> nameMap = this.getNamesByTypes(typeIdMap);
         // 组装返回结果，保持原始顺序
         return parsedMap.entrySet().stream()
             .map(entry -> {
@@ -207,10 +208,32 @@ public class FlwTaskAssigneeServiceImpl implements IFlwTaskAssigneeService, Hand
                 typeIdMap.computeIfAbsent(parsed.getKey(), k -> new ArrayList<>()).add(parsed.getValue());
             }
         }
-        return typeIdMap.entrySet().stream()
-            .flatMap(entry -> this.getUsersByType(entry.getKey(), entry.getValue()).stream())
+        return this.getUsersByTypes(typeIdMap).stream()
             .distinct()
             .toList();
+    }
+
+    private List<RemoteUserVo> getUsersByTypes(Map<TaskAssigneeEnum, List<String>> typeIdMap) {
+        List<Supplier<List<RemoteUserVo>>> suppliers = typeIdMap.entrySet().stream()
+            .map(entry -> (Supplier<List<RemoteUserVo>>) () -> this.getUsersByType(entry.getKey(), entry.getValue()))
+            .toList();
+        return ThreadUtils.virtualSubmitAll(suppliers).stream()
+            .filter(CollUtil::isNotEmpty)
+            .flatMap(Collection::stream)
+            .toList();
+    }
+
+    private Map<TaskAssigneeEnum, Map<String, String>> getNamesByTypes(Map<TaskAssigneeEnum, List<String>> typeIdMap) {
+        List<TaskAssigneeEnum> types = new ArrayList<>(typeIdMap.keySet());
+        List<Supplier<Map<String, String>>> suppliers = types.stream()
+            .map(type -> (Supplier<Map<String, String>>) () -> this.getNamesByType(type, typeIdMap.get(type)))
+            .toList();
+        List<Map<String, String>> names = ThreadUtils.virtualSubmitAll(suppliers);
+        Map<TaskAssigneeEnum, Map<String, String>> nameMap = new EnumMap<>(TaskAssigneeEnum.class);
+        for (int i = 0; i < types.size(); i++) {
+            nameMap.put(types.get(i), names.get(i));
+        }
+        return nameMap;
     }
 
     /**

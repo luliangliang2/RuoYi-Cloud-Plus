@@ -33,7 +33,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Boot 4 下使用 jetty 替代 undertow -->
+        <!-- web 容器使用 jetty -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
