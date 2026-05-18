@@ -15,7 +15,7 @@ import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.encrypt.annotation.ApiEncrypt;
 import org.dromara.common.excel.core.ExcelResult;
-import org.dromara.common.excel.utils.ExcelUtil;
+import org.dromara.common.excel.utils.ExcelBuilder;
 import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.log.annotation.Log;
@@ -74,7 +74,7 @@ public class SysUserController extends BaseController {
     @PostMapping("/export")
     public void export(SysUserBo user, HttpServletResponse response) {
         List<SysUserExportVo> list = userService.selectUserExportList(user);
-        ExcelUtil.exportExcel(list, "用户数据", SysUserExportVo.class, response);
+        ExcelBuilder.of(list, SysUserExportVo.class).sheetName("用户数据").toResponse(response);
     }
 
     /**
@@ -87,7 +87,9 @@ public class SysUserController extends BaseController {
     @SaCheckPermission("system:user:import")
     @PostMapping(value = "/importData", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public R<Void> importData(@RequestPart("file") MultipartFile file, boolean updateSupport) throws Exception {
-        ExcelResult<SysUserImportVo> result = ExcelUtil.importExcel(file.getInputStream(), SysUserImportVo.class, new SysUserImportListener(updateSupport));
+        ExcelResult<SysUserImportVo> result = ExcelBuilder.read(file.getInputStream(), SysUserImportVo.class)
+            .listener(new SysUserImportListener(updateSupport))
+            .doRead();
         return R.ok(result.getAnalysis());
     }
 
@@ -96,7 +98,7 @@ public class SysUserController extends BaseController {
      */
     @PostMapping("/importTemplate")
     public void importTemplate(HttpServletResponse response) {
-        ExcelUtil.exportExcel(new ArrayList<>(), "用户数据", SysUserImportVo.class, response);
+        ExcelBuilder.of(new ArrayList<>(), SysUserImportVo.class).sheetName("用户数据").toResponse(response);
     }
 
     /**

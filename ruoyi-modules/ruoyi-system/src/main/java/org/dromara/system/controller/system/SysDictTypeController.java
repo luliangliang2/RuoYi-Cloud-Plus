@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.web.core.BaseController;
-import org.dromara.common.excel.utils.ExcelUtil;
+import org.dromara.common.excel.utils.ExcelBuilder;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
@@ -51,7 +51,7 @@ public class SysDictTypeController extends BaseController {
     @PostMapping("/export")
     public void export(SysDictTypeBo dictType, HttpServletResponse response) {
         List<SysDictTypeVo> list = dictTypeService.selectDictTypeList(dictType);
-        ExcelUtil.exportExcel(list, "字典类型", SysDictTypeVo.class, response);
+        ExcelBuilder.of(list, SysDictTypeVo.class).sheetName("字典类型").toResponse(response);
     }
 
     /**

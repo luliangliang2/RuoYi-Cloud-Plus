@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.domain.R;
-import org.dromara.common.excel.utils.ExcelUtil;
+import org.dromara.common.excel.utils.ExcelBuilder;
 import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
@@ -52,7 +52,7 @@ public class SysLoginInfoController extends BaseController {
     @PostMapping("/export")
     public void export(SysLoginInfoBo loginInfo, HttpServletResponse response) {
         List<SysLoginInfoVo> list = loginInfoService.selectLoginInfoList(loginInfo);
-        ExcelUtil.exportExcel(list, "登录日志", SysLoginInfoVo.class, response);
+        ExcelBuilder.of(list, SysLoginInfoVo.class).sheetName("登录日志").toResponse(response);
     }
 
     /**
