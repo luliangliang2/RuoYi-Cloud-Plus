@@ -18,6 +18,7 @@ package org.dromara.common.redis.manager;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.redisson.api.RMap;
 import org.redisson.api.RMapCache;
+import org.redisson.api.map.event.MapEntryListener;
 import org.redisson.spring.cache.CacheConfig;
 import org.redisson.spring.cache.RedissonCache;
 import org.springframework.boot.convert.DurationStyle;
@@ -54,10 +55,22 @@ public class PlusSpringCacheManager implements CacheManager {
     Map<String, CacheConfig> configMap = new ConcurrentHashMap<>();
     ConcurrentMap<String, Cache> instanceMap = new ConcurrentHashMap<>();
 
+    private final com.github.benmanes.caffeine.cache.Cache<Object, Object> caffeine;
+
     /**
      * Creates CacheManager supplied by Redisson instance
      */
     public PlusSpringCacheManager() {
+        this(null);
+    }
+
+    /**
+     * Creates CacheManager supplied by Redisson instance
+     *
+     * @param caffeine 本地一级缓存实例
+     */
+    public PlusSpringCacheManager(com.github.benmanes.caffeine.cache.Cache<Object, Object> caffeine) {
+        this.caffeine = caffeine;
     }
 
 
@@ -109,7 +122,11 @@ public class PlusSpringCacheManager implements CacheManager {
      * @param config object
      */
     public void setConfig(Map<String, ? extends CacheConfig> config) {
-        this.configMap = (Map<String, CacheConfig>) config;
+        if (config == null) {
+            this.configMap = new ConcurrentHashMap<>();
+            return;
+        }
+        this.configMap = new ConcurrentHashMap<>((Map<String, CacheConfig>) config);
     }
 
     protected CacheConfig createDefaultConfig() {
@@ -118,11 +135,12 @@ public class PlusSpringCacheManager implements CacheManager {
 
     @Override
     public Cache getCache(String name) {
+        String cacheName = name;
         // 重写 cacheName 支持多参数
         String[] array = StringUtils.delimitedListToStringArray(name, "#");
         name = array[0];
 
-        Cache cache = instanceMap.get(name);
+        Cache cache = instanceMap.get(cacheName);
         if (cache != null) {
             return cache;
         }
@@ -130,10 +148,28 @@ public class PlusSpringCacheManager implements CacheManager {
             return cache;
         }
 
-        CacheConfig config = configMap.get(name);
+        CacheConfig config = resolveCacheConfig(cacheName, name, array);
+
+        int local = resolveLocal(array);
+        if (config.getMaxIdleTime() == 0 && config.getTTL() == 0 && config.getMaxSize() == 0) {
+            return createMap(cacheName, name, config, local);
+        }
+
+        return createMapCache(cacheName, name, config, local);
+    }
+
+    private CacheConfig resolveCacheConfig(String cacheName, String name, String[] array) {
+        CacheConfig config = configMap.get(cacheName);
+        if (config != null) {
+            return config;
+        }
+
+        CacheConfig template = configMap.get(name);
+        if (template != null) {
+            config = copyConfig(template);
+        }
         if (config == null) {
             config = createDefaultConfig();
-            configMap.put(name, config);
         }
 
         if (array.length > 1) {
@@ -145,50 +181,65 @@ public class PlusSpringCacheManager implements CacheManager {
         if (array.length > 3) {
             config.setMaxSize(Integer.parseInt(array[3]));
         }
+        configMap.put(cacheName, config);
+        return config;
+    }
+
+    private int resolveLocal(String[] array) {
         int local = 1;
         if (array.length > 4) {
             local = Integer.parseInt(array[4]);
         }
-
-        if (config.getMaxIdleTime() == 0 && config.getTTL() == 0 && config.getMaxSize() == 0) {
-            return createMap(name, config, local);
-        }
-
-        return createMapCache(name, config, local);
+        return local;
     }
 
-    private Cache createMap(String name, CacheConfig config, int local) {
+    private CacheConfig copyConfig(CacheConfig source) {
+        CacheConfig target = new CacheConfig();
+        target.setTTL(source.getTTL());
+        target.setMaxIdleTime(source.getMaxIdleTime());
+        target.setMaxSize(source.getMaxSize());
+        target.setEvictionMode(source.getEvictionMode());
+        for (MapEntryListener listener : source.getListeners()) {
+            target.addListener(listener);
+        }
+        return target;
+    }
+
+    private Cache createMap(String cacheName, String name, CacheConfig config, int local) {
         RMap<Object, Object> map = RedisUtils.getClient().getMap(name);
 
         Cache cache = new RedissonCache(map, allowNullValues);
-        if (local == 1) {
-            cache = new CaffeineCacheDecorator(name, cache);
+        if (local == 1 && caffeine != null) {
+            cache = new CaffeineCacheDecorator(cacheName, cache, caffeine);
         }
         if (transactionAware) {
             cache = new TransactionAwareCacheDecorator(cache);
         }
-        Cache oldCache = instanceMap.putIfAbsent(name, cache);
+        Cache oldCache = instanceMap.putIfAbsent(cacheName, cache);
         if (oldCache != null) {
             cache = oldCache;
         }
         return cache;
     }
 
-    private Cache createMapCache(String name, CacheConfig config, int local) {
+    private Cache createMapCache(String cacheName, String name, CacheConfig config, int local) {
         RMapCache<Object, Object> map = RedisUtils.getClient().getMapCache(name);
 
         Cache cache = new RedissonCache(map, config, allowNullValues);
-        if (local == 1) {
-            cache = new CaffeineCacheDecorator(name, cache);
+        if (local == 1 && caffeine != null) {
+            cache = new CaffeineCacheDecorator(cacheName, cache, caffeine);
         }
         if (transactionAware) {
             cache = new TransactionAwareCacheDecorator(cache);
         }
-        Cache oldCache = instanceMap.putIfAbsent(name, cache);
+        Cache oldCache = instanceMap.putIfAbsent(cacheName, cache);
         if (oldCache != null) {
             cache = oldCache;
         } else {
             map.setMaxSize(config.getMaxSize());
+            for (MapEntryListener listener : config.getListeners()) {
+                map.addListener(listener);
+            }
         }
         return cache;
     }
