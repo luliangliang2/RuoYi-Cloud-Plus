@@ -114,7 +114,7 @@ public class R<T> implements Serializable {
     }
 
     public static <T> Boolean isSuccess(R<T> ret) {
-        return HttpStatus.SUCCESS == ret.getCode();
+        return ret != null && HttpStatus.SUCCESS == ret.getCode();
     }
 
 }

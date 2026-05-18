@@ -18,7 +18,7 @@ public class ThreadUtils {
     /**
      * 批量执行任务
      */
-    public static void virtualSubmit(Runnable ...runnableList) {
+    public static void virtualInvokeAll(Runnable... runnableList) {
         List<Future<?>> callableList = new ArrayList<>();
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             for (Runnable runnable : runnableList) {
@@ -27,10 +27,24 @@ public class ThreadUtils {
             for (Future<?> future : callableList) {
                 future.get();
             }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("线程执行被中断", e);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause() == null ? e : e.getCause();
+            throw new RuntimeException("线程执行异常：" + cause.getMessage(), cause);
         }
 
+    }
+
+    /**
+     * 批量执行任务
+     *
+     * @deprecated 使用 {@link #virtualInvokeAll(Runnable...)}
+     */
+    @Deprecated
+    public static void virtualSubmit(Runnable... runnableList) {
+        virtualInvokeAll(runnableList);
     }
 
 }
