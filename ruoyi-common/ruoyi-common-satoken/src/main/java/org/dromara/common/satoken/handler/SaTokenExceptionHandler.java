@@ -20,22 +20,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class SaTokenExceptionHandler {
 
     /**
-     * 权限码异常
+     * 权限码和角色权限异常
      */
-    @ExceptionHandler(NotPermissionException.class)
-    public R<Void> handleNotPermissionException(NotPermissionException e, HttpServletRequest request) {
+    @ExceptionHandler({NotPermissionException.class, NotRoleException.class})
+    public R<Void> handleNotAccessException(RuntimeException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        log.error("请求地址'{}',权限码校验失败'{}'", requestURI, e.getMessage());
-        return R.fail(HttpStatus.HTTP_FORBIDDEN, "没有访问权限，请联系管理员授权");
-    }
-
-    /**
-     * 角色权限异常
-     */
-    @ExceptionHandler(NotRoleException.class)
-    public R<Void> handleNotRoleException(NotRoleException e, HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        log.error("请求地址'{}',角色权限校验失败'{}'", requestURI, e.getMessage());
+        String reason = e instanceof NotRoleException ? "角色权限校验失败" : "权限码校验失败";
+        log.error("请求地址'{}',{}'{}'", requestURI, reason, e.getMessage());
         return R.fail(HttpStatus.HTTP_FORBIDDEN, "没有访问权限，请联系管理员授权");
     }
 
