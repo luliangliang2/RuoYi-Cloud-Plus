@@ -2,7 +2,11 @@ package org.dromara.common.encrypt.config;
 
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusProperties;
+import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.encrypt.core.EncryptContextFactory;
+import org.dromara.common.encrypt.core.EncryptedFieldProcessor;
 import org.dromara.common.encrypt.core.EncryptorManager;
+import org.dromara.common.encrypt.enums.AlgorithmType;
 import org.dromara.common.encrypt.interceptor.MybatisDecryptInterceptor;
 import org.dromara.common.encrypt.interceptor.MybatisEncryptInterceptor;
 import org.dromara.common.encrypt.properties.EncryptorProperties;
@@ -30,16 +34,41 @@ public class EncryptorAutoConfiguration {
 
     @Bean
     public EncryptorManager encryptorManager(MybatisPlusProperties mybatisPlusProperties) {
+        validateEncryptorProperties(properties);
         return new EncryptorManager(mybatisPlusProperties.getTypeAliasesPackage());
     }
 
     @Bean
-    public MybatisEncryptInterceptor mybatisEncryptInterceptor(EncryptorManager encryptorManager) {
-        return new MybatisEncryptInterceptor(encryptorManager, properties);
+    public EncryptContextFactory encryptContextFactory() {
+        return new EncryptContextFactory(properties);
     }
 
     @Bean
-    public MybatisDecryptInterceptor mybatisDecryptInterceptor(EncryptorManager encryptorManager) {
-        return new MybatisDecryptInterceptor(encryptorManager, properties);
+    public EncryptedFieldProcessor encryptedFieldProcessor(EncryptorManager encryptorManager, EncryptContextFactory encryptContextFactory) {
+        return new EncryptedFieldProcessor(encryptorManager, encryptContextFactory);
+    }
+
+    @Bean
+    public MybatisEncryptInterceptor mybatisEncryptInterceptor(EncryptedFieldProcessor encryptedFieldProcessor) {
+        return new MybatisEncryptInterceptor(encryptedFieldProcessor);
+    }
+
+    @Bean
+    public MybatisDecryptInterceptor mybatisDecryptInterceptor(EncryptedFieldProcessor encryptedFieldProcessor) {
+        return new MybatisDecryptInterceptor(encryptedFieldProcessor);
+    }
+
+    private void validateEncryptorProperties(EncryptorProperties properties) {
+        AlgorithmType algorithm = properties.getAlgorithm();
+        if (algorithm == AlgorithmType.AES || algorithm == AlgorithmType.SM4) {
+            if (StringUtils.isBlank(properties.getPassword())) {
+                throw new IllegalArgumentException("mybatis-encryptor.password 不能为空");
+            }
+        }
+        if (algorithm == AlgorithmType.RSA || algorithm == AlgorithmType.SM2) {
+            if (StringUtils.isAnyBlank(properties.getPublicKey(), properties.getPrivateKey())) {
+                throw new IllegalArgumentException("mybatis-encryptor.publicKey 与 privateKey 不能为空");
+            }
+        }
     }
 }
