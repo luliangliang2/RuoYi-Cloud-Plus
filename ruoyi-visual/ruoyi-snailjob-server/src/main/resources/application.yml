@@ -7,7 +7,7 @@ spring:
   application:
     name: ruoyi-snailjob-server
   profiles:
-    active: @profiles.active@
+    active: public
   web:
     resources:
       static-locations: classpath:admin/
@@ -43,16 +43,16 @@ spring:
   cloud:
     nacos:
       # nacos 服务地址
-      server-addr: @nacos.server@
-      username: @nacos.username@
-      password: @nacos.password@
+      server-addr: 10.211.55.19:8848
+      username:  nacos
+      password:  nacos
       discovery:
         # 注册组
-        group: @nacos.discovery.group@
+        group: DEFAULT_GROUP
         namespace: ${spring.profiles.active}
       config:
         # 配置组
-        group: @nacos.config.group@
+        group: DEFAULT_GROUP
         namespace: ${spring.profiles.active}
   config:
     import:
