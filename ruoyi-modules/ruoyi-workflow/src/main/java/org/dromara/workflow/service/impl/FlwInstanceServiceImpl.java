@@ -4,8 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.RequiredArgsConstructor;
@@ -378,10 +377,11 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
         // 再组装历史任务（已处理任务）
         List<FlowHisTaskVo> hisTaskVos = new ArrayList<>();
         List<FlowHisTask> hisTasks = flowHisTaskMapper.selectList(
-            new LambdaQueryWrapper<FlowHisTask>()
+            QueryBuilder.lambda(FlowHisTask.class)
                 .eq(FlowHisTask::getInstanceId, instanceId)
                 .eq(FlowHisTask::getNodeType, NodeType.BETWEEN.getKey())
                 .orderByDesc(FlowHisTask::getUpdateTime)
+                .build()
         );
         if (CollUtil.isNotEmpty(hisTasks)) {
             hisTaskVos = BeanUtil.copyToList(hisTasks, FlowHisTaskVo.class);
@@ -403,10 +403,9 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      */
     @Override
     public void updateStatus(Long instanceId, String status) {
-        LambdaUpdateWrapper<FlowInstance> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(FlowInstance::getFlowStatus, status);
-        wrapper.eq(FlowInstance::getId, instanceId);
-        flowInstanceMapper.update(wrapper);
+        flowInstanceMapper.update(Wrappers.lambdaUpdate(FlowInstance.class)
+            .set(FlowInstance::getFlowStatus, status)
+            .eq(FlowInstance::getId, instanceId));
     }
 
     /**

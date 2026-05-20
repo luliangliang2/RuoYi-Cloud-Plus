@@ -4,10 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.domain.SysLoginInfo;
 import org.dromara.system.domain.bo.SysLoginInfoBo;
 import org.dromara.system.domain.vo.SysLoginInfoVo;
@@ -15,8 +16,8 @@ import org.dromara.system.mapper.SysLoginInfoMapper;
 import org.dromara.system.service.ISysLoginInfoService;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -41,13 +42,7 @@ public class SysLoginInfoServiceImpl implements ISysLoginInfoService {
      */
     @Override
     public PageResult<SysLoginInfoVo> selectPageLoginInfoList(SysLoginInfoBo loginInfo, PageQuery pageQuery) {
-        Map<String, Object> params = loginInfo.getParams();
-        LambdaQueryWrapper<SysLoginInfo> lqw = new LambdaQueryWrapper<SysLoginInfo>()
-            .like(StringUtils.isNotBlank(loginInfo.getIpaddr()), SysLoginInfo::getIpaddr, loginInfo.getIpaddr())
-            .eq(StringUtils.isNotBlank(loginInfo.getStatus()), SysLoginInfo::getStatus, loginInfo.getStatus())
-            .like(StringUtils.isNotBlank(loginInfo.getUserName()), SysLoginInfo::getUserName, loginInfo.getUserName())
-            .between(params.get("beginTime") != null && params.get("endTime") != null,
-                SysLoginInfo::getLoginTime, params.get("beginTime"), params.get("endTime"));
+        LambdaQueryWrapper<SysLoginInfo> lqw = buildQueryWrapper(loginInfo);
         if (StringUtils.isBlank(pageQuery.getOrderByColumn())) {
             lqw.orderByDesc(SysLoginInfo::getInfoId);
         }
@@ -75,14 +70,18 @@ public class SysLoginInfoServiceImpl implements ISysLoginInfoService {
      */
     @Override
     public List<SysLoginInfoVo> selectLoginInfoList(SysLoginInfoBo loginInfo) {
-        Map<String, Object> params = loginInfo.getParams();
-        return loginInfoMapper.selectVoList(new LambdaQueryWrapper<SysLoginInfo>()
-            .like(StringUtils.isNotBlank(loginInfo.getIpaddr()), SysLoginInfo::getIpaddr, loginInfo.getIpaddr())
-            .eq(StringUtils.isNotBlank(loginInfo.getStatus()), SysLoginInfo::getStatus, loginInfo.getStatus())
-            .like(StringUtils.isNotBlank(loginInfo.getUserName()), SysLoginInfo::getUserName, loginInfo.getUserName())
-            .between(params.get("beginTime") != null && params.get("endTime") != null,
-                SysLoginInfo::getLoginTime, params.get("beginTime"), params.get("endTime"))
+        return loginInfoMapper.selectVoList(buildQueryWrapper(loginInfo)
             .orderByDesc(SysLoginInfo::getInfoId));
+    }
+
+    private LambdaQueryWrapper<SysLoginInfo> buildQueryWrapper(SysLoginInfoBo loginInfo) {
+        Map<String, Object> params = loginInfo.getParams();
+        return QueryBuilder.lambda(SysLoginInfo.class)
+            .likeIfText(SysLoginInfo::getIpaddr, loginInfo.getIpaddr())
+            .eqIfText(SysLoginInfo::getStatus, loginInfo.getStatus())
+            .likeIfText(SysLoginInfo::getUserName, loginInfo.getUserName())
+            .betweenParams(SysLoginInfo::getLoginTime, params, "beginTime", "endTime")
+            .build();
     }
 
     /**
@@ -101,6 +100,6 @@ public class SysLoginInfoServiceImpl implements ISysLoginInfoService {
      */
     @Override
     public void cleanLoginInfo() {
-        loginInfoMapper.delete(new LambdaQueryWrapper<>());
+        loginInfoMapper.lambda().delete();
     }
 }

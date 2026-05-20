@@ -3,17 +3,17 @@ package org.dromara.system.service.impl;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.constant.SystemConstants;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.ObjectUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.redis.utils.CacheUtils;
 import org.dromara.system.domain.SysConfig;
 import org.dromara.system.domain.bo.SysConfigBo;
@@ -72,8 +72,7 @@ public class SysConfigServiceImpl implements ISysConfigService {
     @Cacheable(cacheNames = CacheNames.SYS_CONFIG, key = "#configKey")
     @Override
     public String selectConfigByKey(String configKey) {
-        SysConfig retConfig = configMapper.selectOne(new LambdaQueryWrapper<SysConfig>()
-            .eq(SysConfig::getConfigKey, configKey));
+        SysConfig retConfig = configMapper.lambda().eq(SysConfig::getConfigKey, configKey).one();
         return ObjectUtils.notNullGetter(retConfig, SysConfig::getConfigValue, StringUtils.EMPTY);
     }
 
@@ -102,14 +101,13 @@ public class SysConfigServiceImpl implements ISysConfigService {
 
     private LambdaQueryWrapper<SysConfig> buildQueryWrapper(SysConfigBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<SysConfig> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getConfigName()), SysConfig::getConfigName, bo.getConfigName());
-        lqw.eq(StringUtils.isNotBlank(bo.getConfigType()), SysConfig::getConfigType, bo.getConfigType());
-        lqw.like(StringUtils.isNotBlank(bo.getConfigKey()), SysConfig::getConfigKey, bo.getConfigKey());
-        lqw.between(params.get("beginTime") != null && params.get("endTime") != null,
-            SysConfig::getCreateTime, params.get("beginTime"), params.get("endTime"));
-        lqw.orderByAsc(SysConfig::getConfigId);
-        return lqw;
+        return QueryBuilder.lambda(SysConfig.class)
+            .likeIfText(SysConfig::getConfigName, bo.getConfigName())
+            .eqIfText(SysConfig::getConfigType, bo.getConfigType())
+            .likeIfText(SysConfig::getConfigKey, bo.getConfigKey())
+            .betweenParams(SysConfig::getCreateTime, params, "beginTime", "endTime")
+            .orderByAsc(SysConfig::getConfigId)
+            .build();
     }
 
     /**
@@ -138,7 +136,7 @@ public class SysConfigServiceImpl implements ISysConfigService {
     @CachePut(cacheNames = CacheNames.SYS_CONFIG, key = "#bo.configKey")
     @Override
     public String updateConfig(SysConfigBo bo) {
-        int row = 0;
+        int row;
         SysConfig config = MapstructUtils.convert(bo, SysConfig.class);
         if (config.getConfigId() != null) {
             SysConfig temp = configMapper.selectById(config.getConfigId());
@@ -148,8 +146,9 @@ public class SysConfigServiceImpl implements ISysConfigService {
             row = configMapper.updateById(config);
         } else {
             CacheUtils.evict(CacheNames.SYS_CONFIG, config.getConfigKey());
-            row = configMapper.update(config, new LambdaQueryWrapper<SysConfig>()
-                .eq(SysConfig::getConfigKey, config.getConfigKey()));
+            row = configMapper.lambda()
+                .eq(SysConfig::getConfigKey, config.getConfigKey())
+                .updateCount(config);
         }
         if (row > 0) {
             return config.getConfigValue();
@@ -190,9 +189,10 @@ public class SysConfigServiceImpl implements ISysConfigService {
      */
     @Override
     public boolean checkConfigKeyUnique(SysConfigBo config) {
-        boolean exist = configMapper.exists(new LambdaQueryWrapper<SysConfig>()
+        boolean exist = configMapper.lambda()
             .eq(SysConfig::getConfigKey, config.getConfigKey())
-            .ne(ObjectUtil.isNotNull(config.getConfigId()), SysConfig::getConfigId, config.getConfigId()));
+            .neIfPresent(SysConfig::getConfigId, config.getConfigId())
+            .exists();
         return !exist;
     }
 

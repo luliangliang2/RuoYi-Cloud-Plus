@@ -5,7 +5,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
@@ -19,6 +18,7 @@ import org.dromara.common.core.utils.ThreadUtils;
 import org.dromara.common.core.utils.file.FileUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.oss.client.OssClient;
 import org.dromara.common.oss.enums.AccessPolicy;
 import org.dromara.common.oss.factory.OssFactory;
@@ -32,6 +32,7 @@ import org.dromara.resource.mapper.SysOssMapper;
 import org.dromara.resource.service.ISysOssService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -41,7 +42,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -136,17 +136,16 @@ public class SysOssServiceImpl implements ISysOssService {
      */
     private LambdaQueryWrapper<SysOss> buildQueryWrapper(SysOssBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<SysOss> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getFileName()), SysOss::getFileName, bo.getFileName());
-        lqw.like(StringUtils.isNotBlank(bo.getOriginalName()), SysOss::getOriginalName, bo.getOriginalName());
-        lqw.eq(StringUtils.isNotBlank(bo.getFileSuffix()), SysOss::getFileSuffix, bo.getFileSuffix());
-        lqw.eq(StringUtils.isNotBlank(bo.getUrl()), SysOss::getUrl, bo.getUrl());
-        lqw.between(params.get("beginCreateTime") != null && params.get("endCreateTime") != null,
-            SysOss::getCreateTime, params.get("beginCreateTime"), params.get("endCreateTime"));
-        lqw.eq(ObjectUtil.isNotNull(bo.getCreateBy()), SysOss::getCreateBy, bo.getCreateBy());
-        lqw.eq(StringUtils.isNotBlank(bo.getService()), SysOss::getService, bo.getService());
-        lqw.orderByAsc(SysOss::getOssId);
-        return lqw;
+        return QueryBuilder.lambda(SysOss.class)
+            .likeIfText(SysOss::getFileName, bo.getFileName())
+            .likeIfText(SysOss::getOriginalName, bo.getOriginalName())
+            .eqIfText(SysOss::getFileSuffix, bo.getFileSuffix())
+            .eqIfText(SysOss::getUrl, bo.getUrl())
+            .betweenParams(SysOss::getCreateTime, params, "beginCreateTime", "endCreateTime")
+            .eqIfPresent(SysOss::getCreateBy, bo.getCreateBy())
+            .eqIfText(SysOss::getService, bo.getService())
+            .orderByAsc(SysOss::getOssId)
+            .build();
     }
 
     /**
@@ -173,15 +172,20 @@ public class SysOssServiceImpl implements ISysOssService {
             throw new ServiceException("文件数据不存在!");
         }
         String percentEncodedFileName = FileUtils.percentEncode(sysOss.getOriginalName());
-        String contentDispositionValue = "attachment; filename=%s;filename*=utf-8''%s".formatted(percentEncodedFileName, percentEncodedFileName);
         return OssFactory.instance(sysOss.getService())
             .download(sysOss.getFileName(), (result, inputStream) -> {
+                MediaType mediaType;
+                try {
+                    mediaType = MediaType.parseMediaType(result.contentType());
+                } catch (Exception e) {
+                    mediaType = MediaType.APPLICATION_OCTET_STREAM;
+                }
                 // 构建响应实体
                 return ResponseEntity.ok()
-                    .header("Access-Control-Expose-Headers", "Content-Disposition,download-filename")
-                    .header("Content-disposition", contentDispositionValue)
+                    .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Disposition,download-filename")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=%s;filename*=utf-8''%s".formatted(percentEncodedFileName, percentEncodedFileName))
                     .header("download-filename", percentEncodedFileName)
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentType(mediaType)
                     .contentLength(result.size())
                     .body(IoUtil.readBytes(inputStream));
             });

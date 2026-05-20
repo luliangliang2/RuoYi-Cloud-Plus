@@ -1,10 +1,7 @@
 package org.dromara.system.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.system.domain.SysSocial;
 import org.dromara.system.domain.bo.SysSocialBo;
 import org.dromara.system.domain.vo.SysSocialVo;
@@ -45,11 +42,11 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public List<SysSocialVo> queryList(SysSocialBo bo) {
-        LambdaQueryWrapper<SysSocial> lqw = new LambdaQueryWrapper<SysSocial>()
-            .eq(ObjectUtil.isNotNull(bo.getUserId()), SysSocial::getUserId, bo.getUserId())
-            .eq(StringUtils.isNotBlank(bo.getAuthId()), SysSocial::getAuthId, bo.getAuthId())
-            .eq(StringUtils.isNotBlank(bo.getSource()), SysSocial::getSource, bo.getSource());
-        return socialMapper.selectVoList(lqw);
+        return socialMapper.lambda()
+            .eqIfPresent(SysSocial::getUserId, bo.getUserId())
+            .eqIfText(SysSocial::getAuthId, bo.getAuthId())
+            .eqIfText(SysSocial::getSource, bo.getSource())
+            .voList();
     }
 
     /**
@@ -60,7 +57,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public List<SysSocialVo> queryListByUserId(Long userId) {
-        return socialMapper.selectVoList(new LambdaQueryWrapper<SysSocial>().eq(SysSocial::getUserId, userId));
+        return socialMapper.lambda().eq(SysSocial::getUserId, userId).voList();
     }
 
     /**
@@ -123,7 +120,7 @@ public class SysSocialServiceImpl implements ISysSocialService {
      */
     @Override
     public List<SysSocialVo> selectByAuthId(String authId) {
-        return socialMapper.selectVoList(new LambdaQueryWrapper<SysSocial>().eq(SysSocial::getAuthId, authId));
+        return socialMapper.lambda().eq(SysSocial::getAuthId, authId).voList();
     }
 
 }

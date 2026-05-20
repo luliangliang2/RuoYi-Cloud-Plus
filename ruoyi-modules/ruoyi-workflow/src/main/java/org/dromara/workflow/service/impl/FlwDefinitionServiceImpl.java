@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.io.IoUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +14,7 @@ import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
+import org.dromara.common.mybatis.core.query.LambdaQueryBuilder;
 import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.core.domain.PageResult;
 import org.dromara.warm.flow.core.dto.DefJson;
@@ -98,15 +98,14 @@ public class FlwDefinitionServiceImpl implements IFlwDefinitionService {
     }
 
     private LambdaQueryWrapper<FlowDefinition> buildQueryWrapper(FlowDefinition flowDefinition) {
-        LambdaQueryWrapper<FlowDefinition> wrapper = Wrappers.lambdaQuery();
-        wrapper.like(StringUtils.isNotBlank(flowDefinition.getFlowCode()), FlowDefinition::getFlowCode, flowDefinition.getFlowCode());
-        wrapper.like(StringUtils.isNotBlank(flowDefinition.getFlowName()), FlowDefinition::getFlowName, flowDefinition.getFlowName());
+        LambdaQueryBuilder<FlowDefinition> builder = QueryBuilder.lambda(FlowDefinition.class)
+            .likeIfText(FlowDefinition::getFlowCode, flowDefinition.getFlowCode())
+            .likeIfText(FlowDefinition::getFlowName, flowDefinition.getFlowName());
         if (StringUtils.isNotBlank(flowDefinition.getCategory())) {
             List<Long> categoryIds = flwCategoryMapper.selectCategoryIdsByParentId(Convert.toLong(flowDefinition.getCategory()));
-            wrapper.in(FlowDefinition::getCategory, StreamUtils.toList(categoryIds, Convert::toStr));
+            builder.inIfNotEmpty(FlowDefinition::getCategory, StreamUtils.toList(categoryIds, Convert::toStr));
         }
-        wrapper.orderByDesc(FlowDefinition::getCreateTime);
-        return wrapper;
+        return builder.orderByDesc(FlowDefinition::getCreateTime).build();
     }
 
     /**
@@ -180,9 +179,10 @@ public class FlwDefinitionServiceImpl implements IFlwDefinitionService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean removeDef(List<Long> ids) {
-        LambdaQueryWrapper<FlowHisTask> wrapper = Wrappers.lambdaQuery();
-        wrapper.in(FlowHisTask::getDefinitionId, ids);
-        List<FlowHisTask> flowHisTasks = flowHisTaskMapper.selectList(wrapper);
+        List<FlowHisTask> flowHisTasks = flowHisTaskMapper.selectList(
+            QueryBuilder.lambda(FlowHisTask.class)
+                .inIfNotEmpty(FlowHisTask::getDefinitionId, ids)
+                .build());
         if (CollUtil.isNotEmpty(flowHisTasks)) {
             List<FlowDefinition> flowDefinitions = flowDefinitionMapper.selectByIds(StreamUtils.toList(flowHisTasks, FlowHisTask::getDefinitionId));
             if (CollUtil.isNotEmpty(flowDefinitions)) {

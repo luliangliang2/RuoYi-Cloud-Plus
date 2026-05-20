@@ -2,15 +2,12 @@ package org.dromara.resource.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.enums.PushSourceEnum;
 import org.dromara.common.core.enums.PushTypeEnum;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.json.utils.JsonUtils;
-import org.dromara.common.mybatis.helper.DataBaseHelper;
 import org.dromara.common.mybatis.utils.IdGeneratorUtil;
 import org.dromara.common.push.dto.PushPayloadDTO;
 import org.dromara.resource.domain.SysMessage;
@@ -131,14 +128,16 @@ public class SysMessageServiceImpl implements ISysMessageService {
      * @return 消息VO列表
      */
     private List<SysMessageVo> selectMessageList(String category, Long userId) {
-        LambdaQueryWrapper<SysMessage> lqw = Wrappers.lambdaQuery();
-        lqw.eq(SysMessage::getCategory, category);
-        lqw.ge(SysMessage::getCreateTime, LocalDateTime.now().minusDays(BOX_DAYS));
-        lqw.and(wrapper -> wrapper.eq(SysMessage::getSendUserIds, GLOBAL_USER_IDS)
-            .or()
-            .apply(DataBaseHelper.findInSet(userId, "send_user_ids")));
-        lqw.orderByDesc(SysMessage::getCreateTime, SysMessage::getMessageId);
-        List<SysMessage> list = messageMapper.selectList(new Page<>(1, BOX_LIMIT, false), lqw);
+        List<SysMessage> list = messageMapper.lambda()
+            .eq(SysMessage::getCategory, category)
+            .ge(SysMessage::getCreateTime, LocalDateTime.now().minusDays(BOX_DAYS))
+            .and(wrapper ->
+                wrapper.eq(SysMessage::getSendUserIds, GLOBAL_USER_IDS)
+                .or()
+                .findInSet(userId, SysMessage::getSendUserIds)
+            )
+            .orderByDesc(SysMessage::getCreateTime, SysMessage::getMessageId)
+            .list(new Page<>(1, BOX_LIMIT, false));
         return list.stream().map(this::buildVo).toList();
     }
 

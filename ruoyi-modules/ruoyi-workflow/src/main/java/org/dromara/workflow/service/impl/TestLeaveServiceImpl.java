@@ -5,7 +5,6 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +16,7 @@ import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.workflow.api.domain.RemoteStartProcess;
 import org.dromara.workflow.api.event.ProcessDeleteEvent;
 import org.dromara.workflow.api.event.ProcessEvent;
@@ -93,12 +93,12 @@ public class TestLeaveServiceImpl implements ITestLeaveService {
     }
 
     private LambdaQueryWrapper<TestLeave> buildQueryWrapper(TestLeaveBo bo) {
-        LambdaQueryWrapper<TestLeave> lqw = Wrappers.lambdaQuery();
-        lqw.eq(StringUtils.isNotBlank(bo.getLeaveType()), TestLeave::getLeaveType, bo.getLeaveType());
-        lqw.ge(bo.getStartLeaveDays() != null, TestLeave::getLeaveDays, bo.getStartLeaveDays());
-        lqw.le(bo.getEndLeaveDays() != null, TestLeave::getLeaveDays, bo.getEndLeaveDays());
-        lqw.orderByDesc(BaseEntity::getCreateTime);
-        return lqw;
+        return QueryBuilder.lambda(TestLeave.class)
+            .eqIfText(TestLeave::getLeaveType, bo.getLeaveType())
+            .geIfPresent(TestLeave::getLeaveDays, bo.getStartLeaveDays())
+            .leIfPresent(TestLeave::getLeaveDays, bo.getEndLeaveDays())
+            .orderByDesc(BaseEntity::getCreateTime)
+            .build();
     }
 
     /**

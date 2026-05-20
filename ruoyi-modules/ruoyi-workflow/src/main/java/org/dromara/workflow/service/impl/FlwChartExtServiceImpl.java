@@ -3,8 +3,6 @@ package org.dromara.workflow.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -12,6 +10,7 @@ import org.dromara.common.core.service.DictService;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.api.RemoteDeptService;
 import org.dromara.system.api.RemoteUserService;
 import org.dromara.system.api.domain.vo.RemoteUserVo;
@@ -267,11 +266,11 @@ public class FlwChartExtServiceImpl implements ChartExtService {
      * @return 历史任务列表
      */
     public List<FlowHisTask> getHisTaskGroupedByNode(Long instanceId) {
-        LambdaQueryWrapper<FlowHisTask> wrapper = Wrappers.lambdaQuery();
-        wrapper.eq(FlowHisTask::getInstanceId, instanceId)
+        return flowHisTaskMapper.selectList(QueryBuilder.lambda(FlowHisTask.class)
+            .eq(FlowHisTask::getInstanceId, instanceId)
             .eq(FlowHisTask::getNodeType, NodeType.BETWEEN.getKey())
-            .orderByDesc(FlowHisTask::getUpdateTime);
-        return flowHisTaskMapper.selectList(wrapper);
+            .orderByDesc(FlowHisTask::getUpdateTime)
+            .build());
     }
 
 }

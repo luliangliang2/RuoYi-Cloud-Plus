@@ -1,18 +1,15 @@
 package org.dromara.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.redis.utils.CacheUtils;
 import org.dromara.system.domain.SysDictData;
 import org.dromara.system.domain.SysDictType;
@@ -72,13 +69,12 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
 
     private LambdaQueryWrapper<SysDictType> buildQueryWrapper(SysDictTypeBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<SysDictType> lqw = Wrappers.lambdaQuery();
-        lqw.like(StringUtils.isNotBlank(bo.getDictName()), SysDictType::getDictName, bo.getDictName());
-        lqw.like(StringUtils.isNotBlank(bo.getDictType()), SysDictType::getDictType, bo.getDictType());
-        lqw.between(params.get("beginTime") != null && params.get("endTime") != null,
-            SysDictType::getCreateTime, params.get("beginTime"), params.get("endTime"));
-        lqw.orderByAsc(SysDictType::getDictId);
-        return lqw;
+        return QueryBuilder.lambda(SysDictType.class)
+            .likeIfText(SysDictType::getDictName, bo.getDictName())
+            .likeIfText(SysDictType::getDictType, bo.getDictType())
+            .betweenParams(SysDictType::getCreateTime, params, "beginTime", "endTime")
+            .orderByAsc(SysDictType::getDictId)
+            .build();
     }
 
     /**
@@ -136,8 +132,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
     public void deleteDictTypeByIds(List<Long> dictIds) {
         List<SysDictType> list = dictTypeMapper.selectByIds(dictIds);
         list.forEach(x -> {
-            boolean assigned = dictDataMapper.exists(new LambdaQueryWrapper<SysDictData>()
-                .eq(SysDictData::getDictType, x.getDictType()));
+            boolean assigned = dictDataMapper.lambda().eq(SysDictData::getDictType, x.getDictType()).exists();
             if (assigned) {
                 throw new ServiceException("{}已分配,不能删除", x.getDictName());
             }
@@ -188,9 +183,10 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
     public List<SysDictDataVo> updateDictType(SysDictTypeBo bo) {
         SysDictType dict = MapstructUtils.convert(bo, SysDictType.class);
         SysDictType oldDict = dictTypeMapper.selectById(dict.getDictId());
-        dictDataMapper.update(null, new LambdaUpdateWrapper<SysDictData>()
+        dictDataMapper.lambda()
             .set(SysDictData::getDictType, dict.getDictType())
-            .eq(SysDictData::getDictType, oldDict.getDictType()));
+            .eq(SysDictData::getDictType, oldDict.getDictType())
+            .update();
         int row = dictTypeMapper.updateById(dict);
         if (row > 0) {
             CacheUtils.evict(CacheNames.SYS_DICT, oldDict.getDictType());
@@ -207,9 +203,10 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService {
      */
     @Override
     public boolean checkDictTypeUnique(SysDictTypeBo dictType) {
-        boolean exist = dictTypeMapper.exists(new LambdaQueryWrapper<SysDictType>()
+        boolean exist = dictTypeMapper.lambda()
             .eq(SysDictType::getDictType, dictType.getDictType())
-            .ne(ObjectUtil.isNotNull(dictType.getDictId()), SysDictType::getDictId, dictType.getDictId()));
+            .neIfPresent(SysDictType::getDictId, dictType.getDictId())
+            .exists();
         return !exist;
     }
 

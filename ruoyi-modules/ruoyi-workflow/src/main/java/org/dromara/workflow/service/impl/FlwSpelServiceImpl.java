@@ -1,9 +1,7 @@
 package org.dromara.workflow.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +12,7 @@ import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.api.domain.bo.RemoteTaskAssigneeBo;
 import org.dromara.system.api.domain.vo.RemoteTaskAssigneeVo;
 import org.dromara.workflow.common.ConditionalOnEnable;
@@ -81,16 +80,15 @@ public class FlwSpelServiceImpl implements IFlwSpelService {
     }
 
     private LambdaQueryWrapper<FlowSpel> buildQueryWrapper(FlowSpelBo bo) {
-        Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<FlowSpel> lqw = Wrappers.lambdaQuery();
-        lqw.orderByAsc(FlowSpel::getId);
-        lqw.like(StringUtils.isNotBlank(bo.getComponentName()), FlowSpel::getComponentName, bo.getComponentName());
-        lqw.like(StringUtils.isNotBlank(bo.getMethodName()), FlowSpel::getMethodName, bo.getMethodName());
-        lqw.eq(StringUtils.isNotBlank(bo.getMethodParams()), FlowSpel::getMethodParams, bo.getMethodParams());
-        lqw.eq(StringUtils.isNotBlank(bo.getViewSpel()), FlowSpel::getViewSpel, bo.getViewSpel());
-        lqw.eq(StringUtils.isNotBlank(bo.getStatus()), FlowSpel::getStatus, bo.getStatus());
-        lqw.like(StringUtils.isNotBlank(bo.getRemark()), FlowSpel::getRemark, bo.getRemark());
-        return lqw;
+        return QueryBuilder.lambda(FlowSpel.class)
+            .likeIfText(FlowSpel::getComponentName, bo.getComponentName())
+            .likeIfText(FlowSpel::getMethodName, bo.getMethodName())
+            .eqIfText(FlowSpel::getMethodParams, bo.getMethodParams())
+            .eqIfText(FlowSpel::getViewSpel, bo.getViewSpel())
+            .eqIfText(FlowSpel::getStatus, bo.getStatus())
+            .likeIfText(FlowSpel::getRemark, bo.getRemark())
+            .orderByAsc(FlowSpel::getId)
+            .build();
     }
 
     /**
@@ -128,9 +126,10 @@ public class FlwSpelServiceImpl implements IFlwSpelService {
      */
     private void validEntityBeforeSave(FlowSpel entity) {
         if (StringUtils.isNotBlank(entity.getViewSpel())) {
-            boolean exists = spelMapper.exists(new LambdaQueryWrapper<FlowSpel>()
+            boolean exists = spelMapper.lambda()
                 .eq(FlowSpel::getViewSpel, entity.getViewSpel())
-                .ne(ObjectUtil.isNotNull(entity.getId()), FlowSpel::getId, entity.getId()));
+                .neIfPresent(FlowSpel::getId, entity.getId())
+                .exists();
             if (exists) {
                 throw new ServiceException("SpEL表达式已存在，请勿重复添加");
             }
@@ -186,11 +185,10 @@ public class FlwSpelServiceImpl implements IFlwSpelService {
         if (CollUtil.isEmpty(viewSpels)) {
             return Collections.emptyMap();
         }
-        List<FlowSpel> list = spelMapper.selectList(
-            new LambdaQueryWrapper<FlowSpel>()
-                .select(FlowSpel::getViewSpel, FlowSpel::getRemark)
-                .in(FlowSpel::getViewSpel, viewSpels)
-        );
+        List<FlowSpel> list = spelMapper.lambda()
+            .select(FlowSpel::getViewSpel, FlowSpel::getRemark)
+            .in(FlowSpel::getViewSpel, viewSpels)
+            .list();
         return StreamUtils.toMap(list, FlowSpel::getViewSpel, FlowSpel::getRemark);
     }
 

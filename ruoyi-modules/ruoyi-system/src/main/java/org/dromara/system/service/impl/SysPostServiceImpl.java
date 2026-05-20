@@ -2,17 +2,17 @@ package org.dromara.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.SystemConstants;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StreamUtils;
-import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.mybatis.core.query.LambdaQueryBuilder;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.domain.SysPost;
 import org.dromara.system.domain.SysUserPost;
 import org.dromara.system.domain.bo.SysPostBo;
@@ -80,15 +80,14 @@ public class SysPostServiceImpl implements ISysPostService {
      * @param bo 查询条件对象
      * @return 构建好的查询包装器
      */
-    private LambdaQueryWrapper<SysPost> buildQueryWrapper(SysPostBo bo) {
+    private Wrapper<SysPost> buildQueryWrapper(SysPostBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<SysPost> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(bo.getPostCode()), SysPost::getPostCode, bo.getPostCode())
-            .like(StringUtils.isNotBlank(bo.getPostCategory()), SysPost::getPostCategory, bo.getPostCategory())
-            .like(StringUtils.isNotBlank(bo.getPostName()), SysPost::getPostName, bo.getPostName())
-            .eq(StringUtils.isNotBlank(bo.getStatus()), SysPost::getStatus, bo.getStatus())
-            .between(params.get("beginTime") != null && params.get("endTime") != null,
-                SysPost::getCreateTime, params.get("beginTime"), params.get("endTime"))
+        LambdaQueryBuilder<SysPost> wrapper = QueryBuilder.lambda(SysPost.class)
+            .likeIfText(SysPost::getPostCode, bo.getPostCode())
+            .likeIfText(SysPost::getPostCategory, bo.getPostCategory())
+            .likeIfText(SysPost::getPostName, bo.getPostName())
+            .eqIfText(SysPost::getStatus, bo.getStatus())
+            .betweenParams(SysPost::getCreateTime, params, "beginTime", "endTime")
             .orderByAsc(SysPost::getPostSort);
         if (ObjectUtil.isNotNull(bo.getDeptId())) {
             //优先单部门搜索
@@ -100,7 +99,7 @@ public class SysPostServiceImpl implements ISysPostService {
                 x.in(SysPost::getDeptId, deptIds);
             });
         }
-        return wrapper;
+        return wrapper.build();
     }
 
     /**
@@ -110,7 +109,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostAll() {
-        return postMapper.selectVoList(new QueryWrapper<>());
+        return postMapper.lambda().voList();
     }
 
     /**
@@ -144,10 +143,11 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostByIds(List<Long> postIds) {
-        return postMapper.selectVoList(new LambdaQueryWrapper<SysPost>()
+        return postMapper.lambda()
             .select(SysPost::getPostId, SysPost::getPostName, SysPost::getPostCode)
             .eq(SysPost::getStatus, SystemConstants.NORMAL)
-            .in(CollUtil.isNotEmpty(postIds), SysPost::getPostId, postIds));
+            .inIfNotEmpty(SysPost::getPostId, postIds)
+            .voList();
     }
 
     /**
@@ -158,10 +158,11 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public boolean checkPostNameUnique(SysPostBo post) {
-        boolean exist = postMapper.exists(new LambdaQueryWrapper<SysPost>()
+        boolean exist = postMapper.lambda()
             .eq(SysPost::getPostName, post.getPostName())
             .eq(SysPost::getDeptId, post.getDeptId())
-            .ne(ObjectUtil.isNotNull(post.getPostId()), SysPost::getPostId, post.getPostId()));
+            .neIfPresent(SysPost::getPostId, post.getPostId())
+            .exists();
         return !exist;
     }
 
@@ -173,9 +174,10 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public boolean checkPostCodeUnique(SysPostBo post) {
-        boolean exist = postMapper.exists(new LambdaQueryWrapper<SysPost>()
+        boolean exist = postMapper.lambda()
             .eq(SysPost::getPostCode, post.getPostCode())
-            .ne(ObjectUtil.isNotNull(post.getPostId()), SysPost::getPostId, post.getPostId()));
+            .neIfPresent(SysPost::getPostId, post.getPostId())
+            .exists();
         return !exist;
     }
 
