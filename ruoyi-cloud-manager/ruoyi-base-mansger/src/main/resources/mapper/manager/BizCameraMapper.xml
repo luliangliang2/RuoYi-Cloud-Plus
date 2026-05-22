@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizCameraMapper">
+
+    <select id="selectCameraList" resultType="org.dromara.manager.domain.vo.BizCameraVo">
+        select c.camera_id,
+               c.tree_id,
+               c.category_node_id,
+               n.node_name as category_node_name,
+               c.camera_code,
+               c.camera_name,
+               c.sn,
+               c.view_angle,
+               c.manufacturer,
+               c.model_name,
+               c.status,
+               c.create_time,
+               c.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_camera c
+            left join biz_tree_node n on n.node_id = c.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '1' and b.equipment_id = c.camera_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            c.del_flag = '0'
+            <if test="bo.cameraCode != null and bo.cameraCode != ''">
+                and c.camera_code like concat('%', #{bo.cameraCode}, '%')
+            </if>
+            <if test="bo.cameraName != null and bo.cameraName != ''">
+                and c.camera_name like concat('%', #{bo.cameraName}, '%')
+            </if>
+            <if test="bo.sn != null and bo.sn != ''">
+                and c.sn like concat('%', #{bo.sn}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and c.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and c.category_node_id = #{bo.categoryNodeId}
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and c.status = #{bo.status}
+            </if>
+        </where>
+        order by c.create_time desc, c.camera_id desc
+    </select>
+
+    <select id="selectCameraPage" resultType="org.dromara.manager.domain.vo.BizCameraVo">
+        select c.camera_id,
+               c.tree_id,
+               c.category_node_id,
+               n.node_name as category_node_name,
+               c.camera_code,
+               c.camera_name,
+               c.sn,
+               c.view_angle,
+               c.manufacturer,
+               c.model_name,
+               c.status,
+               c.create_time,
+               c.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_camera c
+            left join biz_tree_node n on n.node_id = c.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '1' and b.equipment_id = c.camera_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            c.del_flag = '0'
+            <if test="bo.cameraCode != null and bo.cameraCode != ''">
+                and c.camera_code like concat('%', #{bo.cameraCode}, '%')
+            </if>
+            <if test="bo.cameraName != null and bo.cameraName != ''">
+                and c.camera_name like concat('%', #{bo.cameraName}, '%')
+            </if>
+            <if test="bo.sn != null and bo.sn != ''">
+                and c.sn like concat('%', #{bo.sn}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and c.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and c.category_node_id = #{bo.categoryNodeId}
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and c.status = #{bo.status}
+            </if>
+        </where>
+        order by c.create_time desc, c.camera_id desc
+    </select>
+
+    <select id="selectBindableList" resultType="org.dromara.manager.domain.vo.BizCameraVo">
+        select c.camera_id,
+               c.tree_id,
+               c.category_node_id,
+               n.node_name as category_node_name,
+               c.camera_code,
+               c.camera_name,
+               c.sn,
+               c.view_angle,
+               c.manufacturer,
+               c.model_name,
+               c.status,
+               c.create_time,
+               c.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_camera c
+            left join biz_tree_node n on n.node_id = c.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '1' and b.equipment_id = c.camera_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            c.del_flag = '0'
+            and c.status = '0'
+            and (b.bind_id is null or b.vehicle_id = #{vehicleId})
+            <if test="keyword != null and keyword != ''">
+                and (
+                    c.camera_code like concat('%', #{keyword}, '%')
+                    or c.camera_name like concat('%', #{keyword}, '%')
+                    or c.sn like concat('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        order by c.camera_code asc, c.camera_id desc
+    </select>
+
+    <select id="selectCameraVoByIds" resultType="org.dromara.manager.domain.vo.BizCameraVo">
+        select c.camera_id,
+               c.tree_id,
+               c.category_node_id,
+               n.node_name as category_node_name,
+               c.camera_code,
+               c.camera_name,
+               c.sn,
+               c.view_angle,
+               c.manufacturer,
+               c.model_name,
+               c.status,
+               c.create_time,
+               c.remark
+        from biz_camera c
+            left join biz_tree_node n on n.node_id = c.category_node_id and n.del_flag = '0'
+        where c.del_flag = '0'
+          and c.camera_id in
+        <foreach collection="cameraIds" item="cameraId" open="(" separator="," close=")">
+            #{cameraId}
+        </foreach>
+    </select>
+
+</mapper>
