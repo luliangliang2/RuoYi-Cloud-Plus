@@ -1,8 +1,9 @@
-package org.dromara.base.service.impl;
+package org.dromara.manager.service.impl;
 
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.manager.mapper.BizVehicleMapper;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -10,28 +11,25 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.dromara.base.domain.bo.EquipmentAutomobileBo;
-import org.dromara.base.domain.vo.EquipmentAutomobileVo;
-import org.dromara.base.domain.EquipmentAutomobile;
-import org.dromara.base.mapper.EquipmentAutomobileMapper;
-import org.dromara.base.service.IEquipmentAutomobileService;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Collection;
-
+import org.dromara.manager.api.IBizVehicleService;
+import org.dromara.manager.api.domain.BizVehicle;
+import org.dromara.manager.api.domain.bo.BizVehicleBo;
+import org.dromara.manager.api.domain.vo.BizVehicleVo;
 /**
  * 车辆管理Service业务层处理
  *
- * @author 路亮亮
- * @date 2026-03-18
+ * @author LionLi
+ * @date 2026-05-21
  */
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileService {
+public class BizVehicleServiceImpl implements IBizVehicleService {
 
-    private final EquipmentAutomobileMapper baseMapper;
+    private final BizVehicleMapper baseMapper;
 
     /**
      * 查询车辆管理
@@ -40,7 +38,7 @@ public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileServi
      * @return 车辆管理
      */
     @Override
-    public EquipmentAutomobileVo queryById(Long id){
+    public BizVehicleVo queryById(Long id){
         return baseMapper.selectVoById(id);
     }
 
@@ -52,9 +50,9 @@ public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileServi
      * @return 车辆管理分页列表
      */
     @Override
-    public TableDataInfo<EquipmentAutomobileVo> queryPageList(EquipmentAutomobileBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<EquipmentAutomobile> lqw = buildQueryWrapper(bo);
-        Page<EquipmentAutomobileVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+    public TableDataInfo<BizVehicleVo> queryPageList(BizVehicleBo bo, PageQuery pageQuery) {
+        LambdaQueryWrapper<BizVehicle> lqw = buildQueryWrapper(bo);
+        Page<BizVehicleVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
         return TableDataInfo.build(result);
     }
 
@@ -65,18 +63,18 @@ public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileServi
      * @return 车辆管理列表
      */
     @Override
-    public List<EquipmentAutomobileVo> queryList(EquipmentAutomobileBo bo) {
-        LambdaQueryWrapper<EquipmentAutomobile> lqw = buildQueryWrapper(bo);
+    public List<BizVehicleVo> queryList(BizVehicleBo bo) {
+        LambdaQueryWrapper<BizVehicle> lqw = buildQueryWrapper(bo);
         return baseMapper.selectVoList(lqw);
     }
 
-    private LambdaQueryWrapper<EquipmentAutomobile> buildQueryWrapper(EquipmentAutomobileBo bo) {
+    private LambdaQueryWrapper<BizVehicle> buildQueryWrapper(BizVehicleBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<EquipmentAutomobile> lqw = Wrappers.lambdaQuery();
-        lqw.orderByAsc(EquipmentAutomobile::getId);
-        lqw.eq(StringUtils.isNotBlank(bo.getVin()), EquipmentAutomobile::getVin, bo.getVin());
-        lqw.eq(StringUtils.isNotBlank(bo.getBrand()), EquipmentAutomobile::getBrand, bo.getBrand());
-        lqw.eq(StringUtils.isNotBlank(bo.getPlateNumber()), EquipmentAutomobile::getPlateNumber, bo.getPlateNumber());
+        LambdaQueryWrapper<BizVehicle> lqw = Wrappers.lambdaQuery();
+        lqw.orderByAsc(BizVehicle::getId);
+        lqw.eq(StringUtils.isNotBlank(bo.getVin()), BizVehicle::getVin, bo.getVin());
+        lqw.eq(StringUtils.isNotBlank(bo.getPlateNo()), BizVehicle::getPlateNo, bo.getPlateNo());
+        lqw.eq(StringUtils.isNotBlank(bo.getBrand()), BizVehicle::getBrand, bo.getBrand());
         return lqw;
     }
 
@@ -87,8 +85,8 @@ public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileServi
      * @return 是否新增成功
      */
     @Override
-    public Boolean insertByBo(EquipmentAutomobileBo bo) {
-        EquipmentAutomobile add = MapstructUtils.convert(bo, EquipmentAutomobile.class);
+    public Boolean insertByBo(BizVehicleBo bo) {
+        BizVehicle add = MapstructUtils.convert(bo, BizVehicle.class);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
@@ -104,8 +102,8 @@ public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileServi
      * @return 是否修改成功
      */
     @Override
-    public Boolean updateByBo(EquipmentAutomobileBo bo) {
-        EquipmentAutomobile update = MapstructUtils.convert(bo, EquipmentAutomobile.class);
+    public Boolean updateByBo(BizVehicleBo bo) {
+        BizVehicle update = MapstructUtils.convert(bo, BizVehicle.class);
         validEntityBeforeSave(update);
         return baseMapper.updateById(update) > 0;
     }
@@ -113,7 +111,7 @@ public class EquipmentAutomobileServiceImpl implements IEquipmentAutomobileServi
     /**
      * 保存前的数据校验
      */
-    private void validEntityBeforeSave(EquipmentAutomobile entity){
+    private void validEntityBeforeSave(BizVehicle entity){
         //TODO 做一些数据校验,如唯一约束
     }
 

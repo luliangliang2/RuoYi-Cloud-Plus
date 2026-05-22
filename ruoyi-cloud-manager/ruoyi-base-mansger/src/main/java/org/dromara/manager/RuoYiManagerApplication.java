@@ -1,4 +1,4 @@
-package org.dromara.base;
+package org.dromara.manager;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,9 +10,9 @@ import org.springframework.boot.context.metrics.buffering.BufferingApplicationSt
  * @author Lion Li
  */
 @SpringBootApplication
-public class RuoYiBaeApplication {
+public class RuoYiManagerApplication {
 	public static void main(String[] args) {
-		SpringApplication application = new SpringApplication(RuoYiBaeApplication.class);
+		SpringApplication application = new SpringApplication(RuoYiManagerApplication.class);
 		application.setApplicationStartup(new BufferingApplicationStartup(2048));
 		application.run(args);
 		System.out.println("(♥◠‿◠)ﾉﾞ  基础管理模块启动成功   ლ(´ڡ`ლ)ﾞ  ");

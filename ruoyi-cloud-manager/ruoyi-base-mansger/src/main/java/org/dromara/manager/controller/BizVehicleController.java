@@ -1,4 +1,4 @@
-package org.dromara.base.controller;
+package org.dromara.manager.controller;
 
 import java.util.List;
 
@@ -11,50 +11,50 @@ import org.springframework.validation.annotation.Validated;
 import org.dromara.common.idempotent.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.web.core.BaseController;
+import org.dromara.manager.api.IBizVehicleService;
+import org.dromara.manager.api.domain.bo.BizVehicleBo;
+import org.dromara.manager.api.domain.vo.BizVehicleVo;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.validate.AddGroup;
 import org.dromara.common.core.validate.EditGroup;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.excel.utils.ExcelUtil;
-import org.dromara.base.domain.vo.EquipmentAutomobileVo;
-import org.dromara.base.domain.bo.EquipmentAutomobileBo;
-import org.dromara.base.service.IEquipmentAutomobileService;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 
 /**
  * 车辆管理
- * 前端访问路由地址为:/equipment/automobile
+ * 前端访问路由地址为:/manager/vehicle
  *
- * @author 路亮亮
- * @date 2026-03-18
+ * @author LionLi
+ * @date 2026-05-21
  */
 @Validated
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/automobile")
-public class EquipmentAutomobileController extends BaseController {
+@RequestMapping("/vehicle")
+public class BizVehicleController extends BaseController {
 
-    private final IEquipmentAutomobileService equipmentAutomobileService;
+    private final IBizVehicleService bizVehicleService;
 
     /**
      * 查询车辆管理列表
      */
-    @SaCheckPermission("equipment:automobile:list")
+    @SaCheckPermission("manager:vehicle:list")
     @GetMapping("/list")
-    public TableDataInfo<EquipmentAutomobileVo> list(EquipmentAutomobileBo bo, PageQuery pageQuery) {
-        return equipmentAutomobileService.queryPageList(bo, pageQuery);
+    public TableDataInfo<BizVehicleVo> list(BizVehicleBo bo, PageQuery pageQuery) {
+        return bizVehicleService.queryPageList(bo, pageQuery);
     }
 
     /**
      * 导出车辆管理列表
      */
-    @SaCheckPermission("equipment:automobile:export")
+    @SaCheckPermission("manager:vehicle:export")
     @Log(title = "车辆管理", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(EquipmentAutomobileBo bo, HttpServletResponse response) {
-        List<EquipmentAutomobileVo> list = equipmentAutomobileService.queryList(bo);
-        ExcelUtil.exportExcel(list, "车辆管理", EquipmentAutomobileVo.class, response);
+    public void export(BizVehicleBo bo, HttpServletResponse response) {
+        List<BizVehicleVo> list = bizVehicleService.queryList(bo);
+        ExcelUtil.exportExcel(list, "车辆管理", BizVehicleVo.class, response);
     }
 
     /**
@@ -62,33 +62,33 @@ public class EquipmentAutomobileController extends BaseController {
      *
      * @param id 主键
      */
-    @SaCheckPermission("equipment:automobile:query")
+    @SaCheckPermission("manager:vehicle:query")
     @GetMapping("/{id}")
-    public R<EquipmentAutomobileVo> getInfo(@NotNull(message = "主键不能为空")
+    public R<BizVehicleVo> getInfo(@NotNull(message = "主键不能为空")
                                      @PathVariable("id") Long id) {
-        return R.ok(equipmentAutomobileService.queryById(id));
+        return R.ok(bizVehicleService.queryById(id));
     }
 
     /**
      * 新增车辆管理
      */
-    @SaCheckPermission("equipment:automobile:add")
+    @SaCheckPermission("manager:vehicle:add")
     @Log(title = "车辆管理", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping()
-    public R<Void> add(@Validated(AddGroup.class) @RequestBody EquipmentAutomobileBo bo) {
-        return toAjax(equipmentAutomobileService.insertByBo(bo));
+    public R<Void> add(@Validated(AddGroup.class) @RequestBody BizVehicleBo bo) {
+        return toAjax(bizVehicleService.insertByBo(bo));
     }
 
     /**
      * 修改车辆管理
      */
-    @SaCheckPermission("equipment:automobile:edit")
+    @SaCheckPermission("manager:vehicle:edit")
     @Log(title = "车辆管理", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
     @PutMapping()
-    public R<Void> edit(@Validated(EditGroup.class) @RequestBody EquipmentAutomobileBo bo) {
-        return toAjax(equipmentAutomobileService.updateByBo(bo));
+    public R<Void> edit(@Validated(EditGroup.class) @RequestBody BizVehicleBo bo) {
+        return toAjax(bizVehicleService.updateByBo(bo));
     }
 
     /**
@@ -96,11 +96,11 @@ public class EquipmentAutomobileController extends BaseController {
      *
      * @param ids 主键串
      */
-    @SaCheckPermission("equipment:automobile:remove")
+    @SaCheckPermission("manager:vehicle:remove")
     @Log(title = "车辆管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
     public R<Void> remove(@NotEmpty(message = "主键不能为空")
                           @PathVariable("ids") Long[] ids) {
-        return toAjax(equipmentAutomobileService.deleteWithValidByIds(List.of(ids), true));
+        return toAjax(bizVehicleService.deleteWithValidByIds(List.of(ids), true));
     }
 }

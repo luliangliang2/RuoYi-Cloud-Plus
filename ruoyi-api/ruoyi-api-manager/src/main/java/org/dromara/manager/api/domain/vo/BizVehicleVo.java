@@ -1,29 +1,29 @@
-package org.dromara.base.domain.vo;
+package org.dromara.manager.api.domain.vo;
 
-import org.dromara.base.domain.EquipmentAutomobile;
 import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
 import cn.idev.excel.annotation.ExcelProperty;
 import org.dromara.common.excel.annotation.ExcelDictFormat;
 import org.dromara.common.excel.convert.ExcelDictConvert;
+import org.dromara.manager.api.domain.BizVehicle;
+
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
 
 
 
 /**
- * 车辆管理视图对象 equipment_automobile
+ * 车辆管理视图对象 biz_vehicle
  *
- * @author 路亮亮
- * @date 2026-03-18
+ * @author LionLi
+ * @date 2026-05-21
  */
 @Data
 @ExcelIgnoreUnannotated
-@AutoMapper(target = EquipmentAutomobile.class)
-public class EquipmentAutomobileVo implements Serializable {
+@AutoMapper(target = BizVehicle.class)
+public class BizVehicleVo implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -41,16 +41,17 @@ public class EquipmentAutomobileVo implements Serializable {
     private String vin;
 
     /**
-     * 车辆型号
+     * 车牌
      */
-    @ExcelProperty(value = "车辆型号")
-    private String brand;
+    @ExcelProperty(value = "车牌")
+    private String plateNo;
 
     /**
-     * 车牌号
+     * 车辆品牌
      */
-    @ExcelProperty(value = "车牌号")
-    private String plateNumber;
+    @ExcelProperty(value = "车辆品牌", converter = ExcelDictConvert.class)
+    @ExcelDictFormat(dictType = "vehicle_brand")
+    private String brand;
 
 
 }

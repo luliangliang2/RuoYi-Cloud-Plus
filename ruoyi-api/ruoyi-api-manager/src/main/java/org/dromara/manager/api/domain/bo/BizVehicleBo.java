@@ -1,24 +1,25 @@
-package org.dromara.base.domain.bo;
+package org.dromara.manager.api.domain.bo;
 
-import org.dromara.base.domain.EquipmentAutomobile;
-import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.common.core.validate.AddGroup;
 import org.dromara.common.core.validate.EditGroup;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
+import org.dromara.manager.api.domain.BizVehicle;
+
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import jakarta.validation.constraints.*;
 
 /**
- * 车辆管理业务对象 equipment_automobile
+ * 车辆管理业务对象 biz_vehicle
  *
- * @author 路亮亮
- * @date 2026-03-18
+ * @author LionLi
+ * @date 2026-05-21
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-@AutoMapper(target = EquipmentAutomobile.class, reverseConvertGenerate = false)
-public class EquipmentAutomobileBo extends BaseEntity {
+@AutoMapper(target = BizVehicle.class, reverseConvertGenerate = false)
+public class BizVehicleBo extends BaseEntity {
 
     /**
      * 
@@ -32,14 +33,14 @@ public class EquipmentAutomobileBo extends BaseEntity {
     private String vin;
 
     /**
-     * 车辆型号
+     * 车牌
      */
-    private String brand;
+    private String plateNo;
 
     /**
-     * 车牌号
+     * 车辆品牌
      */
-    private String plateNumber;
+    private String brand;
 
 
 }

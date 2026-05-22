@@ -1,9 +1,8 @@
-package org.dromara.base.service;
+package org.dromara.manager.api;
 
-import org.dromara.base.domain.EquipmentAutomobile;
-import org.dromara.base.domain.vo.EquipmentAutomobileVo;
-import org.dromara.base.domain.bo.EquipmentAutomobileBo;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.manager.api.domain.bo.BizVehicleBo;
+import org.dromara.manager.api.domain.vo.BizVehicleVo;
 import org.dromara.common.mybatis.core.page.PageQuery;
 
 import java.util.Collection;
@@ -12,10 +11,10 @@ import java.util.List;
 /**
  * 车辆管理Service接口
  *
- * @author 路亮亮
- * @date 2026-03-18
+ * @author LionLi
+ * @date 2026-05-21
  */
-public interface IEquipmentAutomobileService {
+public interface IBizVehicleService {
 
     /**
      * 查询车辆管理
@@ -23,7 +22,7 @@ public interface IEquipmentAutomobileService {
      * @param id 主键
      * @return 车辆管理
      */
-    EquipmentAutomobileVo queryById(Long id);
+    BizVehicleVo queryById(Long id);
 
     /**
      * 分页查询车辆管理列表
@@ -32,7 +31,7 @@ public interface IEquipmentAutomobileService {
      * @param pageQuery 分页参数
      * @return 车辆管理分页列表
      */
-    TableDataInfo<EquipmentAutomobileVo> queryPageList(EquipmentAutomobileBo bo, PageQuery pageQuery);
+    TableDataInfo<BizVehicleVo> queryPageList(BizVehicleBo bo, PageQuery pageQuery);
 
     /**
      * 查询符合条件的车辆管理列表
@@ -40,7 +39,7 @@ public interface IEquipmentAutomobileService {
      * @param bo 查询条件
      * @return 车辆管理列表
      */
-    List<EquipmentAutomobileVo> queryList(EquipmentAutomobileBo bo);
+    List<BizVehicleVo> queryList(BizVehicleBo bo);
 
     /**
      * 新增车辆管理
@@ -48,7 +47,7 @@ public interface IEquipmentAutomobileService {
      * @param bo 车辆管理
      * @return 是否新增成功
      */
-    Boolean insertByBo(EquipmentAutomobileBo bo);
+    Boolean insertByBo(BizVehicleBo bo);
 
     /**
      * 修改车辆管理
@@ -56,7 +55,7 @@ public interface IEquipmentAutomobileService {
      * @param bo 车辆管理
      * @return 是否修改成功
      */
-    Boolean updateByBo(EquipmentAutomobileBo bo);
+    Boolean updateByBo(BizVehicleBo bo);
 
     /**
      * 校验并批量删除车辆管理信息
