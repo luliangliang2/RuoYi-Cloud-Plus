@@ -1,0 +1,58 @@
+server:
+  port: 9207
+
+spring:
+  application:
+    name: ruoyi-magic-api
+  profiles:
+    active: public
+
+  cloud:
+    nacos:
+      server-addr: 10.211.55.19:8848
+      username: nacos
+      password: nacos
+      discovery:
+        group: DEFAULT_GROUP
+        namespace: public
+      config:
+        group: DEFAULT_GROUP
+        namespace: public
+  config:
+    import:
+      - optional:nacos:application-common.yml
+      - optional:nacos:datasource.yml
+      - optional:nacos:${spring.application.name}.yml
+
+  datasource:
+    dynamic:
+      primary: master
+      seata: false
+      datasource:
+        master:
+          type: ${spring.datasource.type}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          url: ${datasource.system-master.url}
+          username: ${datasource.system-master.username}
+          password: ${datasource.system-master.password}
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    table: flyway_schema_history_magic_api
+
+magic-api:
+  web: /web
+  prefix: /api
+  show-sql: true
+  persistence-response-body: true
+  response: "{code: code == 1 ? 200 : 500, msg: message, data: data}"
+  resource:
+    type: database
+    table-name: magic_api_file
+    prefix: /magic-api
+  backup:
+    enable: true
+    table-name: magic_api_backup
+    max-history: 30

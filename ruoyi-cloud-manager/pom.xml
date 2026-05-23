@@ -19,5 +19,6 @@
 	</dependencies>
 	<modules>
 		<module>ruoyi-base-mansger</module>
+		<module>ruoyi-magic-api</module>
 	</modules>
 </project>
