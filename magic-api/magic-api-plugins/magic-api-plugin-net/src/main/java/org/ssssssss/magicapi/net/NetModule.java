@@ -4,6 +4,10 @@ import io.netty.channel.Channel;
 import org.ssssssss.magicapi.core.annotation.MagicModule;
 import org.ssssssss.magicapi.netty.NettyService;
 import org.ssssssss.magicapi.netty.NettyService.TransferMode;
+import org.ssssssss.magicapi.netty.WebSocketAuthInfo;
+import org.ssssssss.magicapi.netty.WebSocketAuthProvider;
+import org.ssssssss.magicapi.net.auth.RuoYiWebSocketAuthProvider;
+import org.ssssssss.magicapi.net.hub.WebSocketHub;
 import org.ssssssss.magicapi.net.service.NetServerManager;
 import org.ssssssss.script.functions.DynamicAttribute;
 import org.ssssssss.script.functions.DynamicMethod;
@@ -61,7 +65,7 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
      */
     public static class ChannelInfo {
         final String name;
-        final String type;  // "tcp-server", "tcp-client", "udp-server", "udp-client"
+        final String type;  // "tcp-server", "tcp-client", "udp-server", "udp-client", "websocket-server", "websocket-client"
         final Channel channel;
         final TransferMode transferMode;
         final long createTime;
@@ -88,6 +92,9 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
     // 已注册的连接别名 -> 连接信息
     private static final Map<String, ChannelInfo> channelRegistry = new ConcurrentHashMap<>();
 
+    // 已注册的 WebSocket Hub
+    private static final Map<String, WebSocketHub> webSocketHubRegistry = new ConcurrentHashMap<>();
+
     // 已注册的连接别名 -> 消息处理器（用于动态更新）
     private static final Map<String, BiConsumer<String, Object>> channelMessageHandlers = new ConcurrentHashMap<>();
 
@@ -113,6 +120,8 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
 
     // 已注册的连接别名 -> 注册回调处理器 (clientId, registerData, channel) -> alias 或 null
     private static final Map<String, TriFunction<String, Object, Channel, String>> registerHandlers = new ConcurrentHashMap<>();
+
+    private static final WebSocketAuthProvider RUOYI_WEB_SOCKET_AUTH_PROVIDER = new RuoYiWebSocketAuthProvider();
 
     /**
      * 连接验证器接口
@@ -211,19 +220,22 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
      * 注册客户端（内部方法）
      */
     public static void registerClient(String serverName, String clientId, String alias, Channel channel) {
+        ConcurrentHashMap<String, ClientInfo> clientsById = serverClientsById.computeIfAbsent(serverName, k -> new ConcurrentHashMap<>());
+        ConcurrentHashMap<String, ClientInfo> clientsByAlias = serverClientsByAlias.computeIfAbsent(serverName, k -> new ConcurrentHashMap<>());
+
         // 移除旧的别名映射（如果有）
-        ClientInfo oldInfo = serverClientsById.get(serverName).get(clientId);
+        ClientInfo oldInfo = clientsById.get(clientId);
         if (oldInfo != null && oldInfo.alias != null) {
-            serverClientsByAlias.get(serverName).remove(oldInfo.alias);
+            clientsByAlias.remove(oldInfo.alias);
             globalClientAliases.remove(oldInfo.alias);
         }
 
         // 创建新的 ClientInfo
         ClientInfo info = new ClientInfo(clientId, alias, serverName, channel);
-        serverClientsById.computeIfAbsent(serverName, k -> new ConcurrentHashMap<>()).put(clientId, info);
+        clientsById.put(clientId, info);
 
         if (alias != null && !alias.isEmpty()) {
-            serverClientsByAlias.computeIfAbsent(serverName, k -> new ConcurrentHashMap<>()).put(alias, info);
+            clientsByAlias.put(alias, info);
             globalClientAliases.put(alias, info);
         }
     }
@@ -370,13 +382,20 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
         public long createTime() { return info.createTime; }
         public void send(Object message) {
             if (info.channel != null && info.channel.isActive()) {
-                NetServerManager.getNettyService().sendTcpMessage(info.channel, message);
+                if (info.type != null && info.type.startsWith("websocket")) {
+                    NetServerManager.getNettyService().sendWebSocketMessage(info.channel, message);
+                } else {
+                    NetServerManager.getNettyService().sendTcpMessage(info.channel, message);
+                }
             }
         }
         public void broadcast(Object message) {
             if (info.channel != null && info.channel.isActive()) {
-                // 使用 NetModule 的 broadcast 方法
-                NetServerManager.getNettyService().broadcast(info.channel, message);
+                if ("websocket-server".equals(info.type)) {
+                    NetServerManager.getNettyService().broadcastWebSocket(info.channel, message);
+                } else {
+                    NetServerManager.getNettyService().broadcast(info.channel, message);
+                }
             }
         }
         public void close() {
@@ -507,6 +526,9 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
             channel = createTcpServer(name, port, mode);
         } else if ("udp-server".equals(fullType)) {
             channel = createUdpServer(name, port, mode);
+        } else if ("websocket-server".equals(fullType) || "ws-server".equals(fullType)) {
+            fullType = "websocket-server";
+            channel = createWebSocketServer(name, port, "/websocket", true);
         } else {
             throw new IllegalArgumentException("不支持的服务端类型: " + type);
         }
@@ -635,6 +657,10 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
             channel = createTcpClientInternal(host, port, mode);
         } else if ("udp-client".equals(fullType)) {
             channel = createUdpClientInternal(port, mode);
+        } else if ("websocket-client".equals(fullType) || "ws-client".equals(fullType)) {
+            fullType = "websocket-client";
+            String url = buildWebSocketUrl(host, port, "/websocket", false);
+            channel = createWebSocketClientInternal(url, Collections.emptyMap());
         } else {
             throw new IllegalArgumentException("不支持的客户端类型: " + type);
         }
@@ -693,7 +719,7 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
     private void closeChannel(ChannelInfo info) {
         if (info.channel != null && info.channel.isActive()) {
             try {
-                info.channel.close();
+                nettyService.closeChannel(info.channel);
             } catch (Exception e) {
                 // ignore
             }
@@ -973,13 +999,199 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
         }
     }
 
+    // ==================== WebSocket Server ====================
+
+    public Channel createWebSocketServer(String name, int port) {
+        return createWebSocketServer(name, port, "/websocket", true);
+    }
+
+    public Channel createWebSocketServer(String name, int port, String path) {
+        return createWebSocketServer(name, port, path, true);
+    }
+
+    public Channel createWebSocketServer(String name, int port, String path, boolean ruoyiAuth) {
+        ChannelInfo existing = channelRegistry.get(name);
+        if (existing != null) {
+            closeChannel(existing);
+            channelRegistry.remove(name);
+        }
+        Channel channel = createWebSocketServerInternal(name, port, path, ruoyiAuth);
+        if (channel != null && channel.isActive()) {
+            channelRegistry.put(name, new ChannelInfo(name, "websocket-server", channel, TransferMode.TEXT));
+        }
+        return channel;
+    }
+
+    public Channel websocketServer(int port) {
+        return createWebSocketServer("websocket-server-" + port, port, "/websocket", true);
+    }
+
+    public Channel websocketServer(int port, String path) {
+        return createWebSocketServer("websocket-server-" + port, port, path, true);
+    }
+
+    public Channel websocketServer(int port, String path, boolean ruoyiAuth) {
+        return createWebSocketServer("websocket-server-" + port, port, path, ruoyiAuth);
+    }
+
+    // ==================== WebSocket Hub ====================
+
+    public WebSocketHub websocketHub(int port) {
+        return websocketHub("websocket-hub-" + port, port, true);
+    }
+
+    public WebSocketHub websocketHub(int port, boolean ruoyiAuth) {
+        return websocketHub("websocket-hub-" + port, port, ruoyiAuth);
+    }
+
+    public WebSocketHub createWebSocketHub(String name, int port) {
+        return websocketHub(name, port, true);
+    }
+
+    public WebSocketHub createWebSocketHub(String name, int port, boolean ruoyiAuth) {
+        return websocketHub(name, port, ruoyiAuth);
+    }
+
+    public WebSocketHub websocketHub(String name, int port, boolean ruoyiAuth) {
+        closeWebSocketHub(name);
+        WebSocketHub hub = new WebSocketHub(name, port, ruoyiAuth, nettyService).start();
+        webSocketHubRegistry.put(name, hub);
+        return hub;
+    }
+
+    public WebSocketHub getWebSocketHub(String name) {
+        return webSocketHubRegistry.get(name);
+    }
+
+    public void closeWebSocketHub(String name) {
+        WebSocketHub hub = webSocketHubRegistry.remove(name);
+        if (hub != null) {
+            hub.close();
+        }
+    }
+
+    private Channel createWebSocketServerInternal(String name, int port, String path, boolean ruoyiAuth) {
+        try {
+            return nettyService.startWebSocketServer(
+                port,
+                path,
+                false,
+                null,
+                null,
+                ruoyiAuth,
+                ruoyiAuth ? RUOYI_WEB_SOCKET_AUTH_PROVIDER : null,
+                (clientId, msg) -> {
+                    BiConsumer<String, Object> handler = channelMessageHandlers.get(name);
+                    if (handler != null) {
+                        handler.accept(clientId, msg);
+                    } else if (messageHandler != null) {
+                        messageHandler.accept(clientId, msg);
+                    }
+                },
+                (clientId, channel) -> {
+                    java.util.function.BiConsumer<String, Channel> handler = connectionHandlers.get(name);
+                    if (handler != null) {
+                        handler.accept(clientId, channel);
+                    }
+                    if (connectedHandler != null) {
+                        connectedHandler.run();
+                    }
+                },
+                (clientId, channel) -> {
+                    java.util.function.BiConsumer<String, Channel> handler = disconnectionHandlers.get(name);
+                    if (handler != null) {
+                        handler.accept(clientId, channel);
+                    }
+                    unregisterClient(name, clientId);
+                    if (disconnectedHandler != null) {
+                        disconnectedHandler.accept(clientId, null);
+                    }
+                },
+                (clientId, authInfo, channel) -> {
+                    String alias = null;
+                    TriFunction<String, Object, Channel, String> handler = registerHandlers.get(name);
+                    if (handler != null) {
+                        alias = handler.apply(clientId, authInfo, channel);
+                    }
+                    if (alias == null || alias.isEmpty()) {
+                        alias = authInfo != null && authInfo.getUserId() != null ? authInfo.getUserId() : "client_" + clientId.hashCode();
+                    }
+                    registerClient(name, clientId, alias, channel);
+                    ClientInfo clientInfo = getClientById(name, clientId);
+                    if (clientInfo != null) {
+                        clientInfo.setMetadata(authInfo);
+                    }
+                    return alias;
+                }
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("创建 WebSocket 服务端失败: " + e.getMessage(), e);
+        }
+    }
+
+    // ==================== WebSocket Client ====================
+
+    public Channel createWebSocketClient(String name, String url) {
+        return createWebSocketClient(name, url, Collections.emptyMap());
+    }
+
+    public Channel createWebSocketClient(String name, String url, Map<String, String> headers) {
+        ChannelInfo existing = channelRegistry.get(name);
+        if (existing != null) {
+            closeChannel(existing);
+        }
+        Channel channel = createWebSocketClientInternal(url, headers);
+        if (channel != null && channel.isActive()) {
+            channelRegistry.put(name, new ChannelInfo(name, "websocket-client", channel, TransferMode.TEXT));
+        }
+        return channel;
+    }
+
+    public Channel websocketClient(String url) {
+        return createWebSocketClient("websocket-client-" + Math.abs(url.hashCode()), url);
+    }
+
+    public Channel websocketClient(String url, Map<String, String> headers) {
+        return createWebSocketClient("websocket-client-" + Math.abs(url.hashCode()), url, headers);
+    }
+
+    private Channel createWebSocketClientInternal(String url, Map<String, String> headers) {
+        try {
+            return nettyService.connectWebSocket(
+                url,
+                headers,
+                (clientId, msg) -> {
+                    if (messageHandler != null) {
+                        messageHandler.accept(clientId, msg);
+                    }
+                },
+                () -> {
+                    if (connectedHandler != null) {
+                        connectedHandler.run();
+                    }
+                },
+                () -> {
+                    if (disconnectedHandler != null) {
+                        disconnectedHandler.accept("server", null);
+                    }
+                }
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("连接 WebSocket 服务端失败: " + e.getMessage(), e);
+        }
+    }
+
     // ==================== 消息发送 ====================
 
     /**
      * 发送消息到 TCP 通道
      */
     public void send(Channel channel, Object message) {
-        nettyService.sendTcpMessage(channel, message);
+        if (isWebSocketChannel(channel)) {
+            nettyService.sendWebSocketMessage(channel, message);
+        } else {
+            nettyService.sendTcpMessage(channel, message);
+        }
     }
 
     /**
@@ -990,7 +1202,12 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
         if (channel == null) {
             throw new IllegalArgumentException("未找到名为 " + name + " 的连接");
         }
-        send(channel, message);
+        ChannelInfo info = channelRegistry.get(name);
+        if (info != null && info.type != null && info.type.startsWith("websocket")) {
+            nettyService.sendWebSocketMessage(channel, message);
+        } else {
+            send(channel, message);
+        }
     }
 
     /**
@@ -1007,9 +1224,14 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
      * @return 是否发送成功
      */
     public boolean sendTo(String clientAlias, Object message) {
-        Channel channel = getClientChannelByAlias(clientAlias);
+        ClientInfo info = getClientByAlias(clientAlias);
+        Channel channel = info != null ? info.channel : null;
         if (channel != null && channel.isActive()) {
-            nettyService.sendTcpMessage(channel, message);
+            if (isWebSocketServer(info.serverName)) {
+                nettyService.sendWebSocketMessage(channel, message);
+            } else {
+                nettyService.sendTcpMessage(channel, message);
+            }
             return true;
         }
         return false;
@@ -1038,7 +1260,11 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
         }
 
         if (channel != null && channel.isActive()) {
-            nettyService.sendTcpMessage(channel, message);
+            if (isWebSocketServer(serverName)) {
+                nettyService.sendWebSocketMessage(channel, message);
+            } else {
+                nettyService.sendTcpMessage(channel, message);
+            }
             return true;
         }
         return false;
@@ -1067,6 +1293,7 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
         for (Channel channel : nettyService.getServerChannels().values()) {
             if (channel.isActive()) {
                 nettyService.broadcast(channel, message);
+                nettyService.broadcastWebSocket(channel, message);
             }
         }
     }
@@ -1077,7 +1304,11 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
     public void broadcast(String name, Object message) {
         ChannelInfo info = channelRegistry.get(name);
         if (info != null && info.channel.isActive()) {
-            nettyService.broadcast(info.channel, message);
+            if ("websocket-server".equals(info.type)) {
+                nettyService.broadcastWebSocket(info.channel, message);
+            } else {
+                nettyService.broadcast(info.channel, message);
+            }
         }
     }
 
@@ -1198,6 +1429,26 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
             }
             handler.accept(clientId, msg);
         });
+    }
+
+    private static boolean isWebSocketServer(String serverName) {
+        ChannelInfo info = channelRegistry.get(serverName);
+        return info != null && "websocket-server".equals(info.type);
+    }
+
+    private static boolean isWebSocketChannel(Channel channel) {
+        return channel != null && (
+            channel.pipeline().get(io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler.class) != null
+                || channel.pipeline().get(io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.class) != null
+        );
+    }
+
+    private static String buildWebSocketUrl(String host, int port, String path, boolean ssl) {
+        String normalizedPath = path == null || path.trim().isEmpty() ? "/websocket" : path;
+        if (!normalizedPath.startsWith("/")) {
+            normalizedPath = "/" + normalizedPath;
+        }
+        return (ssl ? "wss" : "ws") + "://" + host + ":" + port + normalizedPath;
     }
 
     // ==================== 连接管理 ====================

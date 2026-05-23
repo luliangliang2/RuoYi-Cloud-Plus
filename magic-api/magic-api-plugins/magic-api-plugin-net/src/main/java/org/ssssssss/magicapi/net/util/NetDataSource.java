@@ -36,6 +36,11 @@ public class NetDataSource {
                 return testUdpClient();
             } else if ("udp-server".equals(type)) {
                 return testUdpServer();
+            } else if ("websocket-client".equals(type) || "ws-client".equals(type)) {
+                return testTcpClient();
+            } else if ("websocket-server".equals(type) || "ws-server".equals(type)
+                || "websocket-hub".equals(type) || "ws-hub".equals(type)) {
+                return testTcpServer();
             }
             return false;
         } catch (Exception e) {

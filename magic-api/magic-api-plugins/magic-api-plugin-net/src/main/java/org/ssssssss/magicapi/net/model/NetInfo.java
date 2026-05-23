@@ -15,7 +15,7 @@ public class NetInfo extends MagicEntity {
     private String key;
 
     /**
-     * 类型：tcp-client, tcp-server, udp-client, udp-server
+     * 类型：tcp-client, tcp-server, udp-client, udp-server, websocket-client, websocket-server, websocket-hub
      */
     private String type;
 

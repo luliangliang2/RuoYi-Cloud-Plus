@@ -17,6 +17,7 @@ CREATE TABLE `sj_namespace`
 
 INSERT INTO `sj_namespace` VALUES (1, 'Development', 'dev', '', 0, now(), now());
 INSERT INTO `sj_namespace` VALUES (2, 'Production', 'prod', '', 0, now(), now());
+INSERT INTO `sj_namespace` VALUES (3, 'Public', 'public', '', 0, now(), now());
 
 CREATE TABLE `sj_group_config`
 (
@@ -40,6 +41,7 @@ CREATE TABLE `sj_group_config`
 
 INSERT INTO `sj_group_config` VALUES (1, 'dev', 'ruoyi_group', '', 'SJ_cKqBTPzCsWA3VyuCfFoccmuIEGXjr5KT', 1, 1, 0, 1, 1,  now(), now());
 INSERT INTO `sj_group_config` VALUES (2, 'prod', 'ruoyi_group', '', 'SJ_cKqBTPzCsWA3VyuCfFoccmuIEGXjr5KT', 1, 1, 0, 1, 1,  now(), now());
+INSERT INTO `sj_group_config` VALUES (3, 'public', 'ruoyi_group', '', 'SJ_cKqBTPzCsWA3VyuCfFoccmuIEGXjr5KT', 1, 1, 0, 1, 1,  now(), now());
 
 CREATE TABLE `sj_notify_config`
 (

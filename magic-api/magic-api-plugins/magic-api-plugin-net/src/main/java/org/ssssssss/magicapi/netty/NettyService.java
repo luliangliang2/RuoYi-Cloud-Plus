@@ -14,21 +14,48 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.PongWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.CharsetUtil;
+import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.ssssssss.magicapi.net.hub.WebSocketContext;
+import org.ssssssss.magicapi.net.hub.WebSocketRoute;
+import org.ssssssss.magicapi.utils.JsonUtils;
 
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.ArrayList;
@@ -38,6 +65,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * 基于 Netty 的网络服务
@@ -64,8 +92,492 @@ public class NettyService {
     private final Map<String, List<String>> clientConnections = new ConcurrentHashMap<>();
     // 存储每个 TCP 服务端对应的客户端 Channel（key: "tcp-server:端口", value: 客户端 Channel 列表）
     private final Map<String, List<Channel>> serverClientChannels = new ConcurrentHashMap<>();
+    // 存储每个 WebSocket 服务端对应的客户端 Channel（key: "websocket-server:端口:路径", value: 客户端 Channel 列表）
+    private final Map<String, List<Channel>> webSocketServerClientChannels = new ConcurrentHashMap<>();
 
     public NettyService() {
+    }
+
+    // ==================== WebSocket Hub Server ====================
+
+    /**
+     * 启动支持同端口多路径路由的 WebSocket Hub。
+     */
+    public Channel startWebSocketHub(int port, boolean useSSL, String keystore, String keystorePassword,
+                                     boolean requireAuth, WebSocketAuthProvider authProvider,
+                                     Function<String, WebSocketRoute> routeResolver,
+                                     Function<WebSocketContext, String> registerHandler,
+                                     BiConsumer<WebSocketContext, Object> messageHandler,
+                                     Consumer<WebSocketContext> connectedHandler,
+                                     Consumer<WebSocketContext> disconnectedHandler) {
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
+        final String channelId = "websocket-hub:" + port;
+
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(bossGroup, workerGroup)
+            .channel(NioServerSocketChannel.class)
+            .option(ChannelOption.SO_BACKLOG, 128)
+            .childOption(ChannelOption.SO_KEEPALIVE, true)
+            .childOption(ChannelOption.TCP_NODELAY, true)
+            .childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                protected void initChannel(SocketChannel ch) {
+                    ChannelPipeline pipeline = ch.pipeline();
+                    if (useSSL && keystore != null) {
+                        try {
+                            SslContext sslContext = createServerSslContext(keystore, keystorePassword, false);
+                            pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
+                        } catch (Exception e) {
+                            logger.error("创建 WebSocket Hub SSL 上下文失败", e);
+                        }
+                    }
+                    pipeline.addLast("http-codec", new HttpServerCodec());
+                    pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+                    pipeline.addLast("chunked-writer", new ChunkedWriteHandler());
+                    pipeline.addLast("hub-handler", new WebSocketHubHandler(channelId, useSSL, requireAuth, authProvider,
+                        routeResolver, registerHandler, messageHandler, connectedHandler, disconnectedHandler));
+                }
+            });
+
+        try {
+            ChannelFuture future = bootstrap.bind(port).sync();
+            Channel channel = future.channel();
+            serverChannels.put(channelId, channel);
+            logger.info("WebSocket Hub 启动成功，端口: {}", port);
+            return channel;
+        } catch (Exception e) {
+            logger.error("启动 WebSocket Hub 失败，端口: {}", port, e);
+            shutdown();
+            return null;
+        }
+    }
+
+    private class WebSocketHubHandler extends ChannelInboundHandlerAdapter {
+        private final String serverChannelId;
+        private final boolean useSSL;
+        private final boolean requireAuth;
+        private final WebSocketAuthProvider authProvider;
+        private final Function<String, WebSocketRoute> routeResolver;
+        private final Function<WebSocketContext, String> registerHandler;
+        private final BiConsumer<WebSocketContext, Object> messageHandler;
+        private final Consumer<WebSocketContext> connectedHandler;
+        private final Consumer<WebSocketContext> disconnectedHandler;
+        private WebSocketServerHandshaker handshaker;
+        private WebSocketContext context;
+
+        WebSocketHubHandler(String serverChannelId, boolean useSSL, boolean requireAuth, WebSocketAuthProvider authProvider,
+                            Function<String, WebSocketRoute> routeResolver,
+                            Function<WebSocketContext, String> registerHandler,
+                            BiConsumer<WebSocketContext, Object> messageHandler,
+                            Consumer<WebSocketContext> connectedHandler,
+                            Consumer<WebSocketContext> disconnectedHandler) {
+            this.serverChannelId = serverChannelId;
+            this.useSSL = useSSL;
+            this.requireAuth = requireAuth;
+            this.authProvider = authProvider;
+            this.routeResolver = routeResolver;
+            this.registerHandler = registerHandler;
+            this.messageHandler = messageHandler;
+            this.connectedHandler = connectedHandler;
+            this.disconnectedHandler = disconnectedHandler;
+        }
+
+        @Override
+        public void channelRead(ChannelHandlerContext ctx, Object msg) {
+            try {
+                if (msg instanceof FullHttpRequest) {
+                    handleHttpRequest(ctx, (FullHttpRequest) msg);
+                } else if (msg instanceof WebSocketFrame) {
+                    handleWebSocketFrame(ctx, (WebSocketFrame) msg);
+                } else {
+                    ctx.fireChannelRead(msg);
+                    return;
+                }
+            } finally {
+                ReferenceCountUtil.release(msg);
+            }
+        }
+
+        private void handleHttpRequest(ChannelHandlerContext ctx, FullHttpRequest request) {
+            io.netty.handler.codec.http.QueryStringDecoder decoder = new io.netty.handler.codec.http.QueryStringDecoder(request.uri());
+            String requestPath = decoder.path();
+            if (routeResolver == null || routeResolver.apply(requestPath) == null) {
+                sendHttpResponse(ctx, HttpResponseStatus.NOT_FOUND);
+                return;
+            }
+            WebSocketAuthInfo authInfo = WebSocketAuthInfo.ANONYMOUS;
+            if (requireAuth) {
+                authInfo = authProvider == null ? null : authProvider.authenticate(request);
+                if (authInfo == null || !authInfo.isAuthenticated()) {
+                    sendHttpResponse(ctx, HttpResponseStatus.UNAUTHORIZED);
+                    return;
+                }
+            }
+
+            WebSocketContext socketContext = new WebSocketContext(requestPath, getClientId(ctx), ctx.channel(), request, authInfo);
+            String alias = registerHandler == null ? defaultWebSocketAlias(socketContext.getClientId(), authInfo) : registerHandler.apply(socketContext);
+            if (alias == null || alias.isEmpty()) {
+                sendHttpResponse(ctx, HttpResponseStatus.UNAUTHORIZED);
+                return;
+            }
+            socketContext.setAlias(alias);
+            this.context = socketContext;
+            ctx.channel().attr(WebSocketAttributes.CLIENT_ID).set(socketContext.getClientId());
+            ctx.channel().attr(WebSocketAttributes.CLIENT_ALIAS).set(alias);
+            ctx.channel().attr(WebSocketAttributes.AUTH_INFO).set(authInfo);
+            ctx.channel().attr(WebSocketAttributes.SERVER_CHANNEL_ID).set(serverChannelId);
+
+            WebSocketServerHandshakerFactory factory = new WebSocketServerHandshakerFactory(
+                buildWebSocketLocation(request, requestPath, useSSL), getWebSocketSubprotocols(request), true, 65536);
+            handshaker = factory.newHandshaker(request);
+            if (handshaker == null) {
+                WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel());
+            } else {
+                request.setUri(requestPath);
+                handshaker.handshake(ctx.channel(), request.retain()).addListener(future -> {
+                    if (future.isSuccess() && connectedHandler != null) {
+                        connectedHandler.accept(socketContext);
+                    }
+                });
+            }
+        }
+
+        private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
+            if (context == null) {
+                ctx.close();
+                return;
+            }
+            if (frame instanceof TextWebSocketFrame) {
+                if (messageHandler != null) {
+                    messageHandler.accept(context, ((TextWebSocketFrame) frame).text());
+                }
+            } else if (frame instanceof BinaryWebSocketFrame) {
+                ByteBuf content = frame.content();
+                byte[] data = new byte[content.readableBytes()];
+                content.readBytes(data);
+                if (messageHandler != null) {
+                    messageHandler.accept(context, data);
+                }
+            } else if (frame instanceof PingWebSocketFrame) {
+                ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
+            } else if (frame instanceof CloseWebSocketFrame) {
+                if (handshaker != null) {
+                    handshaker.close(ctx.channel(), ((CloseWebSocketFrame) frame).retain());
+                } else {
+                    ctx.close();
+                }
+            }
+        }
+
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) {
+            if (context != null && disconnectedHandler != null) {
+                disconnectedHandler.accept(context);
+            }
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            logger.error("WebSocket Hub 连接异常: {}", getClientId(ctx), cause);
+            ctx.close();
+        }
+
+        private void sendHttpResponse(ChannelHandlerContext ctx, HttpResponseStatus status) {
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    // ==================== WebSocket Server ====================
+
+    /**
+     * 启动 WebSocket 服务端。
+     */
+    public Channel startWebSocketServer(int port, String path, boolean useSSL, String keystore, String keystorePassword,
+                                        boolean requireAuth, WebSocketAuthProvider authProvider,
+                                        BiConsumer<String, Object> messageHandler,
+                                        java.util.function.BiConsumer<String, Channel> connectedHandler,
+                                        java.util.function.BiConsumer<String, Channel> disconnectedHandler,
+                                        org.ssssssss.magicapi.net.NetModule.TriFunction<String, WebSocketAuthInfo, Channel, String> registerHandler) {
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
+        final String websocketPath = normalizeWebSocketPath(path);
+        final String channelId = buildWebSocketServerId(port, websocketPath);
+
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(bossGroup, workerGroup)
+            .channel(NioServerSocketChannel.class)
+            .option(ChannelOption.SO_BACKLOG, 128)
+            .childOption(ChannelOption.SO_KEEPALIVE, true)
+            .childOption(ChannelOption.TCP_NODELAY, true)
+            .childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                protected void initChannel(SocketChannel ch) {
+                    ChannelPipeline pipeline = ch.pipeline();
+                    if (useSSL && keystore != null) {
+                        try {
+                            SslContext sslContext = createServerSslContext(keystore, keystorePassword, false);
+                            pipeline.addLast("ssl", sslContext.newHandler(ch.alloc()));
+                        } catch (Exception e) {
+                            logger.error("创建 WebSocket SSL 上下文失败", e);
+                        }
+                    }
+                    pipeline.addLast("http-codec", new HttpServerCodec());
+                    pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+                    pipeline.addLast("chunked-writer", new ChunkedWriteHandler());
+                    pipeline.addLast("auth", new WebSocketAuthHandler(channelId, websocketPath, requireAuth, authProvider, connectedHandler, disconnectedHandler, registerHandler));
+                    pipeline.addLast("protocol", new WebSocketServerProtocolHandler(websocketPath, "Bearer", true, 65536));
+                    pipeline.addLast("handler", new WebSocketServerFrameHandler(channelId, messageHandler, disconnectedHandler));
+                }
+            });
+
+        try {
+            ChannelFuture future = bootstrap.bind(port).sync();
+            Channel channel = future.channel();
+            serverChannels.put(channelId, channel);
+            webSocketServerClientChannels.put(channelId, new java.util.concurrent.CopyOnWriteArrayList<>());
+            logger.info("WebSocket 服务端启动成功，端口: {}，路径: {}", port, websocketPath);
+            return channel;
+        } catch (Exception e) {
+            logger.error("启动 WebSocket 服务端失败，端口: {}，路径: {}", port, websocketPath, e);
+            shutdown();
+            return null;
+        }
+    }
+
+    private class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+        private final String serverChannelId;
+        private final String websocketPath;
+        private final boolean requireAuth;
+        private final WebSocketAuthProvider authProvider;
+        private final java.util.function.BiConsumer<String, Channel> connectedHandler;
+        private final java.util.function.BiConsumer<String, Channel> disconnectedHandler;
+        private final org.ssssssss.magicapi.net.NetModule.TriFunction<String, WebSocketAuthInfo, Channel, String> registerHandler;
+
+        WebSocketAuthHandler(String serverChannelId, String websocketPath, boolean requireAuth, WebSocketAuthProvider authProvider,
+                             java.util.function.BiConsumer<String, Channel> connectedHandler,
+                             java.util.function.BiConsumer<String, Channel> disconnectedHandler,
+                             org.ssssssss.magicapi.net.NetModule.TriFunction<String, WebSocketAuthInfo, Channel, String> registerHandler) {
+            this.serverChannelId = serverChannelId;
+            this.websocketPath = websocketPath;
+            this.requireAuth = requireAuth;
+            this.authProvider = authProvider;
+            this.connectedHandler = connectedHandler;
+            this.disconnectedHandler = disconnectedHandler;
+            this.registerHandler = registerHandler;
+        }
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
+            String requestPath = new io.netty.handler.codec.http.QueryStringDecoder(request.uri()).path();
+            if (!websocketPath.equals(requestPath)) {
+                sendHttpResponse(ctx, HttpResponseStatus.NOT_FOUND);
+                return;
+            }
+            WebSocketAuthInfo authInfo = WebSocketAuthInfo.ANONYMOUS;
+            if (requireAuth) {
+                authInfo = authProvider == null ? null : authProvider.authenticate(request);
+                if (authInfo == null || !authInfo.isAuthenticated()) {
+                    sendHttpResponse(ctx, HttpResponseStatus.UNAUTHORIZED);
+                    return;
+                }
+            }
+            String clientId = getClientId(ctx);
+            String alias = registerHandler == null ? defaultWebSocketAlias(clientId, authInfo) : registerHandler.apply(clientId, authInfo, ctx.channel());
+            if (alias == null || alias.isEmpty()) {
+                sendHttpResponse(ctx, HttpResponseStatus.UNAUTHORIZED);
+                return;
+            }
+            ctx.channel().attr(WebSocketAttributes.CLIENT_ID).set(clientId);
+            ctx.channel().attr(WebSocketAttributes.CLIENT_ALIAS).set(alias);
+            ctx.channel().attr(WebSocketAttributes.AUTH_INFO).set(authInfo);
+            ctx.channel().attr(WebSocketAttributes.SERVER_CHANNEL_ID).set(serverChannelId);
+            List<Channel> clients = webSocketServerClientChannels.get(serverChannelId);
+            if (clients != null) {
+                clients.add(ctx.channel());
+            }
+            if (connectedHandler != null) {
+                connectedHandler.accept(clientId, ctx.channel());
+            }
+            request.setUri(requestPath);
+            ctx.fireChannelRead(request.retain());
+        }
+
+        private void sendHttpResponse(ChannelHandlerContext ctx, HttpResponseStatus status) {
+            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, status);
+            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+            ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+    private class WebSocketServerFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+        private final String serverChannelId;
+        private final BiConsumer<String, Object> messageHandler;
+        private final java.util.function.BiConsumer<String, Channel> disconnectedHandler;
+
+        WebSocketServerFrameHandler(String serverChannelId, BiConsumer<String, Object> messageHandler,
+                                    java.util.function.BiConsumer<String, Channel> disconnectedHandler) {
+            this.serverChannelId = serverChannelId;
+            this.messageHandler = messageHandler;
+            this.disconnectedHandler = disconnectedHandler;
+        }
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) {
+            if (frame instanceof TextWebSocketFrame) {
+                if (messageHandler != null) {
+                    messageHandler.accept(getClientId(ctx), ((TextWebSocketFrame) frame).text());
+                }
+            } else if (frame instanceof BinaryWebSocketFrame) {
+                ByteBuf content = frame.content();
+                byte[] data = new byte[content.readableBytes()];
+                content.readBytes(data);
+                if (messageHandler != null) {
+                    messageHandler.accept(getClientId(ctx), data);
+                }
+            } else if (frame instanceof PingWebSocketFrame) {
+                ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
+            } else if (frame instanceof CloseWebSocketFrame) {
+                ctx.close();
+            }
+        }
+
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) {
+            List<Channel> clients = webSocketServerClientChannels.get(serverChannelId);
+            if (clients != null) {
+                clients.remove(ctx.channel());
+            }
+            if (disconnectedHandler != null) {
+                disconnectedHandler.accept(getClientId(ctx), ctx.channel());
+            }
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            logger.error("WebSocket 服务端连接异常: {}", getClientId(ctx), cause);
+            ctx.close();
+        }
+    }
+
+    // ==================== WebSocket Client ====================
+
+    /**
+     * 连接 WebSocket 服务端。
+     */
+    public Channel connectWebSocket(String url, Map<String, String> headers, BiConsumer<String, Object> messageHandler,
+                                    Runnable connectedHandler, Runnable disconnectedHandler) {
+        URI uri;
+        try {
+            uri = new URI(url);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("WebSocket URL 无效: " + url, e);
+        }
+        String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
+        String host = uri.getHost() == null ? "127.0.0.1" : uri.getHost();
+        int port = uri.getPort();
+        if (port == -1) {
+            port = "wss".equalsIgnoreCase(scheme) ? 443 : 80;
+        }
+        boolean useSSL = "wss".equalsIgnoreCase(scheme);
+        EventLoopGroup group = new NioEventLoopGroup();
+        Bootstrap bootstrap = new Bootstrap();
+        int finalPort = port;
+        bootstrap.group(group)
+            .channel(NioSocketChannel.class)
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .handler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                protected void initChannel(SocketChannel ch) {
+                    ChannelPipeline pipeline = ch.pipeline();
+                    if (useSSL) {
+                        try {
+                            pipeline.addLast("ssl", SslContextBuilder.forClient().build().newHandler(ch.alloc(), host, finalPort));
+                        } catch (Exception e) {
+                            logger.error("创建 WebSocket 客户端 SSL 上下文失败", e);
+                        }
+                    }
+                    pipeline.addLast("http-codec", new io.netty.handler.codec.http.HttpClientCodec());
+                    pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
+                    pipeline.addLast("protocol", new WebSocketClientProtocolHandler(
+                        uri,
+                        WebSocketVersion.V13,
+                        null,
+                        true,
+                        buildWebSocketHeaders(headers),
+                        65536
+                    ));
+                    pipeline.addLast("handler", new WebSocketClientFrameHandler(messageHandler, connectedHandler, disconnectedHandler));
+                }
+            });
+
+        String clientId = "websocket-client:" + url;
+        try {
+            Channel channel = bootstrap.connect(host, port).sync().channel();
+            clientChannels.put(clientId, channel);
+            logger.info("WebSocket 客户端连接成功: {}", url);
+            return channel;
+        } catch (Exception e) {
+            logger.error("连接 WebSocket 服务端失败: {}", url, e);
+            group.shutdownGracefully();
+            return null;
+        }
+    }
+
+    private static class WebSocketClientFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+        private final BiConsumer<String, Object> messageHandler;
+        private final Runnable connectedHandler;
+        private final Runnable disconnectedHandler;
+
+        WebSocketClientFrameHandler(BiConsumer<String, Object> messageHandler, Runnable connectedHandler, Runnable disconnectedHandler) {
+            this.messageHandler = messageHandler;
+            this.connectedHandler = connectedHandler;
+            this.disconnectedHandler = disconnectedHandler;
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE && connectedHandler != null) {
+                connectedHandler.run();
+            } else {
+                super.userEventTriggered(ctx, evt);
+            }
+        }
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) {
+            if (frame instanceof TextWebSocketFrame) {
+                if (messageHandler != null) {
+                    messageHandler.accept("server", ((TextWebSocketFrame) frame).text());
+                }
+            } else if (frame instanceof BinaryWebSocketFrame) {
+                ByteBuf content = frame.content();
+                byte[] data = new byte[content.readableBytes()];
+                content.readBytes(data);
+                if (messageHandler != null) {
+                    messageHandler.accept("server", data);
+                }
+            } else if (frame instanceof PingWebSocketFrame) {
+                ctx.writeAndFlush(new PongWebSocketFrame(frame.content().retain()));
+            } else if (frame instanceof CloseWebSocketFrame) {
+                ctx.close();
+            }
+        }
+
+        @Override
+        public void channelInactive(ChannelHandlerContext ctx) {
+            if (disconnectedHandler != null) {
+                disconnectedHandler.run();
+            }
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            logger.error("WebSocket 客户端异常", cause);
+            ctx.close();
+        }
     }
 
     // ==================== TCP Server ====================
@@ -656,6 +1168,40 @@ public class NettyService {
     }
 
     /**
+     * 发送 WebSocket 消息。
+     */
+    public void sendWebSocketMessage(Channel channel, Object message) {
+        if (channel != null && channel.isActive()) {
+            if (message instanceof byte[]) {
+                channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.wrappedBuffer((byte[]) message)));
+            } else if (message instanceof String || message instanceof Number || message instanceof Boolean || message instanceof Character) {
+                channel.writeAndFlush(new TextWebSocketFrame(String.valueOf(message)));
+            } else {
+                channel.writeAndFlush(new TextWebSocketFrame(JsonUtils.toJsonStringWithoutLog(message)));
+            }
+        }
+    }
+
+    /**
+     * 广播 WebSocket 消息到指定服务端的所有客户端。
+     */
+    public void broadcastWebSocket(Channel serverChannel, Object message) {
+        if (serverChannel == null) {
+            return;
+        }
+        for (Map.Entry<String, List<Channel>> entry : webSocketServerClientChannels.entrySet()) {
+            Channel server = serverChannels.get(entry.getKey());
+            if (server != null && server.id().asLongText().equals(serverChannel.id().asLongText())) {
+                for (Channel clientChannel : entry.getValue()) {
+                    sendWebSocketMessage(clientChannel, message);
+                }
+                logger.debug("广播 WebSocket 消息到 {} 个客户端", entry.getValue().size());
+                return;
+            }
+        }
+    }
+
+    /**
      * 广播消息到指定服务端的所有客户端
      * @param serverChannel TCP 服务端 Channel（注意：不是监听 Channel 本身，而是包含端口信息的 Channel）
      * @param message 消息
@@ -722,7 +1268,7 @@ public class NettyService {
      */
     public void closeChannel(Channel channel) {
         if (channel != null) {
-            channel.close();
+            channel.close().syncUninterruptibly();
         }
     }
 
@@ -742,7 +1288,9 @@ public class NettyService {
     public void stopServer(String serverId) {
         Channel channel = serverChannels.remove(serverId);
         if (channel != null) {
-            channel.close();
+            closeChannel(channel);
+            serverClientChannels.remove(serverId);
+            webSocketServerClientChannels.remove(serverId);
             logger.info("服务器已停止: {}", serverId);
         }
     }
@@ -783,6 +1331,56 @@ public class NettyService {
         }
 
         logger.info("NettyService 已关闭");
+    }
+
+    private static String normalizeWebSocketPath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return "/websocket";
+        }
+        return path.startsWith("/") ? path : "/" + path;
+    }
+
+    private static String buildWebSocketServerId(int port, String path) {
+        return "websocket-server:" + port + ":" + normalizeWebSocketPath(path);
+    }
+
+    private static String buildWebSocketLocation(FullHttpRequest request, String path, boolean ssl) {
+        String host = request.headers().get(HttpHeaderNames.HOST);
+        if (host == null || host.trim().isEmpty()) {
+            host = "127.0.0.1";
+        }
+        return (ssl ? "wss://" : "ws://") + host + normalizeWebSocketPath(path);
+    }
+
+    private static String getWebSocketSubprotocols(FullHttpRequest request) {
+        String protocols = request.headers().get("Sec-WebSocket-Protocol");
+        if (protocols != null && protocols.toLowerCase().contains("bearer")) {
+            return "Bearer";
+        }
+        return null;
+    }
+
+    private static String getClientId(ChannelHandlerContext ctx) {
+        return ctx.channel().remoteAddress() == null ? ctx.channel().id().asLongText() : ctx.channel().remoteAddress().toString();
+    }
+
+    private static String defaultWebSocketAlias(String clientId, WebSocketAuthInfo authInfo) {
+        if (authInfo != null && authInfo.getUserId() != null && !authInfo.getUserId().isEmpty()) {
+            return authInfo.getUserId();
+        }
+        return "client_" + clientId.hashCode();
+    }
+
+    private static io.netty.handler.codec.http.HttpHeaders buildWebSocketHeaders(Map<String, String> headers) {
+        io.netty.handler.codec.http.HttpHeaders httpHeaders = new io.netty.handler.codec.http.DefaultHttpHeaders();
+        if (headers != null) {
+            headers.forEach((key, value) -> {
+                if (key != null && value != null) {
+                    httpHeaders.set(key, value);
+                }
+            });
+        }
+        return httpHeaders;
     }
 
     // ==================== SSL 上下文创建 ====================

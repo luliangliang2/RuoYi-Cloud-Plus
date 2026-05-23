@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.ssssssss.magicapi.netty.NettyService;
 import org.ssssssss.magicapi.netty.NettyService.TransferMode;
+import org.ssssssss.magicapi.net.auth.RuoYiWebSocketAuthProvider;
 import org.ssssssss.magicapi.net.model.NetInfo;
 
 import java.net.InetSocketAddress;
@@ -47,10 +48,8 @@ public class NetServerManager {
     public static boolean startServer(NetInfo info) {
         String serverId = buildServerId(info);
 
-        // 如果服务器已存在，先停止
-        if (serverCache.containsKey(serverId)) {
-            stopServer(info);
-        }
+        // 重复创建相同配置或复用相同服务端口时，先同步关闭旧监听端口再启动。
+        stopConflictingServers(info);
 
         try {
             String type = info.getType();
@@ -61,6 +60,10 @@ public class NetServerManager {
                 channel = startTcpServer(info, mode);
             } else if ("udp-server".equals(type)) {
                 channel = startUdpServer(info, mode);
+            } else if ("websocket-server".equals(type) || "ws-server".equals(type)) {
+                channel = startWebSocketServer(info);
+            } else if ("websocket-hub".equals(type) || "ws-hub".equals(type)) {
+                channel = startWebSocketHub(info);
             } else {
                 // 客户端模式不需要启动服务器
                 logger.info("客户端模式不需要启动服务器: {}", info.getKey());
@@ -141,12 +144,68 @@ public class NetServerManager {
         ServerInfo serverInfo = serverCache.remove(serverId);
         if (serverInfo != null && serverInfo.channel != null) {
             try {
-                serverInfo.channel.close();
+                nettyService.closeChannel(serverInfo.channel);
+                nettyService.stopServer(buildNettyServerId(serverInfo.netInfo));
                 logger.info("Net 服务器已停止: {} (端口: {})", info.getKey(), info.getPort());
             } catch (Exception e) {
                 logger.error("停止服务器异常: {}", info.getKey(), e);
             }
         }
+    }
+
+    private static void stopConflictingServers(NetInfo info) {
+        for (Map.Entry<String, ServerInfo> entry : serverCache.entrySet()) {
+            ServerInfo cached = entry.getValue();
+            if (cached == null || cached.netInfo == null) {
+                continue;
+            }
+            if (isSameServerPort(cached.netInfo, info)) {
+                ServerInfo removed = serverCache.remove(entry.getKey());
+                if (removed != null && removed.channel != null) {
+                    nettyService.closeChannel(removed.channel);
+                    nettyService.stopServer(buildNettyServerId(removed.netInfo));
+                    logger.info("Net 服务器端口重启前已关闭: {} (类型: {}, 端口: {})",
+                        removed.netInfo.getKey(), removed.netInfo.getType(), removed.netInfo.getPort());
+                }
+            }
+        }
+    }
+
+    private static boolean isSameServerPort(NetInfo left, NetInfo right) {
+        return left.getPort() == right.getPort() && isServerType(left.getType()) && isServerType(right.getType());
+    }
+
+    private static boolean isServerType(String type) {
+        return "tcp-server".equals(type)
+            || "udp-server".equals(type)
+            || "websocket-server".equals(type)
+            || "ws-server".equals(type)
+            || "websocket-hub".equals(type)
+            || "ws-hub".equals(type);
+    }
+
+    private static String buildNettyServerId(NetInfo info) {
+        String type = info.getType();
+        if ("tcp-server".equals(type)) {
+            return "tcp-server:" + info.getPort();
+        }
+        if ("udp-server".equals(type)) {
+            return "udp-server:" + info.getPort();
+        }
+        if ("websocket-server".equals(type) || "ws-server".equals(type)) {
+            return "websocket-server:" + info.getPort() + ":" + normalizePath(getStringProperty(info, "path", "/websocket"));
+        }
+        if ("websocket-hub".equals(type) || "ws-hub".equals(type)) {
+            return "websocket-hub:" + info.getPort();
+        }
+        return buildServerId(info);
+    }
+
+    private static String normalizePath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return "/websocket";
+        }
+        return path.startsWith("/") ? path : "/" + path;
     }
 
     /**
@@ -157,6 +216,8 @@ public class NetServerManager {
             ServerInfo info = entry.getValue();
             if (info.netInfo.getKey().equals(key) && "tcp-server".equals(info.netInfo.getType())) {
                 nettyService.sendTcpMessage(info.channel, message);
+            } else if (info.netInfo.getKey().equals(key) && "websocket-server".equals(info.netInfo.getType())) {
+                nettyService.broadcastWebSocket(info.channel, message);
             }
         }
     }
@@ -221,6 +282,56 @@ public class NetServerManager {
      */
     public static NettyService getNettyService() {
         return nettyService;
+    }
+
+    private static Channel startWebSocketServer(NetInfo info) {
+        String path = getStringProperty(info, "path", "/websocket");
+        boolean ruoyiAuth = getBooleanProperty(info, "ruoyiAuth", true);
+        return nettyService.startWebSocketServer(
+            info.getPort(),
+            path,
+            info.isSsl(),
+            info.getKeystore(),
+            info.getKeystorePassword(),
+            ruoyiAuth,
+            ruoyiAuth ? new RuoYiWebSocketAuthProvider() : null,
+            (clientId, message) -> logger.debug("WebSocket 收到消息 from {}: {}", clientId, message),
+            (clientId, channel) -> logger.info("WebSocket 客户端连接: {}", channel != null ? channel.remoteAddress() : clientId),
+            (clientId, channel) -> logger.info("WebSocket 客户端断开: {}", channel != null ? channel.remoteAddress() : clientId),
+            (clientId, authInfo, channel) -> authInfo != null && authInfo.getUserId() != null ? authInfo.getUserId() : "client_" + clientId.hashCode()
+        );
+    }
+
+    private static Channel startWebSocketHub(NetInfo info) {
+        boolean ruoyiAuth = getBooleanProperty(info, "ruoyiAuth", true);
+        return nettyService.startWebSocketHub(
+            info.getPort(),
+            info.isSsl(),
+            info.getKeystore(),
+            info.getKeystorePassword(),
+            ruoyiAuth,
+            ruoyiAuth ? new RuoYiWebSocketAuthProvider() : null,
+            path -> null,
+            context -> null,
+            (context, message) -> logger.debug("WebSocket Hub 收到消息 path={} from {}: {}", context.getPath(), context.getClientId(), message),
+            context -> logger.info("WebSocket Hub 客户端连接 path={} from {}", context.getPath(), context.getClientId()),
+            context -> logger.info("WebSocket Hub 客户端断开: {}", context.getClientId())
+        );
+    }
+
+    private static String getStringProperty(NetInfo info, String key, String defaultValue) {
+        if (info.getProperties() == null || info.getProperties().get(key) == null) {
+            return defaultValue;
+        }
+        return String.valueOf(info.getProperties().get(key));
+    }
+
+    private static boolean getBooleanProperty(NetInfo info, String key, boolean defaultValue) {
+        if (info.getProperties() == null || info.getProperties().get(key) == null) {
+            return defaultValue;
+        }
+        Object value = info.getProperties().get(key);
+        return value instanceof Boolean ? (Boolean) value : Boolean.parseBoolean(String.valueOf(value));
     }
 
     /**

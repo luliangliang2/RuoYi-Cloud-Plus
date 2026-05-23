@@ -33,7 +33,9 @@ public class NetMagicDynamicRegistry extends AbstractMagicDynamicRegistry<NetInf
         NetInfo info = mappingNode.getEntity();
         try {
             // 对于服务端类型，启动端口监听
-            if ("tcp-server".equals(info.getType()) || "udp-server".equals(info.getType())) {
+            if ("tcp-server".equals(info.getType()) || "udp-server".equals(info.getType())
+                || "websocket-server".equals(info.getType()) || "ws-server".equals(info.getType())
+                || "websocket-hub".equals(info.getType()) || "ws-hub".equals(info.getType())) {
                 boolean started = NetServerManager.startServer(info);
                 if (started) {
                     logger.info("Net 数据源注册成功，服务器已启动: {} (类型: {}, 端口: {})", 
