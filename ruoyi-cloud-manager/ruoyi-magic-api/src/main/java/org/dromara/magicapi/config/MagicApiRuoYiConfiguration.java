@@ -229,10 +229,10 @@ public class MagicApiRuoYiConfiguration {
         @Comment("获取当前登录用户摘要")
         public Map<String, Object> user() {
             return Map.of(
-                "userId", Convert.toStr(LoginHelper.getUserId(), ""),
-                "username", Convert.toStr(LoginHelper.getUsername(), ""),
-                "tenantId", Convert.toStr(TenantHelper.getTenantId(), ""),
-                "deptId", Convert.toStr(LoginHelper.getDeptId(), "")
+            		LoginHelper.USER_KEY, Convert.toStr(LoginHelper.getUserId(), ""),
+            		LoginHelper.USER_NAME_KEY, Convert.toStr(LoginHelper.getUsername(), ""),
+            		LoginHelper.TENANT_KEY, Convert.toStr(TenantHelper.getTenantId(), ""),
+            		LoginHelper.DEPT_KEY, Convert.toStr(LoginHelper.getDeptId(), "")
             );
         }
     }
