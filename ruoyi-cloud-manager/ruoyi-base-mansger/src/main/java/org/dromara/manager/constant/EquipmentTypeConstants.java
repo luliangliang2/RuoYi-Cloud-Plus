@@ -18,4 +18,9 @@ public interface EquipmentTypeConstants {
      */
     String RADAR = "2";
 
+    /**
+     * SIM卡
+     */
+    String SIM_CARD = "3";
+
 }

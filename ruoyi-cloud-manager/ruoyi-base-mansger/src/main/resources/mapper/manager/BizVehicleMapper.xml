@@ -4,4 +4,82 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.dromara.manager.mapper.BizVehicleMapper">
 
+    <select id="selectVehicleVoById" resultType="org.dromara.manager.api.domain.vo.BizVehicleVo">
+        select v.id,
+               v.tree_id,
+               v.category_node_id,
+               n.node_name as category_node_name,
+               v.vin,
+               v.plate_no,
+               v.brand
+        from biz_vehicle v
+            left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+        where v.del_flag = 0
+          and v.id = #{id}
+    </select>
+
+    <select id="selectVehiclePage" resultType="org.dromara.manager.api.domain.vo.BizVehicleVo">
+        select v.id,
+               v.tree_id,
+               v.category_node_id,
+               n.node_name as category_node_name,
+               v.vin,
+               v.plate_no,
+               v.brand,
+               v.create_time
+        from biz_vehicle v
+            left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+        <where>
+            v.del_flag = 0
+            <if test="bo.vin != null and bo.vin != ''">
+                and v.vin = #{bo.vin}
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and v.plate_no = #{bo.plateNo}
+            </if>
+            <if test="bo.brand != null and bo.brand != ''">
+                and v.brand = #{bo.brand}
+            </if>
+            <if test="bo.treeId != null">
+                and v.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and v.category_node_id = #{bo.categoryNodeId}
+            </if>
+        </where>
+        order by v.id asc
+    </select>
+
+    <select id="selectVehicleList" resultType="org.dromara.manager.api.domain.vo.BizVehicleVo">
+        select v.id,
+               v.tree_id,
+               v.category_node_id,
+               n.node_name as category_node_name,
+               v.vin,
+               v.plate_no,
+               v.brand,
+               v.create_time
+        from biz_vehicle v
+            left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+        <where>
+            v.del_flag = 0
+            <if test="bo.vin != null and bo.vin != ''">
+                and v.vin = #{bo.vin}
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and v.plate_no = #{bo.plateNo}
+            </if>
+            <if test="bo.brand != null and bo.brand != ''">
+                and v.brand = #{bo.brand}
+            </if>
+            <if test="bo.treeId != null">
+                and v.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and v.category_node_id = #{bo.categoryNodeId}
+            </if>
+        </where>
+        order by v.id asc
+    </select>
+
 </mapper>

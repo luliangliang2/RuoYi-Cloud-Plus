@@ -11,11 +11,13 @@ import org.dromara.manager.api.domain.BizVehicle;
 import org.dromara.manager.constant.EquipmentTypeConstants;
 import org.dromara.manager.domain.BizCamera;
 import org.dromara.manager.domain.BizRadar;
+import org.dromara.manager.domain.BizSimCard;
 import org.dromara.manager.domain.BizVehicleEquipmentBind;
 import org.dromara.manager.domain.bo.BizVehicleEquipmentBindBo;
 import org.dromara.manager.domain.vo.BizVehicleEquipmentBindVo;
 import org.dromara.manager.mapper.BizCameraMapper;
 import org.dromara.manager.mapper.BizRadarMapper;
+import org.dromara.manager.mapper.BizSimCardMapper;
 import org.dromara.manager.mapper.BizVehicleEquipmentBindMapper;
 import org.dromara.manager.mapper.BizVehicleMapper;
 import org.dromara.manager.service.IBizVehicleEquipmentBindService;
@@ -39,6 +41,7 @@ public class BizVehicleEquipmentBindServiceImpl implements IBizVehicleEquipmentB
     private final BizVehicleMapper vehicleMapper;
     private final BizCameraMapper cameraMapper;
     private final BizRadarMapper radarMapper;
+    private final BizSimCardMapper simCardMapper;
 
     /**
      * 查询车辆上装绑定
@@ -137,6 +140,16 @@ public class BizVehicleEquipmentBindServiceImpl implements IBizVehicleEquipmentB
             }
             if (!"0".equals(radar.getStatus())) {
                 throw new ServiceException("雷达已停用");
+            }
+            return;
+        }
+        if (EquipmentTypeConstants.SIM_CARD.equals(entity.getEquipmentType())) {
+            BizSimCard simCard = simCardMapper.selectById(entity.getEquipmentId());
+            if (simCard == null) {
+                throw new ServiceException("SIM卡不存在");
+            }
+            if (!"0".equals(simCard.getStatus())) {
+                throw new ServiceException("SIM卡已停用");
             }
             return;
         }

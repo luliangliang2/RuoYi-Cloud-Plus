@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizCommandConfigMapper">
+
+    <select id="selectCommandConfigList" resultType="org.dromara.manager.domain.vo.BizCommandConfigVo">
+        select c.command_id,
+               c.tree_id,
+               c.category_node_id,
+               n.node_name as category_node_name,
+               c.command_code,
+               c.command_name,
+               c.command_type,
+               c.command_template,
+               c.status,
+               c.create_time,
+               c.remark
+        from biz_command_config c
+            left join biz_tree_node n on n.node_id = c.category_node_id and n.del_flag = '0'
+        <where>
+            c.del_flag = '0'
+            <if test="bo.commandCode != null and bo.commandCode != ''">
+                and c.command_code like concat('%', #{bo.commandCode}, '%')
+            </if>
+            <if test="bo.commandName != null and bo.commandName != ''">
+                and c.command_name like concat('%', #{bo.commandName}, '%')
+            </if>
+            <if test="bo.commandType != null and bo.commandType != ''">
+                and c.command_type = #{bo.commandType}
+            </if>
+            <if test="bo.treeId != null">
+                and c.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and c.category_node_id = #{bo.categoryNodeId}
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and c.status = #{bo.status}
+            </if>
+        </where>
+        order by c.create_time desc, c.command_id desc
+    </select>
+
+    <select id="selectCommandConfigPage" resultType="org.dromara.manager.domain.vo.BizCommandConfigVo">
+        select c.command_id,
+               c.tree_id,
+               c.category_node_id,
+               n.node_name as category_node_name,
+               c.command_code,
+               c.command_name,
+               c.command_type,
+               c.command_template,
+               c.status,
+               c.create_time,
+               c.remark
+        from biz_command_config c
+            left join biz_tree_node n on n.node_id = c.category_node_id and n.del_flag = '0'
+        <where>
+            c.del_flag = '0'
+            <if test="bo.commandCode != null and bo.commandCode != ''">
+                and c.command_code like concat('%', #{bo.commandCode}, '%')
+            </if>
+            <if test="bo.commandName != null and bo.commandName != ''">
+                and c.command_name like concat('%', #{bo.commandName}, '%')
+            </if>
+            <if test="bo.commandType != null and bo.commandType != ''">
+                and c.command_type = #{bo.commandType}
+            </if>
+            <if test="bo.treeId != null">
+                and c.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and c.category_node_id = #{bo.categoryNodeId}
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and c.status = #{bo.status}
+            </if>
+        </where>
+        order by c.create_time desc, c.command_id desc
+    </select>
+
+</mapper>

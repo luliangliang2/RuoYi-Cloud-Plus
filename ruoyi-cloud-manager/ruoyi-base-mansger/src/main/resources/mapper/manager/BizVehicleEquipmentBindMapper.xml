@@ -9,9 +9,21 @@
                b.vehicle_id,
                b.equipment_type,
                b.equipment_id,
-               case when b.equipment_type = '1' then c.camera_code else r.radar_code end as equipment_code,
-               case when b.equipment_type = '1' then c.camera_name else r.radar_name end as equipment_name,
-               case when b.equipment_type = '1' then c.sn else r.sn end as sn,
+               case
+                   when b.equipment_type = '1' then c.camera_code
+                   when b.equipment_type = '2' then r.radar_code
+                   else s.iccid
+               end as equipment_code,
+               case
+                   when b.equipment_type = '1' then c.camera_name
+                   when b.equipment_type = '2' then r.radar_name
+                   else s.phone_number
+               end as equipment_name,
+               case
+                   when b.equipment_type = '1' then c.sn
+                   when b.equipment_type = '2' then r.sn
+                   else s.imei
+               end as sn,
                b.install_position,
                b.install_time,
                b.status,
@@ -20,6 +32,7 @@
         from biz_vehicle_equipment_bind b
             left join biz_camera c on b.equipment_type = '1' and c.camera_id = b.equipment_id and c.del_flag = '0'
             left join biz_radar r on b.equipment_type = '2' and r.radar_id = b.equipment_id and r.del_flag = '0'
+            left join biz_sim_card s on b.equipment_type = '3' and s.sim_id = b.equipment_id and s.del_flag = '0'
         <where>
             b.del_flag = '0'
             <if test="vehicleId != null">

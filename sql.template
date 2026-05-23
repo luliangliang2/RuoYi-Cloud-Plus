@@ -1,11 +1,14 @@
 CREATE TABLE `biz_vehicle` (
   `id` bigint unsigned NOT NULL,
   `tenant_id` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '000000' COMMENT '租户id',
+  `tree_id` bigint DEFAULT NULL COMMENT '分类树ID',
+  `category_node_id` bigint DEFAULT NULL COMMENT '分类节点ID',
   `create_dept` bigint DEFAULT NULL COMMENT '创建部门',
   `create_time` timestamp NULL DEFAULT NULL COMMENT '创建时间',
   `create_by` bigint DEFAULT NULL COMMENT '创建人',
   `update_time` timestamp NULL DEFAULT NULL COMMENT '更新时间',
   `update_by` bigint DEFAULT NULL COMMENT '更新人',
   `del_flag` int DEFAULT '0' COMMENT '删除标志',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_biz_vehicle_category` (`tenant_id`, `tree_id`, `category_node_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='';

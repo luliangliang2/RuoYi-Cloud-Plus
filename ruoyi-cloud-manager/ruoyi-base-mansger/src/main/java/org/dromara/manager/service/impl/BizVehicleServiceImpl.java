@@ -1,18 +1,14 @@
 package org.dromara.manager.service.impl;
 
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.manager.mapper.BizVehicleMapper;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Map;
 import java.util.Collection;
 import org.dromara.manager.api.IBizVehicleService;
 import org.dromara.manager.api.domain.BizVehicle;
@@ -39,7 +35,7 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      */
     @Override
     public BizVehicleVo queryById(Long id){
-        return baseMapper.selectVoById(id);
+        return baseMapper.selectVehicleVoById(id);
     }
 
     /**
@@ -51,8 +47,8 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      */
     @Override
     public TableDataInfo<BizVehicleVo> queryPageList(BizVehicleBo bo, PageQuery pageQuery) {
-        LambdaQueryWrapper<BizVehicle> lqw = buildQueryWrapper(bo);
-        Page<BizVehicleVo> result = baseMapper.selectVoPage(pageQuery.build(), lqw);
+        BizVehicle query = MapstructUtils.convert(bo, BizVehicle.class);
+        Page<BizVehicleVo> result = baseMapper.selectVehiclePage(pageQuery.build(), query);
         return TableDataInfo.build(result);
     }
 
@@ -64,18 +60,8 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      */
     @Override
     public List<BizVehicleVo> queryList(BizVehicleBo bo) {
-        LambdaQueryWrapper<BizVehicle> lqw = buildQueryWrapper(bo);
-        return baseMapper.selectVoList(lqw);
-    }
-
-    private LambdaQueryWrapper<BizVehicle> buildQueryWrapper(BizVehicleBo bo) {
-        Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<BizVehicle> lqw = Wrappers.lambdaQuery();
-        lqw.orderByAsc(BizVehicle::getId);
-        lqw.eq(StringUtils.isNotBlank(bo.getVin()), BizVehicle::getVin, bo.getVin());
-        lqw.eq(StringUtils.isNotBlank(bo.getPlateNo()), BizVehicle::getPlateNo, bo.getPlateNo());
-        lqw.eq(StringUtils.isNotBlank(bo.getBrand()), BizVehicle::getBrand, bo.getBrand());
-        return lqw;
+        BizVehicle query = MapstructUtils.convert(bo, BizVehicle.class);
+        return baseMapper.selectVehicleList(query);
     }
 
     /**

@@ -28,6 +28,16 @@ public class BizVehicleBo extends BaseEntity {
     private Long id;
 
     /**
+     * 分类树ID
+     */
+    private Long treeId;
+
+    /**
+     * 分类节点ID
+     */
+    private Long categoryNodeId;
+
+    /**
      * vin码
      */
     private String vin;

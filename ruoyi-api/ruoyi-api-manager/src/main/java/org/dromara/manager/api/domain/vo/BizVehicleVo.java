@@ -35,6 +35,22 @@ public class BizVehicleVo implements Serializable {
     private Long id;
 
     /**
+     * 分类树ID
+     */
+    private Long treeId;
+
+    /**
+     * 分类节点ID
+     */
+    private Long categoryNodeId;
+
+    /**
+     * 分类节点名称
+     */
+    @ExcelProperty(value = "分类")
+    private String categoryNodeName;
+
+    /**
      * vin码
      */
     @ExcelProperty(value = "vin码")
