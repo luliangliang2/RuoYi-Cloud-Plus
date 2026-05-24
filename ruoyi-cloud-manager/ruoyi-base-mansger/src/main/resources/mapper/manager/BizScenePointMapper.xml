@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizScenePointMapper">
+
+    <select id="selectScenePointList" resultType="org.dromara.manager.domain.vo.BizScenePointVo">
+        select p.point_id,
+               p.tree_id,
+               p.category_node_id,
+               n.node_name as category_node_name,
+               p.route_id,
+               r.route_name,
+               r.gcj02_path as route_gcj02_path,
+               p.point_name,
+               p.gcj02_lng,
+               p.gcj02_lat,
+               p.bd09_lng,
+               p.bd09_lat,
+               p.wgs84_lng,
+               p.wgs84_lat,
+               p.contact_name,
+               p.contact_phone,
+               p.status,
+               p.create_time,
+               p.remark
+        from biz_scene_point p
+            left join biz_tree_node n on n.node_id = p.category_node_id and n.del_flag = '0'
+            left join biz_scene_route r on r.route_id = p.route_id and r.del_flag = '0'
+        <where>
+            p.del_flag = '0'
+            <if test="bo.pointName != null and bo.pointName != ''">
+                and p.point_name like concat('%', #{bo.pointName}, '%')
+            </if>
+            <if test="bo.routeId != null">
+                and p.route_id = #{bo.routeId}
+            </if>
+            <if test="bo.treeId != null">
+                and p.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and p.category_node_id = #{bo.categoryNodeId}
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and p.status = #{bo.status}
+            </if>
+        </where>
+        order by p.create_time desc, p.point_id desc
+    </select>
+
+    <select id="selectScenePointPage" resultType="org.dromara.manager.domain.vo.BizScenePointVo">
+        select p.point_id,
+               p.tree_id,
+               p.category_node_id,
+               n.node_name as category_node_name,
+               p.route_id,
+               r.route_name,
+               r.gcj02_path as route_gcj02_path,
+               p.point_name,
+               p.gcj02_lng,
+               p.gcj02_lat,
+               p.bd09_lng,
+               p.bd09_lat,
+               p.wgs84_lng,
+               p.wgs84_lat,
+               p.contact_name,
+               p.contact_phone,
+               p.status,
+               p.create_time,
+               p.remark
+        from biz_scene_point p
+            left join biz_tree_node n on n.node_id = p.category_node_id and n.del_flag = '0'
+            left join biz_scene_route r on r.route_id = p.route_id and r.del_flag = '0'
+        <where>
+            p.del_flag = '0'
+            <if test="bo.pointName != null and bo.pointName != ''">
+                and p.point_name like concat('%', #{bo.pointName}, '%')
+            </if>
+            <if test="bo.routeId != null">
+                and p.route_id = #{bo.routeId}
+            </if>
+            <if test="bo.treeId != null">
+                and p.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeId != null">
+                and p.category_node_id = #{bo.categoryNodeId}
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and p.status = #{bo.status}
+            </if>
+        </where>
+        order by p.create_time desc, p.point_id desc
+    </select>
+
+</mapper>
