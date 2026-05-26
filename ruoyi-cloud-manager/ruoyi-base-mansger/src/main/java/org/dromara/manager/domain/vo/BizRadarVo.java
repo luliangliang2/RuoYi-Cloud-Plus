@@ -10,6 +10,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 上装雷达视图对象 biz_radar
@@ -40,6 +41,11 @@ public class BizRadarVo implements Serializable {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 分类节点名称

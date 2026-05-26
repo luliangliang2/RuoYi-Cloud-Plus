@@ -11,7 +11,7 @@ import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-
+import java.util.List;
 
 
 /**
@@ -43,6 +43,11 @@ public class BizVehicleVo implements Serializable {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 分类节点名称

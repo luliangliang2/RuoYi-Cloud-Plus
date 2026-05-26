@@ -48,6 +48,12 @@ public class BizTreeDefBo extends BaseEntity {
     private String treeType;
 
     /**
+     * 选择模式（single单选 multiple多选）
+     */
+    @Size(max = 16, message = "选择模式长度不能超过{max}个字符")
+    private String selectMode;
+
+    /**
      * 使用模块编码
      */
     @Size(max = 64, message = "使用模块编码长度不能超过{max}个字符")

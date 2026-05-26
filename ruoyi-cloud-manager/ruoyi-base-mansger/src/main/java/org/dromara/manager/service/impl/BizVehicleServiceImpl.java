@@ -2,12 +2,17 @@ package org.dromara.manager.service.impl;
 
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.manager.domain.BizTreeCategoryBind;
 import org.dromara.manager.mapper.BizVehicleMapper;
+import org.dromara.manager.mapper.BizTreeCategoryBindMapper;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 import org.dromara.manager.api.IBizVehicleService;
@@ -25,7 +30,10 @@ import org.dromara.manager.api.domain.vo.BizVehicleVo;
 @Service
 public class BizVehicleServiceImpl implements IBizVehicleService {
 
+    private static final String BUSINESS_TYPE = "vehicle";
+
     private final BizVehicleMapper baseMapper;
+    private final BizTreeCategoryBindMapper categoryBindMapper;
 
     /**
      * 查询车辆管理
@@ -35,7 +43,9 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      */
     @Override
     public BizVehicleVo queryById(Long id){
-        return baseMapper.selectVehicleVoById(id);
+        BizVehicleVo vo = baseMapper.selectVehicleVoById(id);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -47,8 +57,8 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      */
     @Override
     public TableDataInfo<BizVehicleVo> queryPageList(BizVehicleBo bo, PageQuery pageQuery) {
-        BizVehicle query = MapstructUtils.convert(bo, BizVehicle.class);
-        Page<BizVehicleVo> result = baseMapper.selectVehiclePage(pageQuery.build(), query);
+        Page<BizVehicleVo> result = baseMapper.selectVehiclePage(pageQuery.build(), bo);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -60,8 +70,9 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      */
     @Override
     public List<BizVehicleVo> queryList(BizVehicleBo bo) {
-        BizVehicle query = MapstructUtils.convert(bo, BizVehicle.class);
-        return baseMapper.selectVehicleList(query);
+        List<BizVehicleVo> list = baseMapper.selectVehicleList(bo);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -71,12 +82,15 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizVehicleBo bo) {
+        normalizeCategory(bo);
         BizVehicle add = MapstructUtils.convert(bo, BizVehicle.class);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setId(add.getId());
+            saveCategoryBinds(bo.getId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -88,10 +102,16 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizVehicleBo bo) {
+        normalizeCategory(bo);
         BizVehicle update = MapstructUtils.convert(bo, BizVehicle.class);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            saveCategoryBinds(bo.getId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     /**
@@ -109,10 +129,49 @@ public class BizVehicleServiceImpl implements IBizVehicleService {
      * @return 是否删除成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
         if(isValid){
             //TODO 做一些业务上的校验,判断是否需要校验
         }
+        categoryBindMapper.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizVehicleBo bo) {
+        List<Long> nodeIds = new ArrayList<>();
+        if (bo.getCategoryNodeIds() != null) {
+            nodeIds.addAll(bo.getCategoryNodeIds().stream().filter(java.util.Objects::nonNull).distinct().toList());
+        } else if (bo.getCategoryNodeId() != null) {
+            nodeIds.add(bo.getCategoryNodeId());
+        }
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void saveCategoryBinds(Long businessId, Long treeId, List<Long> nodeIds) {
+        categoryBindMapper.deleteByBusiness(BUSINESS_TYPE, businessId);
+        if (nodeIds == null || nodeIds.isEmpty()) {
+            return;
+        }
+        for (Long nodeId : nodeIds) {
+            BizTreeCategoryBind bind = new BizTreeCategoryBind();
+            bind.setBusinessType(BUSINESS_TYPE);
+            bind.setBusinessId(businessId);
+            bind.setTreeId(treeId);
+            bind.setNodeId(nodeId);
+            categoryBindMapper.insert(bind);
+        }
+    }
+
+    private void fillCategoryNodeIds(BizVehicleVo vo) {
+        if (vo == null || vo.getId() == null) {
+            return;
+        }
+        List<Long> nodeIds = categoryBindMapper.selectNodeIds(BUSINESS_TYPE, vo.getId());
+        if (nodeIds.isEmpty() && vo.getCategoryNodeId() != null) {
+            nodeIds = List.of(vo.getCategoryNodeId());
+        }
+        vo.setCategoryNodeIds(nodeIds);
     }
 }

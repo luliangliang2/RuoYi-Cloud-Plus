@@ -8,7 +8,14 @@
         select p.point_id,
                p.tree_id,
                p.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'scenePoint'
+                     and tcb.business_id = p.point_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                p.route_id,
                r.route_name,
                r.gcj02_path as route_gcj02_path,
@@ -38,8 +45,28 @@
             <if test="bo.treeId != null">
                 and p.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and p.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'scenePoint'
+                      and fcb.business_id = p.point_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'scenePoint'
+                      and fcb.business_id = p.point_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
             <if test="bo.status != null and bo.status != ''">
                 and p.status = #{bo.status}
@@ -52,7 +79,14 @@
         select p.point_id,
                p.tree_id,
                p.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'scenePoint'
+                     and tcb.business_id = p.point_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                p.route_id,
                r.route_name,
                r.gcj02_path as route_gcj02_path,
@@ -82,8 +116,28 @@
             <if test="bo.treeId != null">
                 and p.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and p.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'scenePoint'
+                      and fcb.business_id = p.point_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'scenePoint'
+                      and fcb.business_id = p.point_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
             <if test="bo.status != null and bo.status != ''">
                 and p.status = #{bo.status}

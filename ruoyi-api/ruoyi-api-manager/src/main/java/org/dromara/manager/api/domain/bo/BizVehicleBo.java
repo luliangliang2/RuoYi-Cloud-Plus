@@ -9,6 +9,7 @@ import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import jakarta.validation.constraints.*;
+import java.util.List;
 
 /**
  * 车辆管理业务对象 biz_vehicle
@@ -36,6 +37,11 @@ public class BizVehicleBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * vin码

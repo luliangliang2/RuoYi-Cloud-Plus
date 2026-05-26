@@ -15,8 +15,10 @@ import org.dromara.manager.domain.bo.BizSceneAreaBo;
 import org.dromara.manager.domain.vo.BizSceneAreaVo;
 import org.dromara.manager.mapper.BizSceneAreaMapper;
 import org.dromara.manager.service.IBizSceneAreaService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.dromara.manager.utils.CoordinateConvertUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +34,10 @@ import java.util.List;
 @Service
 public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
 
+    private static final String BUSINESS_TYPE = "sceneArea";
+
     private final BizSceneAreaMapper baseMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询场景区域
@@ -42,7 +47,9 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
      */
     @Override
     public BizSceneAreaVo queryById(Long areaId) {
-        return baseMapper.selectVoById(areaId);
+        BizSceneAreaVo vo = baseMapper.selectVoById(areaId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -56,6 +63,7 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
     public TableDataInfo<BizSceneAreaVo> queryPageList(BizSceneAreaBo bo, PageQuery pageQuery) {
         BizSceneArea query = MapstructUtils.convert(bo, BizSceneArea.class);
         Page<BizSceneAreaVo> result = baseMapper.selectSceneAreaPage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -68,7 +76,9 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
     @Override
     public List<BizSceneAreaVo> queryList(BizSceneAreaBo bo) {
         BizSceneArea query = MapstructUtils.convert(bo, BizSceneArea.class);
-        return baseMapper.selectSceneAreaList(query);
+        List<BizSceneAreaVo> list = baseMapper.selectSceneAreaList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -78,13 +88,16 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizSceneAreaBo bo) {
+        normalizeCategory(bo);
         BizSceneArea add = MapstructUtils.convert(bo, BizSceneArea.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setAreaId(add.getAreaId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getAreaId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -96,11 +109,17 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizSceneAreaBo bo) {
+        normalizeCategory(bo);
         BizSceneArea update = MapstructUtils.convert(bo, BizSceneArea.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getAreaId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizSceneArea entity) {
@@ -159,8 +178,23 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
      * @return 是否删除成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizSceneAreaBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizSceneAreaVo vo) {
+        if (vo == null || vo.getAreaId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getAreaId(), vo.getCategoryNodeId()));
     }
 
 }

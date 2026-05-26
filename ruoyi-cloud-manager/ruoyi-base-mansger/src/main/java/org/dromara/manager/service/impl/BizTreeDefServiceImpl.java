@@ -119,7 +119,10 @@ public class BizTreeDefServiceImpl implements IBizTreeDefService {
 
     private void fillDefaultValue(BizTreeDef entity) {
         if (StringUtils.isBlank(entity.getTreeType())) {
-            entity.setTreeType("common");
+            entity.setTreeType("business");
+        }
+        if (StringUtils.isBlank(entity.getSelectMode())) {
+            entity.setSelectMode("single");
         }
         if (StringUtils.isBlank(entity.getRootMode())) {
             entity.setRootMode("1");
@@ -150,13 +153,14 @@ public class BizTreeDefServiceImpl implements IBizTreeDefService {
      */
     @Override
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
-        if (isValid) {
-            Long count = treeNodeMapper.selectCount(new LambdaQueryWrapper<BizTreeNode>()
-                .in(BizTreeNode::getTreeId, ids));
-            if (count > 0) {
-                throw new ServiceException("存在树节点，不允许删除");
-            }
+        List<BizTreeDef> treeDefs = baseMapper.selectList(new LambdaQueryWrapper<BizTreeDef>()
+            .in(BizTreeDef::getTreeId, ids));
+        boolean hasSystemTree = treeDefs.stream().anyMatch(treeDef -> "system".equals(treeDef.getTreeType()));
+        if (hasSystemTree) {
+            throw new ServiceException("系统分类不允许删除");
         }
+        treeNodeMapper.delete(new LambdaQueryWrapper<BizTreeNode>()
+            .in(BizTreeNode::getTreeId, ids));
         return baseMapper.deleteByIds(ids) > 0;
     }
 

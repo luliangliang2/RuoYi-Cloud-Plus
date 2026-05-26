@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
 import org.dromara.manager.api.domain.BizVehicle;
+import org.dromara.manager.api.domain.bo.BizVehicleBo;
 import org.dromara.manager.api.domain.vo.BizVehicleVo;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public interface BizVehicleMapper extends BaseMapperPlus<BizVehicle, BizVehicleV
      * @param bo 查询条件
      * @return 车辆管理列表
      */
-    Page<BizVehicleVo> selectVehiclePage(@Param("page") Page<BizVehicleVo> page, @Param("bo") BizVehicle bo);
+    Page<BizVehicleVo> selectVehiclePage(@Param("page") Page<BizVehicleVo> page, @Param("bo") BizVehicleBo bo);
 
     /**
      * 查询车辆管理列表
@@ -39,6 +40,6 @@ public interface BizVehicleMapper extends BaseMapperPlus<BizVehicle, BizVehicleV
      * @param bo 查询条件
      * @return 车辆管理列表
      */
-    List<BizVehicleVo> selectVehicleList(@Param("bo") BizVehicle bo);
+    List<BizVehicleVo> selectVehicleList(@Param("bo") BizVehicleBo bo);
 
 }

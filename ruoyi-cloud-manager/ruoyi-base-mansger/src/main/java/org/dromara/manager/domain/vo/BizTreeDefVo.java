@@ -49,6 +49,12 @@ public class BizTreeDefVo implements Serializable {
     private String treeType;
 
     /**
+     * 选择模式（single单选 multiple多选）
+     */
+    @ExcelProperty(value = "选择模式")
+    private String selectMode;
+
+    /**
      * 使用模块编码
      */
     @ExcelProperty(value = "使用模块编码")

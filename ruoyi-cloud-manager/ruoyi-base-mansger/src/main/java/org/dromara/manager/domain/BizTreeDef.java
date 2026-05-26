@@ -45,6 +45,11 @@ public class BizTreeDef extends TenantEntity {
     private String treeType;
 
     /**
+     * 选择模式（single单选 multiple多选）
+     */
+    private String selectMode;
+
+    /**
      * 使用模块编码
      */
     private String moduleCode;

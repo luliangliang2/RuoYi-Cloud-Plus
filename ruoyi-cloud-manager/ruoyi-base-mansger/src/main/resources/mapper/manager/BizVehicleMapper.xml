@@ -22,13 +22,16 @@
         select v.id,
                v.tree_id,
                v.category_node_id,
-               n.node_name as category_node_name,
+               coalesce(group_concat(distinct bn.node_name order by bn.node_id separator '、'), n.node_name) as category_node_name,
                v.vin,
                v.plate_no,
                v.brand,
                v.create_time
         from biz_vehicle v
             left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+            left join biz_tree_category_bind cb
+                on cb.business_type = 'vehicle' and cb.business_id = v.id and cb.del_flag = '0'
+            left join biz_tree_node bn on bn.node_id = cb.node_id and bn.del_flag = '0'
         <where>
             v.del_flag = 0
             <if test="bo.vin != null and bo.vin != ''">
@@ -43,10 +46,31 @@
             <if test="bo.treeId != null">
                 and v.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and v.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
         </where>
+        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.create_time
         order by v.id asc
     </select>
 
@@ -54,13 +78,16 @@
         select v.id,
                v.tree_id,
                v.category_node_id,
-               n.node_name as category_node_name,
+               coalesce(group_concat(distinct bn.node_name order by bn.node_id separator '、'), n.node_name) as category_node_name,
                v.vin,
                v.plate_no,
                v.brand,
                v.create_time
         from biz_vehicle v
             left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+            left join biz_tree_category_bind cb
+                on cb.business_type = 'vehicle' and cb.business_id = v.id and cb.del_flag = '0'
+            left join biz_tree_node bn on bn.node_id = cb.node_id and bn.del_flag = '0'
         <where>
             v.del_flag = 0
             <if test="bo.vin != null and bo.vin != ''">
@@ -75,10 +102,31 @@
             <if test="bo.treeId != null">
                 and v.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and v.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
         </where>
+        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.create_time
         order by v.id asc
     </select>
 

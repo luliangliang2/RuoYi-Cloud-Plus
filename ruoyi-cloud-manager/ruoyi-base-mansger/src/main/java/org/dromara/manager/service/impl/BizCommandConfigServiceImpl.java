@@ -15,7 +15,9 @@ import org.dromara.manager.domain.bo.BizCommandConfigBo;
 import org.dromara.manager.domain.vo.BizCommandConfigVo;
 import org.dromara.manager.mapper.BizCommandConfigMapper;
 import org.dromara.manager.service.IBizCommandConfigService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,7 +33,10 @@ import java.util.List;
 @Service
 public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
 
+    private static final String BUSINESS_TYPE = "commandConfig";
+
     private final BizCommandConfigMapper baseMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询指令配置
@@ -41,7 +46,9 @@ public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
      */
     @Override
     public BizCommandConfigVo queryById(Long commandId) {
-        return baseMapper.selectVoById(commandId);
+        BizCommandConfigVo vo = baseMapper.selectVoById(commandId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -55,6 +62,7 @@ public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
     public TableDataInfo<BizCommandConfigVo> queryPageList(BizCommandConfigBo bo, PageQuery pageQuery) {
         BizCommandConfig query = MapstructUtils.convert(bo, BizCommandConfig.class);
         Page<BizCommandConfigVo> result = baseMapper.selectCommandConfigPage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -67,7 +75,9 @@ public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
     @Override
     public List<BizCommandConfigVo> queryList(BizCommandConfigBo bo) {
         BizCommandConfig query = MapstructUtils.convert(bo, BizCommandConfig.class);
-        return baseMapper.selectCommandConfigList(query);
+        List<BizCommandConfigVo> list = baseMapper.selectCommandConfigList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -77,13 +87,16 @@ public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizCommandConfigBo bo) {
+        normalizeCategory(bo);
         BizCommandConfig add = MapstructUtils.convert(bo, BizCommandConfig.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setCommandId(add.getCommandId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getCommandId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -95,11 +108,17 @@ public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizCommandConfigBo bo) {
+        normalizeCategory(bo);
         BizCommandConfig update = MapstructUtils.convert(bo, BizCommandConfig.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getCommandId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizCommandConfig entity) {
@@ -134,8 +153,23 @@ public class BizCommandConfigServiceImpl implements IBizCommandConfigService {
      * @return 是否删除成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizCommandConfigBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizCommandConfigVo vo) {
+        if (vo == null || vo.getCommandId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getCommandId(), vo.getCategoryNodeId()));
     }
 
 }

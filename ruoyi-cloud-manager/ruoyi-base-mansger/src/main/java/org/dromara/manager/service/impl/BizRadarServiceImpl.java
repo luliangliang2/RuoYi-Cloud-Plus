@@ -18,7 +18,9 @@ import org.dromara.manager.domain.vo.BizRadarVo;
 import org.dromara.manager.mapper.BizRadarMapper;
 import org.dromara.manager.mapper.BizVehicleEquipmentBindMapper;
 import org.dromara.manager.service.IBizRadarService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,8 +36,11 @@ import java.util.List;
 @Service
 public class BizRadarServiceImpl implements IBizRadarService {
 
+    private static final String BUSINESS_TYPE = "radar";
+
     private final BizRadarMapper baseMapper;
     private final BizVehicleEquipmentBindMapper bindMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询上装雷达
@@ -45,7 +50,9 @@ public class BizRadarServiceImpl implements IBizRadarService {
      */
     @Override
     public BizRadarVo queryById(Long radarId) {
-        return baseMapper.selectVoById(radarId);
+        BizRadarVo vo = baseMapper.selectVoById(radarId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -59,6 +66,7 @@ public class BizRadarServiceImpl implements IBizRadarService {
     public TableDataInfo<BizRadarVo> queryPageList(BizRadarBo bo, PageQuery pageQuery) {
         BizRadar query = MapstructUtils.convert(bo, BizRadar.class);
         Page<BizRadarVo> result = baseMapper.selectRadarPage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -71,7 +79,9 @@ public class BizRadarServiceImpl implements IBizRadarService {
     @Override
     public List<BizRadarVo> queryList(BizRadarBo bo) {
         BizRadar query = MapstructUtils.convert(bo, BizRadar.class);
-        return baseMapper.selectRadarList(query);
+        List<BizRadarVo> list = baseMapper.selectRadarList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -93,13 +103,16 @@ public class BizRadarServiceImpl implements IBizRadarService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizRadarBo bo) {
+        normalizeCategory(bo);
         BizRadar add = MapstructUtils.convert(bo, BizRadar.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setRadarId(add.getRadarId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getRadarId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -111,11 +124,17 @@ public class BizRadarServiceImpl implements IBizRadarService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizRadarBo bo) {
+        normalizeCategory(bo);
         BizRadar update = MapstructUtils.convert(bo, BizRadar.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getRadarId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizRadar entity) {
@@ -161,7 +180,21 @@ public class BizRadarServiceImpl implements IBizRadarService {
                 throw new ServiceException("雷达已绑定车辆，不允许删除");
             }
         }
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizRadarBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizRadarVo vo) {
+        if (vo == null || vo.getRadarId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getRadarId(), vo.getCategoryNodeId()));
     }
 
 }

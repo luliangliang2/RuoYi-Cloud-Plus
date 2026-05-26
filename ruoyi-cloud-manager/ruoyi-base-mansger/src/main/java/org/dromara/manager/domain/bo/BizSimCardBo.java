@@ -13,6 +13,7 @@ import org.dromara.manager.domain.BizSimCard;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * SIM卡业务对象 biz_sim_card
@@ -40,6 +41,11 @@ public class BizSimCardBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * IMEI

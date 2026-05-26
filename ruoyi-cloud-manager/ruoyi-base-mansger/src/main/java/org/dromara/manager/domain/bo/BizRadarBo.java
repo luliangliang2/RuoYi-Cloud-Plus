@@ -13,6 +13,7 @@ import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.manager.domain.BizRadar;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 上装雷达业务对象 biz_radar
@@ -40,6 +41,11 @@ public class BizRadarBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 雷达编码

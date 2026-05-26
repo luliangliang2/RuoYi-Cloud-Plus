@@ -1,6 +1,7 @@
 package org.dromara.manager.domain;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -10,6 +11,7 @@ import org.dromara.common.tenant.core.TenantEntity;
 import java.io.Serial;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * SIM卡对象 biz_sim_card
@@ -40,6 +42,12 @@ public class BizSimCard extends TenantEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合（查询使用）
+     */
+    @TableField(exist = false)
+    private List<Long> categoryNodeIds;
 
     /**
      * IMEI

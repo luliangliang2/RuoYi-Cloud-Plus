@@ -9,6 +9,7 @@ import org.dromara.manager.domain.BizSceneRoute;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 场景路线视图对象 biz_scene_route
@@ -39,6 +40,11 @@ public class BizSceneRouteVo implements Serializable {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 分类节点名称

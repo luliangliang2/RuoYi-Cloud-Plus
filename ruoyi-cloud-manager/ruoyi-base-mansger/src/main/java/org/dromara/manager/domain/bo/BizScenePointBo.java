@@ -13,6 +13,7 @@ import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.manager.domain.BizScenePoint;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 场景点位业务对象 biz_scene_point
@@ -40,6 +41,11 @@ public class BizScenePointBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 路线ID

@@ -8,7 +8,14 @@
         select s.sim_id,
                s.tree_id,
                s.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                s.imei,
                s.iccid,
                s.phone_number,
@@ -41,8 +48,28 @@
             <if test="bo.treeId != null">
                 and s.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and s.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
             <if test="bo.status != null and bo.status != ''">
                 and s.status = #{bo.status}
@@ -55,7 +82,14 @@
         select s.sim_id,
                s.tree_id,
                s.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                s.imei,
                s.iccid,
                s.phone_number,
@@ -88,8 +122,28 @@
             <if test="bo.treeId != null">
                 and s.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and s.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
             <if test="bo.status != null and bo.status != ''">
                 and s.status = #{bo.status}
@@ -102,7 +156,14 @@
         select s.sim_id,
                s.tree_id,
                s.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                s.imei,
                s.iccid,
                s.phone_number,
@@ -140,7 +201,14 @@
         select s.sim_id,
                s.tree_id,
                s.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                s.imei,
                s.iccid,
                s.phone_number,

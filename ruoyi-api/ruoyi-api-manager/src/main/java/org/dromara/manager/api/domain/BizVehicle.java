@@ -7,9 +7,12 @@ import java.io.Serial;
 
 import org.dromara.common.tenant.core.TenantEntity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.util.List;
 
 /**
  * 车辆管理对象 biz_vehicle
@@ -40,6 +43,12 @@ public class BizVehicle extends TenantEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合（查询使用）
+     */
+    @TableField(exist = false)
+    private List<Long> categoryNodeIds;
 
     /**
      * vin码

@@ -15,8 +15,10 @@ import org.dromara.manager.domain.bo.BizSceneRouteBo;
 import org.dromara.manager.domain.vo.BizSceneRouteVo;
 import org.dromara.manager.mapper.BizSceneRouteMapper;
 import org.dromara.manager.service.IBizSceneRouteService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.dromara.manager.utils.CoordinateConvertUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +34,10 @@ import java.util.List;
 @Service
 public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
 
+    private static final String BUSINESS_TYPE = "sceneRoute";
+
     private final BizSceneRouteMapper baseMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询场景路线
@@ -42,7 +47,9 @@ public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
      */
     @Override
     public BizSceneRouteVo queryById(Long routeId) {
-        return baseMapper.selectVoById(routeId);
+        BizSceneRouteVo vo = baseMapper.selectVoById(routeId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -56,6 +63,7 @@ public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
     public TableDataInfo<BizSceneRouteVo> queryPageList(BizSceneRouteBo bo, PageQuery pageQuery) {
         BizSceneRoute query = MapstructUtils.convert(bo, BizSceneRoute.class);
         Page<BizSceneRouteVo> result = baseMapper.selectSceneRoutePage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -68,7 +76,9 @@ public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
     @Override
     public List<BizSceneRouteVo> queryList(BizSceneRouteBo bo) {
         BizSceneRoute query = MapstructUtils.convert(bo, BizSceneRoute.class);
-        return baseMapper.selectSceneRouteList(query);
+        List<BizSceneRouteVo> list = baseMapper.selectSceneRouteList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -78,13 +88,16 @@ public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizSceneRouteBo bo) {
+        normalizeCategory(bo);
         BizSceneRoute add = MapstructUtils.convert(bo, BizSceneRoute.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setRouteId(add.getRouteId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getRouteId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -96,11 +109,17 @@ public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizSceneRouteBo bo) {
+        normalizeCategory(bo);
         BizSceneRoute update = MapstructUtils.convert(bo, BizSceneRoute.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getRouteId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizSceneRoute entity) {
@@ -156,8 +175,23 @@ public class BizSceneRouteServiceImpl implements IBizSceneRouteService {
      * @return 是否删除成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizSceneRouteBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizSceneRouteVo vo) {
+        if (vo == null || vo.getRouteId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getRouteId(), vo.getCategoryNodeId()));
     }
 
 }

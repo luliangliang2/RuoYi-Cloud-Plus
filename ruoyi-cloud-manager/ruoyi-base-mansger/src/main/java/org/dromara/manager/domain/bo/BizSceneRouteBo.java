@@ -10,6 +10,8 @@ import org.dromara.common.core.validate.EditGroup;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.manager.domain.BizSceneRoute;
 
+import java.util.List;
+
 /**
  * 场景路线业务对象 biz_scene_route
  *
@@ -36,6 +38,11 @@ public class BizSceneRouteBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 路线名称

@@ -10,6 +10,8 @@ import org.dromara.common.core.validate.EditGroup;
 import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.manager.domain.BizCommandConfig;
 
+import java.util.List;
+
 /**
  * 指令配置业务对象 biz_command_config
  *
@@ -36,6 +38,11 @@ public class BizCommandConfigBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 指令编码

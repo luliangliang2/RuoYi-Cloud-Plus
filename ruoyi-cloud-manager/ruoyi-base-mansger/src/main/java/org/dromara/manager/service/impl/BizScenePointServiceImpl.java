@@ -16,8 +16,10 @@ import org.dromara.manager.domain.vo.BizScenePointVo;
 import org.dromara.manager.mapper.BizScenePointMapper;
 import org.dromara.manager.mapper.BizSceneRouteMapper;
 import org.dromara.manager.service.IBizScenePointService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.dromara.manager.utils.CoordinateConvertUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -34,8 +36,11 @@ import java.util.List;
 @Service
 public class BizScenePointServiceImpl implements IBizScenePointService {
 
+    private static final String BUSINESS_TYPE = "scenePoint";
+
     private final BizScenePointMapper baseMapper;
     private final BizSceneRouteMapper sceneRouteMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询场景点位
@@ -45,7 +50,9 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
      */
     @Override
     public BizScenePointVo queryById(Long pointId) {
-        return baseMapper.selectVoById(pointId);
+        BizScenePointVo vo = baseMapper.selectVoById(pointId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -59,6 +66,7 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
     public TableDataInfo<BizScenePointVo> queryPageList(BizScenePointBo bo, PageQuery pageQuery) {
         BizScenePoint query = MapstructUtils.convert(bo, BizScenePoint.class);
         Page<BizScenePointVo> result = baseMapper.selectScenePointPage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -71,7 +79,9 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
     @Override
     public List<BizScenePointVo> queryList(BizScenePointBo bo) {
         BizScenePoint query = MapstructUtils.convert(bo, BizScenePoint.class);
-        return baseMapper.selectScenePointList(query);
+        List<BizScenePointVo> list = baseMapper.selectScenePointList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -81,13 +91,16 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizScenePointBo bo) {
+        normalizeCategory(bo);
         BizScenePoint add = MapstructUtils.convert(bo, BizScenePoint.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setPointId(add.getPointId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getPointId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -99,11 +112,17 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizScenePointBo bo) {
+        normalizeCategory(bo);
         BizScenePoint update = MapstructUtils.convert(bo, BizScenePoint.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getPointId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizScenePoint entity) {
@@ -162,8 +181,23 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
      * @return 是否删除成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid) {
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizScenePointBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizScenePointVo vo) {
+        if (vo == null || vo.getPointId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getPointId(), vo.getCategoryNodeId()));
     }
 
 }

@@ -8,7 +8,14 @@
         select c.command_id,
                c.tree_id,
                c.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'commandConfig'
+                     and tcb.business_id = c.command_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                c.command_code,
                c.command_name,
                c.command_type,
@@ -32,8 +39,28 @@
             <if test="bo.treeId != null">
                 and c.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and c.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'commandConfig'
+                      and fcb.business_id = c.command_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'commandConfig'
+                      and fcb.business_id = c.command_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
             <if test="bo.status != null and bo.status != ''">
                 and c.status = #{bo.status}
@@ -46,7 +73,14 @@
         select c.command_id,
                c.tree_id,
                c.category_node_id,
-               n.node_name as category_node_name,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'commandConfig'
+                     and tcb.business_id = c.command_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
                c.command_code,
                c.command_name,
                c.command_type,
@@ -70,8 +104,28 @@
             <if test="bo.treeId != null">
                 and c.tree_id = #{bo.treeId}
             </if>
-            <if test="bo.categoryNodeId != null">
-                and c.category_node_id = #{bo.categoryNodeId}
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'commandConfig'
+                      and fcb.business_id = c.command_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'commandConfig'
+                      and fcb.business_id = c.command_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
             </if>
             <if test="bo.status != null and bo.status != ''">
                 and c.status = #{bo.status}

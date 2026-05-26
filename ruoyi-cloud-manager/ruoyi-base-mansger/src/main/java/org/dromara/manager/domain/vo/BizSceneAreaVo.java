@@ -9,6 +9,7 @@ import org.dromara.manager.domain.BizSceneArea;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 场景区域视图对象 biz_scene_area
@@ -39,6 +40,11 @@ public class BizSceneAreaVo implements Serializable {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 分类节点名称

@@ -18,7 +18,9 @@ import org.dromara.manager.domain.vo.BizSimCardVo;
 import org.dromara.manager.mapper.BizSimCardMapper;
 import org.dromara.manager.mapper.BizVehicleEquipmentBindMapper;
 import org.dromara.manager.service.IBizSimCardService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,8 +36,11 @@ import java.util.List;
 @Service
 public class BizSimCardServiceImpl implements IBizSimCardService {
 
+    private static final String BUSINESS_TYPE = "simCard";
+
     private final BizSimCardMapper baseMapper;
     private final BizVehicleEquipmentBindMapper bindMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询SIM卡
@@ -45,7 +50,9 @@ public class BizSimCardServiceImpl implements IBizSimCardService {
      */
     @Override
     public BizSimCardVo queryById(Long simId) {
-        return baseMapper.selectVoById(simId);
+        BizSimCardVo vo = baseMapper.selectVoById(simId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -59,6 +66,7 @@ public class BizSimCardServiceImpl implements IBizSimCardService {
     public TableDataInfo<BizSimCardVo> queryPageList(BizSimCardBo bo, PageQuery pageQuery) {
         BizSimCard query = MapstructUtils.convert(bo, BizSimCard.class);
         Page<BizSimCardVo> result = baseMapper.selectSimCardPage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -71,7 +79,9 @@ public class BizSimCardServiceImpl implements IBizSimCardService {
     @Override
     public List<BizSimCardVo> queryList(BizSimCardBo bo) {
         BizSimCard query = MapstructUtils.convert(bo, BizSimCard.class);
-        return baseMapper.selectSimCardList(query);
+        List<BizSimCardVo> list = baseMapper.selectSimCardList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -93,13 +103,16 @@ public class BizSimCardServiceImpl implements IBizSimCardService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizSimCardBo bo) {
+        normalizeCategory(bo);
         BizSimCard add = MapstructUtils.convert(bo, BizSimCard.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setSimId(add.getSimId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getSimId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -111,11 +124,17 @@ public class BizSimCardServiceImpl implements IBizSimCardService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizSimCardBo bo) {
+        normalizeCategory(bo);
         BizSimCard update = MapstructUtils.convert(bo, BizSimCard.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getSimId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizSimCard entity) {
@@ -174,7 +193,21 @@ public class BizSimCardServiceImpl implements IBizSimCardService {
                 throw new ServiceException("SIM卡已绑定车辆，不允许删除");
             }
         }
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizSimCardBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizSimCardVo vo) {
+        if (vo == null || vo.getSimId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getSimId(), vo.getCategoryNodeId()));
     }
 
 }

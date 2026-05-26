@@ -18,7 +18,9 @@ import org.dromara.manager.domain.vo.BizCameraVo;
 import org.dromara.manager.mapper.BizCameraMapper;
 import org.dromara.manager.mapper.BizVehicleEquipmentBindMapper;
 import org.dromara.manager.service.IBizCameraService;
+import org.dromara.manager.service.support.TreeCategoryBindSupport;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -34,8 +36,11 @@ import java.util.List;
 @Service
 public class BizCameraServiceImpl implements IBizCameraService {
 
+    private static final String BUSINESS_TYPE = "camera";
+
     private final BizCameraMapper baseMapper;
     private final BizVehicleEquipmentBindMapper bindMapper;
+    private final TreeCategoryBindSupport categoryBindSupport;
 
     /**
      * 查询上装相机
@@ -45,7 +50,9 @@ public class BizCameraServiceImpl implements IBizCameraService {
      */
     @Override
     public BizCameraVo queryById(Long cameraId) {
-        return baseMapper.selectVoById(cameraId);
+        BizCameraVo vo = baseMapper.selectVoById(cameraId);
+        fillCategoryNodeIds(vo);
+        return vo;
     }
 
     /**
@@ -59,6 +66,7 @@ public class BizCameraServiceImpl implements IBizCameraService {
     public TableDataInfo<BizCameraVo> queryPageList(BizCameraBo bo, PageQuery pageQuery) {
         BizCamera query = MapstructUtils.convert(bo, BizCamera.class);
         Page<BizCameraVo> result = baseMapper.selectCameraPage(pageQuery.build(), query);
+        result.getRecords().forEach(this::fillCategoryNodeIds);
         return TableDataInfo.build(result);
     }
 
@@ -71,7 +79,9 @@ public class BizCameraServiceImpl implements IBizCameraService {
     @Override
     public List<BizCameraVo> queryList(BizCameraBo bo) {
         BizCamera query = MapstructUtils.convert(bo, BizCamera.class);
-        return baseMapper.selectCameraList(query);
+        List<BizCameraVo> list = baseMapper.selectCameraList(query);
+        list.forEach(this::fillCategoryNodeIds);
+        return list;
     }
 
     /**
@@ -93,13 +103,16 @@ public class BizCameraServiceImpl implements IBizCameraService {
      * @return 是否新增成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertByBo(BizCameraBo bo) {
+        normalizeCategory(bo);
         BizCamera add = MapstructUtils.convert(bo, BizCamera.class);
         fillDefaultValue(add);
         validEntityBeforeSave(add);
         boolean flag = baseMapper.insert(add) > 0;
         if (flag) {
             bo.setCameraId(add.getCameraId());
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getCameraId(), bo.getTreeId(), bo.getCategoryNodeIds());
         }
         return flag;
     }
@@ -111,11 +124,17 @@ public class BizCameraServiceImpl implements IBizCameraService {
      * @return 是否修改成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateByBo(BizCameraBo bo) {
+        normalizeCategory(bo);
         BizCamera update = MapstructUtils.convert(bo, BizCamera.class);
         fillDefaultValue(update);
         validEntityBeforeSave(update);
-        return baseMapper.updateById(update) > 0;
+        boolean flag = baseMapper.updateById(update) > 0;
+        if (flag) {
+            categoryBindSupport.save(BUSINESS_TYPE, bo.getCameraId(), bo.getTreeId(), bo.getCategoryNodeIds());
+        }
+        return flag;
     }
 
     private void fillDefaultValue(BizCamera entity) {
@@ -161,7 +180,21 @@ public class BizCameraServiceImpl implements IBizCameraService {
                 throw new ServiceException("相机已绑定车辆，不允许删除");
             }
         }
+        categoryBindSupport.deleteByBusinessIds(BUSINESS_TYPE, ids);
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    private void normalizeCategory(BizCameraBo bo) {
+        List<Long> nodeIds = categoryBindSupport.normalize(bo.getCategoryNodeId(), bo.getCategoryNodeIds());
+        bo.setCategoryNodeIds(nodeIds);
+        bo.setCategoryNodeId(nodeIds.isEmpty() ? null : nodeIds.get(0));
+    }
+
+    private void fillCategoryNodeIds(BizCameraVo vo) {
+        if (vo == null || vo.getCameraId() == null) {
+            return;
+        }
+        vo.setCategoryNodeIds(categoryBindSupport.getNodeIds(BUSINESS_TYPE, vo.getCameraId(), vo.getCategoryNodeId()));
     }
 
 }

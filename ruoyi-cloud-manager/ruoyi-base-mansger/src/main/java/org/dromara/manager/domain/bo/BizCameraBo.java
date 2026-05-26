@@ -12,6 +12,7 @@ import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.manager.domain.BizCamera;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 上装相机业务对象 biz_camera
@@ -39,6 +40,11 @@ public class BizCameraBo extends BaseEntity {
      * 分类节点ID
      */
     private Long categoryNodeId;
+
+    /**
+     * 分类节点ID集合
+     */
+    private List<Long> categoryNodeIds;
 
     /**
      * 相机编码
