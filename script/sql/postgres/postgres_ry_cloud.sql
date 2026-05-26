@@ -361,11 +361,10 @@ insert into sys_menu values(1761400000000000112, 'Nacos控制台', 1761400000000
 insert into sys_menu values(1761400000000000114, 'Admin控制台', 1761400000000000002, 5, 'http://localhost:9100/login', '', '', 'Y', 'Y', 'C', '0', '0', 'monitor:server:list', 'server', '', '', 1761000000000000103, 1761100000000000001, now(), null, null, '服务监控菜单');
 insert into sys_menu values(1761400000000000115, '代码生成', 1761400000000000003, 2, 'gen', 'tool/gen/index', '', 'N', 'Y', 'C', '0', '0', 'tool:gen:list', 'code', '', '', 1761000000000000103, 1761100000000000001, now(), null, null, '代码生成菜单');
 insert into sys_menu values(1761400000000000123, '客户端管理', 1761400000000000001, 11, 'client', 'system/client/index', '', 'N', 'Y', 'C', '0', '0', 'system:client:list', 'international', '', '', 1761000000000000103, 1761100000000000001, now(), null, null, '客户端管理菜单');
-insert into sys_menu values(1761400000000000116, '修改生成配置', 1761400000000000003, 2, 'gen-edit/index/:tableId', 'tool/gen/editTable', '', 'N', 'N', 'C', 'N', 'Y', 'tool:gen:edit', '#', '/tool/gen', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
-insert into sys_menu values(1761400000000000130, '分配用户', 1761400000000000001, 2, 'role-auth/user/:roleId', 'system/role/authUser', '', 'N', 'N', 'C', 'N', 'Y', 'system:role:edit', '#', '/system/role', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
-insert into sys_menu values(1761400000000000131, '分配角色', 1761400000000000001, 1, 'user-auth/role/:userId', 'system/user/authRole', '', 'N', 'N', 'C', 'N', 'Y', 'system:user:edit', '#', '/system/user', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
-insert into sys_menu values(1761400000000000132, '字典数据', 1761400000000000001, 6, 'dict-data/index/:dictId', 'system/dict/data', '', 'N', 'N', 'C', 'N', 'Y', 'system:dict:list', '#', '/system/dict', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
-insert into sys_menu values(1761400000000000133, '文件配置管理', 1761400000000000001, 10, 'oss-config/index', 'system/oss/config', '', 'N', 'N', 'C', 'N', 'Y', 'system:ossConfig:list', '#', '/system/oss', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
+insert into sys_menu values(1761400000000000116, '修改生成配置', 1761400000000000003, 2, 'gen-edit/index/:tableId', 'tool/gen/editTable', '', 'N', 'N', 'C', '1', '0', 'tool:gen:edit', '#', '/tool/gen', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
+insert into sys_menu values(1761400000000000130, '分配用户', 1761400000000000001, 2, 'role-auth/user/:roleId', 'system/role/authUser', '', 'N', 'N', 'C', '1', '0', 'system:role:edit', '#', '/system/role', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
+insert into sys_menu values(1761400000000000131, '分配角色', 1761400000000000001, 1, 'user-auth/role/:userId', 'system/user/authRole', '', 'N', 'N', 'C', '1', '0', 'system:user:edit', '#', '/system/user', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
+insert into sys_menu values(1761400000000000133, '文件配置管理', 1761400000000000001, 10, 'oss-config/index', 'system/oss/config', '', 'N', 'N', 'C', '1', '0', 'system:ossConfig:list', '#', '/system/oss', '', 1761000000000000103, 1761100000000000001, now(), null, null, '');
 
 -- oss菜单
 insert into sys_menu values(1761400000000000118, '文件管理', 1761400000000000001, 10, 'oss', 'system/oss/index', '', 'N', 'Y', 'C', '0', '0', 'system:oss:list', 'upload', '', '', 1761000000000000103, 1761100000000000001, now(), null, null, '文件管理菜单');
@@ -579,7 +578,6 @@ insert into sys_role_menu values (1761300000000000003, 1761400000000000118);
 insert into sys_role_menu values (1761300000000000003, 1761400000000000123);
 insert into sys_role_menu values (1761300000000000003, 1761400000000000130);
 insert into sys_role_menu values (1761300000000000003, 1761400000000000131);
-insert into sys_role_menu values (1761300000000000003, 1761400000000000132);
 insert into sys_role_menu values (1761300000000000003, 1761400000000000133);
 insert into sys_role_menu values (1761300000000000003, 1761400000000000500);
 insert into sys_role_menu values (1761300000000000003, 1761400000000000501);
