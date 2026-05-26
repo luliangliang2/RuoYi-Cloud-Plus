@@ -25,6 +25,7 @@ import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.common.redis.utils.CacheUtils;
 import org.dromara.common.tenant.core.TenantEntity;
 import org.dromara.common.tenant.helper.TenantHelper;
+import org.dromara.manager.api.RemoteTreeDefService;
 import org.dromara.system.domain.*;
 import org.dromara.system.domain.bo.SysTenantBo;
 import org.dromara.system.domain.vo.SysTenantVo;
@@ -61,6 +62,9 @@ public class SysTenantServiceImpl implements ISysTenantService {
 
     @DubboReference(mock = "true")
     private RemoteWorkflowService remoteWorkflowService;
+
+    @DubboReference(mock = "true")
+    private RemoteTreeDefService remoteTreeDefService;
 
     /**
      * 查询租户
@@ -211,6 +215,9 @@ public class SysTenantServiceImpl implements ISysTenantService {
             config.setUpdateTime(null);
         }
         configMapper.insertBatch(sysConfigList);
+
+        // 新增租户维护树定义（只同步树定义，不同步树节点）
+        remoteTreeDefService.syncTreeDef(tenantId);
 
         // 新增租户流程定义
         remoteWorkflowService.syncDef(tenantId);
@@ -560,6 +567,9 @@ public class SysTenantServiceImpl implements ISysTenantService {
         for (String tenantId : syncTenantIds) {
             TenantHelper.dynamic(tenantId, () -> CacheUtils.clear(CacheNames.SYS_CONFIG));
         }
+        tenantIds.stream()
+            .filter(tenantId -> !TenantConstants.DEFAULT_TENANT_ID.equals(tenantId))
+            .forEach(remoteTreeDefService::syncTreeDef);
     }
 
 }

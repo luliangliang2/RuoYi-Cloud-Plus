@@ -66,4 +66,11 @@ public interface IBizTreeDefService {
      */
     Boolean deleteWithValidByIds(Collection<Long> ids, Boolean isValid);
 
+    /**
+     * 同步默认租户的维护树定义到指定租户
+     *
+     * @param tenantId 租户编号
+     */
+    void syncTreeDef(String tenantId);
+
 }

@@ -41,6 +41,13 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- manager接口 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-api-manager</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 </project>

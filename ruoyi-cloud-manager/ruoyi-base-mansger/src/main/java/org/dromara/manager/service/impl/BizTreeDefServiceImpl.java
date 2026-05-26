@@ -1,15 +1,22 @@
 package org.dromara.manager.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.core.constant.TenantConstants;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
+import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.tenant.core.TenantEntity;
+import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.manager.domain.BizTreeDef;
 import org.dromara.manager.domain.BizTreeNode;
 import org.dromara.manager.domain.bo.BizTreeDefBo;
@@ -18,9 +25,13 @@ import org.dromara.manager.mapper.BizTreeDefMapper;
 import org.dromara.manager.mapper.BizTreeNodeMapper;
 import org.dromara.manager.service.IBizTreeDefService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 维护树定义Service业务层处理
@@ -162,6 +173,45 @@ public class BizTreeDefServiceImpl implements IBizTreeDefService {
         treeNodeMapper.delete(new LambdaQueryWrapper<BizTreeNode>()
             .in(BizTreeNode::getTreeId, ids));
         return baseMapper.deleteByIds(ids) > 0;
+    }
+
+    /**
+     * 同步默认租户的维护树定义到指定租户
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void syncTreeDef(String tenantId) {
+        if (StringUtils.isBlank(tenantId) || TenantConstants.DEFAULT_TENANT_ID.equals(tenantId)) {
+            return;
+        }
+        List<BizTreeDef> treeDefList = TenantHelper.ignore(() -> baseMapper.selectList());
+        Map<String, List<BizTreeDef>> treeDefMap = StreamUtils.groupByKey(treeDefList, TenantEntity::getTenantId);
+        List<BizTreeDef> defaultTreeDefList = treeDefMap.get(TenantConstants.DEFAULT_TENANT_ID);
+        if (CollUtil.isEmpty(defaultTreeDefList)) {
+            return;
+        }
+        Set<String> tenantTreeCodes = StreamUtils.toSet(treeDefMap.get(tenantId), BizTreeDef::getTreeCode);
+        List<BizTreeDef> saveTreeDefList = new ArrayList<>();
+        for (BizTreeDef treeDef : defaultTreeDefList) {
+            if (tenantTreeCodes.contains(treeDef.getTreeCode())) {
+                continue;
+            }
+            BizTreeDef add = BeanUtil.toBean(treeDef, BizTreeDef.class);
+            add.setTreeId(null);
+            add.setTenantId(tenantId);
+            add.setCreateDept(null);
+            add.setCreateBy(null);
+            add.setCreateTime(null);
+            add.setUpdateBy(null);
+            add.setUpdateTime(null);
+            saveTreeDefList.add(add);
+        }
+        TenantHelper.ignore(() -> {
+            if (CollUtil.isNotEmpty(saveTreeDefList)) {
+                baseMapper.insertBatch(saveTreeDefList);
+            }
+        });
+        log.info("同步维护树定义完成，tenantId={}，数量={}", tenantId, Convert.toInt(saveTreeDefList.size()));
     }
 
 }
