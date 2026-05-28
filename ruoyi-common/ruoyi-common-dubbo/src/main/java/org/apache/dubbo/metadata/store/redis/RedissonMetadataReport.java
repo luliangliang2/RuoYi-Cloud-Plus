@@ -5,10 +5,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
@@ -16,6 +16,7 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 import org.dromara.common.core.utils.SpringUtils;
+import org.dromara.common.json.utils.JsonUtils;
 import org.redisson.api.RScript;
 import org.redisson.api.RTopic;
 import org.redisson.api.RedissonClient;
@@ -90,8 +91,18 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
     // -------------------------------------------------------------------------
 
     @Override
+    public void storeProviderMetadata(MetadataIdentifier id, ServiceDefinition serviceDefinition) {
+        doStoreProviderMetadata(id, JsonUtils.toJsonString(serviceDefinition));
+    }
+
+    @Override
     protected void doStoreProviderMetadata(MetadataIdentifier id, String serviceDefinitions) {
         storeMetadata(id.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), serviceDefinitions, true);
+    }
+
+    @Override
+    public void storeConsumerMetadata(MetadataIdentifier id, Map<String, String> value) {
+        doStoreConsumerMetadata(id, JsonUtils.toJsonString(value));
     }
 
     @Override
@@ -124,8 +135,18 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
+    public void saveSubscribedData(SubscriberMetadataIdentifier id, Set<String> urls) {
+        doSaveSubscriberData(id, JsonUtils.toJsonString(urls));
+    }
+
+    @Override
     protected String doGetSubscribedURLs(SubscriberMetadataIdentifier id) {
         return getMetadata(id.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
+    }
+
+    @Override
+    public List<String> getSubscribedURLs(SubscriberMetadataIdentifier id) {
+        return JsonUtils.parseArray(doGetSubscribedURLs(id), String.class);
     }
 
     @Override
@@ -145,7 +166,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
     @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier id, Map<String, String> instanceMetadata) {
         String content = getMetadata(id.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        return JsonUtils.toJavaObject(content, MetadataInfo.class);
+        return JsonUtils.parseObject(content, MetadataInfo.class);
     }
 
     @Override
