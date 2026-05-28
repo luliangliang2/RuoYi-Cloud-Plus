@@ -29,6 +29,7 @@ public class DialectAdapter {
 		add(new SQLServer2005Dialect());
 		add(new DmDialect());
 		add(new KingbaseSQLDialect());
+		add(new TDengineDialect());
 	}
 
 	public void add(Dialect dialect) {
