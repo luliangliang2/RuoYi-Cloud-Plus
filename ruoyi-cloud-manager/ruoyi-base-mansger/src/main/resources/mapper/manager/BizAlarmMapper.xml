@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizAlarmMapper">
+
+    <sql id="alarmWhere">
+        <where>
+            vin in
+            <foreach collection="vins" item="vin" open="(" separator="," close=")">
+                #{vin}
+            </foreach>
+            <if test="bo.alarmCode != null">
+                and alarm_code = #{bo.alarmCode}
+            </if>
+            <if test="bo.alarmLevel != null">
+                and alarm_level = #{bo.alarmLevel}
+            </if>
+            <if test="bo.handled != null">
+                and handled = #{bo.handled}
+            </if>
+            <if test="bo.beginTime != null">
+                and ts &gt;= #{bo.beginTime}
+            </if>
+            <if test="bo.endTime != null">
+                and ts &lt;= #{bo.endTime}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectAlarmList" resultType="org.dromara.manager.domain.vo.BizAlarmVo">
+        select ts,
+               vin,
+               vehicle_type as vehicleType,
+               alarm_code as alarmCode,
+               alarm_level as alarmLevel,
+               alarm_msg as alarmMsg,
+               val,
+               handled
+        from st_vehicle_alarm
+        <include refid="alarmWhere"/>
+        order by ts desc
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="selectAlarmCount" resultType="java.lang.Long">
+        select count(*)
+        from st_vehicle_alarm
+        <include refid="alarmWhere"/>
+    </select>
+
+</mapper>

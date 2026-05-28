@@ -130,4 +130,24 @@
         order by v.id asc
     </select>
 
+    <select id="selectAuthorizedVinList" resultType="java.lang.String">
+        select distinct v.vin
+        from biz_vehicle v
+        <where>
+            v.del_flag = 0
+            and v.vin is not null
+            and v.vin != ''
+            <if test="bo.vin != null and bo.vin != ''">
+                and v.vin = #{bo.vin}
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and v.plate_no = #{bo.plateNo}
+            </if>
+            <if test="bo.brand != null and bo.brand != ''">
+                and v.brand = #{bo.brand}
+            </if>
+        </where>
+        order by v.vin asc
+    </select>
+
 </mapper>

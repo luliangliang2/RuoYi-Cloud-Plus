@@ -97,6 +97,12 @@
 			<artifactId>ruoyi-common-sensitive</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.taosdata.jdbc</groupId>
+			<artifactId>taos-jdbcdriver</artifactId>
+			<version>3.8.3</version>
+		</dependency>
+
 		<!-- 测试消息总线使用 搭配 TestBusController -->
 		<!--        <dependency>-->
 		<!--            <groupId>org.dromara</groupId>-->
