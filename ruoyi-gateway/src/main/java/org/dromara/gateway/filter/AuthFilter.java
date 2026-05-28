@@ -47,7 +47,7 @@ public class AuthFilter implements WebMvcConfigurer {
     }
 
     /**
-     * 重新注册 Sa-Token 上下文过滤器，使其覆盖 Servlet 异步分发。
+     * 重新注册 Sa-Token 上下文过滤器，使其覆盖网关 SSE/WebSocket 异步分发。
      *
      * @param filter Sa-Token 官方上下文过滤器
      * @return 过滤器注册配置
