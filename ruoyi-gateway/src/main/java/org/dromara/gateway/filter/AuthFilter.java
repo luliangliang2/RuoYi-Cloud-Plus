@@ -31,12 +31,12 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * [Sa-Token 权限认证] 拦截器配置
+ * [Sa-Token 权限认证] 过滤器配置
  *
  * @author Lion Li
  */
 @Configuration
-public class AuthFilter implements WebMvcConfigurer {
+public class AuthFilter {
 
     private static final String CLIENT_RULE_SEPARATOR_REGEX = "[,;\\r\\n]+";
 
@@ -65,28 +65,40 @@ public class AuthFilter implements WebMvcConfigurer {
         return registration;
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new SaInterceptor(handler -> SaRouter.match("/**")
-            .notMatch(ignoreWhite.getWhites())
-            .check(() -> {
-                HttpServletRequest request = ServletUtils.getRequest();
+    /**
+     * 注册 Sa-Token 全局过滤器
+     */
+    @Bean
+    public SaServletFilter authSaServletFilter() {
+        return new SaServletFilter()
+            .addInclude("/**")
+            .addExclude("/favicon.ico", "/actuator", "/actuator/**", "/error")
+            .setAuth(obj -> SaRouter.match("/**")
+                .notMatch(ignoreWhite.getWhites())
+                .check(() -> {
+                    HttpServletRequest request = ServletUtils.getRequest();
 
-                StpUtil.checkLogin();
+                    StpUtil.checkLogin();
 
-                String headerCid = request.getHeader(LoginHelper.CLIENT_KEY);
-                String paramCid = ServletUtils.getParameter(LoginHelper.CLIENT_KEY);
-                Object extra = StpUtil.getExtra(LoginHelper.CLIENT_KEY);
-                String clientId = extra == null ? null : extra.toString();
-                if (!StringUtils.equalsAny(clientId, headerCid, paramCid)) {
-                    throw NotLoginException.newInstance(StpUtil.getLoginType(),
-                        "-100", "客户端ID与Token不匹配",
-                        StpUtil.getTokenValue());
+                    String headerCid = request.getHeader(LoginHelper.CLIENT_KEY);
+                    String paramCid = ServletUtils.getParameter(LoginHelper.CLIENT_KEY);
+                    Object extra = StpUtil.getExtra(LoginHelper.CLIENT_KEY);
+                    String clientId = extra == null ? null : extra.toString();
+                    if (!StringUtils.equalsAny(clientId, headerCid, paramCid)) {
+                        throw NotLoginException.newInstance(StpUtil.getLoginType(),
+                            "-100", "客户端ID与Token不匹配",
+                            StpUtil.getTokenValue());
+                    }
+                    validateClientAccessRules(request);
+                }))
+            .setError(e -> {
+                HttpServletResponse response = ServletUtils.getResponse();
+                response.setContentType(SaTokenConsts.CONTENT_TYPE_APPLICATION_JSON);
+                if (e instanceof NotLoginException) {
+                    return SaResult.error(e.getMessage()).setCode(HttpStatus.UNAUTHORIZED);
                 }
-                validateClientAccessRules(request);
-            })))
-            .addPathPatterns("/**")
-            .excludePathPatterns("/favicon.ico", "/actuator", "/actuator/**", "/error");
+                return SaResult.error("认证失败，无法访问系统资源").setCode(HttpStatus.UNAUTHORIZED);
+            });
     }
 
     /**
