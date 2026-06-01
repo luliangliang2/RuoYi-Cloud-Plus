@@ -4,6 +4,7 @@ server:
 spring:
   application:
     name: ruoyi-magic-api
+
   profiles:
     active: public
 
@@ -42,17 +43,5 @@ spring:
     baseline-on-migrate: true
     table: flyway_schema_history_magic_api
 
-magic-api:
-  web: /web
-  prefix: /api
-  show-sql: true
-  persistence-response-body: true
-  response: "{code: code == 1 ? 200 : 500, msg: message, data: data}"
-  resource:
-    type: database
-    table-name: magic_api_file
-    prefix: /magic-api
-  backup:
-    enable: true
-    table-name: magic_api_backup
-    max-history: 30
+
+

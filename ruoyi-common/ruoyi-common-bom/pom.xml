@@ -222,6 +222,13 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- netty websocket模块 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-common-netty-websocket</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- 授权认证 -->
             <dependency>
                 <groupId>org.dromara</groupId>

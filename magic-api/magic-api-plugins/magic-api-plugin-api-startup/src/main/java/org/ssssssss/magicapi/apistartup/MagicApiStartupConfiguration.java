@@ -11,6 +11,7 @@ import org.ssssssss.magicapi.apistartup.service.ApiStartupRunner;
 import org.ssssssss.magicapi.core.config.MagicAPIProperties;
 import org.ssssssss.magicapi.core.config.MagicPluginConfiguration;
 import org.ssssssss.magicapi.core.model.Plugin;
+import org.ssssssss.magicapi.core.service.MagicAPIService;
 import org.ssssssss.magicapi.core.service.MagicResourceService;
 
 @Configuration
@@ -38,7 +39,8 @@ public class MagicApiStartupConfiguration implements MagicPluginConfiguration {
 	@ConditionalOnMissingBean
 	public ApiStartupRunner apiStartupRunner(MagicResourceService magicResourceService,
 											MagicAPIProperties properties,
-											WebServerApplicationContext applicationContext) {
-		return new ApiStartupRunner(magicResourceService, properties, applicationContext);
+											WebServerApplicationContext applicationContext,
+											MagicAPIService magicAPIService) {
+		return new ApiStartupRunner(magicResourceService, properties, applicationContext, magicAPIService);
 	}
 }

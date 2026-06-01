@@ -58,6 +58,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.dromara</groupId>
+			<artifactId>ruoyi-common-netty-websocket</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.ssssssss</groupId>
 			<artifactId>magic-api-plugin-mqtt</artifactId>
 			<version>${magic-api.version}</version>
@@ -70,11 +75,11 @@
 		</dependency>
 
 
-		<dependency>
+		<!--	<dependency>
 			<groupId>org.ssssssss</groupId>
 			<artifactId>magic-api-plugin-net</artifactId>
 			<version>${magic-api.version}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.ssssssss</groupId>
 			<artifactId>magic-api-plugin-api-startup</artifactId>
