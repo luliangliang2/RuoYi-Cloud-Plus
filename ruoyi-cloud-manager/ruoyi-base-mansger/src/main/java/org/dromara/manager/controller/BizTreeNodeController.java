@@ -47,7 +47,7 @@ public class BizTreeNodeController extends BaseController {
     /**
      * 查询维护树节点列表
      */
-    @SaCheckPermission("manager:tree:list")
+    @SaCheckPermission("manager:treeNode:list")
     @GetMapping("/list")
     public R<List<BizTreeNodeVo>> list(BizTreeNodeBo bo) {
         return R.ok(treeNodeService.queryList(bo));
@@ -56,7 +56,7 @@ public class BizTreeNodeController extends BaseController {
     /**
      * 查询可选父节点列表
      */
-    @SaCheckPermission("manager:tree:query")
+    @SaCheckPermission("manager:treeNode:query")
     @GetMapping("/selectable")
     public R<List<BizTreeNodeVo>> selectable(@NotNull(message = "树ID不能为空")
                                              @RequestParam Long treeId,
@@ -67,7 +67,7 @@ public class BizTreeNodeController extends BaseController {
     /**
      * 导出维护树节点列表
      */
-    @SaCheckPermission("manager:tree:export")
+    @SaCheckPermission("manager:treeNode:export")
     @Log(title = "维护树节点", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(BizTreeNodeBo bo, HttpServletResponse response) {
@@ -80,7 +80,7 @@ public class BizTreeNodeController extends BaseController {
      *
      * @param nodeId 主键
      */
-    @SaCheckPermission("manager:tree:query")
+    @SaCheckPermission("manager:treeNode:query")
     @GetMapping("/{nodeId}")
     public R<BizTreeNodeVo> getInfo(@NotNull(message = "主键不能为空")
                                     @PathVariable("nodeId") Long nodeId) {
@@ -90,7 +90,7 @@ public class BizTreeNodeController extends BaseController {
     /**
      * 新增维护树节点
      */
-    @SaCheckPermission("manager:tree:add")
+    @SaCheckPermission("manager:treeNode:add")
     @Log(title = "维护树节点", businessType = BusinessType.INSERT)
     @RepeatSubmit()
     @PostMapping
@@ -101,7 +101,7 @@ public class BizTreeNodeController extends BaseController {
     /**
      * 修改维护树节点
      */
-    @SaCheckPermission("manager:tree:edit")
+    @SaCheckPermission("manager:treeNode:edit")
     @Log(title = "维护树节点", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
     @PutMapping
@@ -114,7 +114,7 @@ public class BizTreeNodeController extends BaseController {
      *
      * @param ids 主键串
      */
-    @SaCheckPermission("manager:tree:remove")
+    @SaCheckPermission("manager:treeNode:remove")
     @Log(title = "维护树节点", businessType = BusinessType.DELETE)
     @DeleteMapping("/{ids}")
     public R<Void> remove(@NotEmpty(message = "主键不能为空")

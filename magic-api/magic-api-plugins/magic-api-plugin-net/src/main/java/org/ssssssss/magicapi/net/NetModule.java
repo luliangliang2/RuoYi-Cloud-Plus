@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import org.ssssssss.magicapi.core.annotation.MagicModule;
 import org.ssssssss.magicapi.netty.NettyService;
 import org.ssssssss.magicapi.netty.NettyService.TransferMode;
-import org.ssssssss.magicapi.netty.WebSocketAuthInfo;
+
 import org.ssssssss.magicapi.netty.WebSocketAuthProvider;
 import org.ssssssss.magicapi.net.auth.RuoYiWebSocketAuthProvider;
 import org.ssssssss.magicapi.net.hub.WebSocketHub;
@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 /**
  * Net 模块
@@ -415,14 +416,14 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
         /**
          * 设置该服务端的客户端连接回调
          */
-        public void onConnect(java.util.function.BiConsumer<String, String> handler) {
+        public void onConnect(BiConsumer<String, String> handler) {
             onConnect(info.name, handler);
         }
 
         /**
          * 设置该服务端的客户端断开连接回调
          */
-        public void onDisconnect(java.util.function.BiConsumer<String, String> handler) {
+        public void onDisconnect(BiConsumer<String, String> handler) {
             onDisconnect(info.name, handler);
         }
 
@@ -431,7 +432,7 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
          * 返回的字符串将作为客户端的别名
          * 返回 null 表示拒绝注册
          */
-        public void onRegister(java.util.function.BiFunction<String, Object, String> handler) {
+        public void onRegister(BiFunction<String, Object, String> handler) {
             onRegister(info.name, handler);
         }
 
@@ -754,7 +755,7 @@ public class NetModule implements DynamicMethod, DynamicAttribute<NetModule, Net
     /**
      * 获取所有已注册的连接名称
      */
-    public java.util.Set<String> getNames() {
+    public Set<String> getNames() {
         return new java.util.HashSet<>(channelRegistry.keySet());
     }
 
