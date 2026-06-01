@@ -33,6 +33,8 @@ import java.util.Objects;
 public class BizVehicleMonitorServiceImpl implements IBizVehicleMonitorService {
 
     private static final String MODULE_CODE = "vehicle";
+    private static final String CATEGORY_ICON = "heroicons:folder";
+    private static final String VEHICLE_ICON = "heroicons:truck-solid";
 
     private final BizTreeDefMapper treeDefMapper;
     private final BizTreeNodeMapper treeNodeMapper;
@@ -98,6 +100,7 @@ public class BizVehicleMonitorServiceImpl implements IBizVehicleMonitorService {
         vo.setKey("node-" + node.getNodeId());
         vo.setTitle(node.getNodeName());
         vo.setType("category");
+        vo.setIcon(CATEGORY_ICON);
         vo.setTreeId(node.getTreeId());
         vo.setNodeId(node.getNodeId());
         return vo;
@@ -135,15 +138,20 @@ public class BizVehicleMonitorServiceImpl implements IBizVehicleMonitorService {
         vo.setKey("node-uncategorized");
         vo.setTitle("未分类车辆");
         vo.setType("category");
+        vo.setIcon(CATEGORY_ICON);
         vo.setTreeId(treeId);
         return vo;
     }
 
     private BizVehicleMonitorTreeVo buildVehicleNode(BizVehicleVo vehicle) {
+        if (vehicle.getOnline() == null) {
+            vehicle.setOnline(false);
+        }
         BizVehicleMonitorTreeVo vo = new BizVehicleMonitorTreeVo();
         vo.setKey("vehicle-" + vehicle.getId());
         vo.setTitle(StringUtils.blankToDefault(vehicle.getPlateNo(), vehicle.getVin()));
         vo.setType("vehicle");
+        vo.setIcon(VEHICLE_ICON);
         vo.setTreeId(vehicle.getTreeId());
         vo.setNodeId(vehicle.getCategoryNodeId());
         vo.setVehicleId(vehicle.getId());

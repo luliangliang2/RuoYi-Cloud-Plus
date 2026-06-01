@@ -74,5 +74,10 @@ public class BizVehicleVo implements Serializable {
     @ExcelDictFormat(dictType = "vehicle_brand")
     private String brand;
 
+    /**
+     * 是否在线
+     */
+    private Boolean online;
+
 
 }

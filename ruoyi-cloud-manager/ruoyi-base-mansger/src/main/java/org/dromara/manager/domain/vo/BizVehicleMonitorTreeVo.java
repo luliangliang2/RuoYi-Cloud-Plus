@@ -36,6 +36,11 @@ public class BizVehicleMonitorTreeVo implements Serializable {
     private String type;
 
     /**
+     * 节点图标
+     */
+    private String icon;
+
+    /**
      * 分类树ID
      */
     private Long treeId;
