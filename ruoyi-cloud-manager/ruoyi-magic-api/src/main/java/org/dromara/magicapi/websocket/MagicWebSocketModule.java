@@ -38,7 +38,7 @@ public class MagicWebSocketModule implements DynamicModule<MagicWebSocketModule>
         this.sessionManager = sessionManager;
     }
 
-    @Override
+    
     public MagicWebSocketModule getDynamicModule(MagicScriptContext context) {
         return this;
     }
