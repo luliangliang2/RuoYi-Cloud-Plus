@@ -43,7 +43,7 @@ public class RedisCacheController {
     @Cacheable(cacheNames = "demo:cache#60s#10m#20#1", key = "#key", condition = "#key != null")
     @GetMapping("/test1")
     public R<String> test1(String key, String value) {
-        return R.ok("操作成功", value);
+        return R.data(value);
     }
 
     /**
@@ -57,7 +57,7 @@ public class RedisCacheController {
     @CachePut(cacheNames = CacheNames.DEMO_CACHE, key = "#key", condition = "#key != null")
     @GetMapping("/test2")
     public R<String> test2(String key, String value) {
-        return R.ok("操作成功", value);
+        return R.data(value);
     }
 
     /**
@@ -71,7 +71,7 @@ public class RedisCacheController {
     @CacheEvict(cacheNames = CacheNames.DEMO_CACHE, key = "#key", condition = "#key != null")
     @GetMapping("/test3")
     public R<String> test3(String key, String value) {
-        return R.ok("操作成功", value);
+        return R.data(value);
     }
 
     /**

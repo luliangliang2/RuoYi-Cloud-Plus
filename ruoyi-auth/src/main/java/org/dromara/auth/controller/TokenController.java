@@ -113,7 +113,7 @@ public class TokenController {
         map.put("domain", domain);
         map.put("state", AuthStateUtils.createState());
         String authorizeUrl = authRequest.authorize(Base64.encode(JsonUtils.toJsonString(map), StandardCharsets.UTF_8));
-        return R.ok("操作成功", authorizeUrl);
+        return R.data(authorizeUrl);
     }
 
     /**

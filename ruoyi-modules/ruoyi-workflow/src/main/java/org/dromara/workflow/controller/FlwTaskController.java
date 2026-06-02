@@ -47,7 +47,7 @@ public class FlwTaskController extends BaseController {
     @PostMapping("/startWorkFlow")
     public R<RemoteStartProcessReturn> startWorkFlow(@Validated(AddGroup.class) @RequestBody StartProcessBo startProcessBo) {
         RemoteStartProcessReturn startProcessReturn = flwTaskService.startWorkFlow(startProcessBo);
-        return R.ok("提交成功", startProcessReturn);
+        return R.data(startProcessReturn);
     }
 
     /**

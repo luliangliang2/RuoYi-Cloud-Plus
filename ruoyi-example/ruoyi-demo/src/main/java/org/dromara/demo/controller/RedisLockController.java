@@ -37,7 +37,7 @@ public class RedisLockController {
         System.out.println("start:" + key + ",time:" + LocalTime.now());
         ThreadUtil.sleep(10000);
         System.out.println("end :" + key + ",time:" + LocalTime.now());
-        return R.ok("操作成功", value);
+        return R.data(value);
     }
 
     /**
@@ -58,7 +58,7 @@ public class RedisLockController {
             lockTemplate.releaseLock(lockInfo);
         }
         //结束
-        return R.ok("操作成功", value);
+        return R.data(value);
     }
 
 }

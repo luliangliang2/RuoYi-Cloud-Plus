@@ -188,7 +188,7 @@ public class FlwDefinitionController extends BaseController {
     @GetMapping("/xmlString/{id}")
     @SaCheckPermission("workflow:definition:query")
     public R<String> xmlString(@PathVariable Long id) {
-        return R.ok("操作成功", defService.exportJson(id));
+        return R.data(defService.exportJson(id));
     }
 
     /**

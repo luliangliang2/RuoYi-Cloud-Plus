@@ -24,14 +24,10 @@ import org.dromara.warm.flow.core.service.DefService;
 import org.dromara.warm.flow.orm.entity.FlowDefinition;
 import org.dromara.warm.flow.orm.entity.FlowHisTask;
 import org.dromara.warm.flow.orm.entity.FlowNode;
-import org.dromara.warm.flow.orm.entity.FlowSkip;
 import org.dromara.warm.flow.orm.mapper.FlowDefinitionMapper;
 import org.dromara.warm.flow.orm.mapper.FlowHisTaskMapper;
 import org.dromara.warm.flow.orm.mapper.FlowNodeMapper;
-import org.dromara.warm.flow.orm.mapper.FlowSkipMapper;
 import org.dromara.workflow.common.ConditionalOnEnable;
-import org.dromara.workflow.common.constant.FlowConstant;
-import org.dromara.workflow.domain.FlowCategory;
 import org.dromara.workflow.domain.vo.FlowDefinitionVo;
 import org.dromara.workflow.mapper.FlwCategoryMapper;
 import org.dromara.workflow.service.IFlwCommonService;
@@ -61,7 +57,6 @@ public class FlwDefinitionServiceImpl implements IFlwDefinitionService {
     private final FlowDefinitionMapper flowDefinitionMapper;
     private final FlowHisTaskMapper flowHisTaskMapper;
     private final FlowNodeMapper flowNodeMapper;
-    private final FlowSkipMapper flowSkipMapper;
     private final FlwCategoryMapper flwCategoryMapper;
     private final IFlwCommonService flwCommonService;
 

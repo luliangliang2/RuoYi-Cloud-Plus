@@ -72,7 +72,7 @@ public class SysConfigController extends BaseController {
      */
     @GetMapping(value = "/configKey/{configKey}")
     public R<String> getConfigKey(@PathVariable String configKey) {
-        return R.ok("操作成功", configService.selectConfigByKey(configKey));
+        return R.data(configService.selectConfigByKey(configKey));
     }
 
     /**
