@@ -2,7 +2,7 @@ server:
   # undertow 配置
   undertow:
     # HTTP post内容的最大大小。当值为-1时，默认值为大小是无限的
-    max-http-post-size: -1
+    max-http-post-size: 1GB
     # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
     # 每块buffer的空间大小,越小的空间被利用越充分
     buffer-size: 512
@@ -32,13 +32,6 @@ dubbo:
   consumer:
     # 超时时间
     timeout: 3000
-  metadata-report:
-    # Redis集群开关
-    cluster: false
-    parameters:
-      # 集群地址 cluster 为 true 生效
-      # 集群把所有Redis集群节点写到这里就行了
-      backup: 10.211.55.19:6379
   # 自定义配置
   custom:
     # 全局请求log
@@ -110,10 +103,10 @@ spring:
   # redis通用配置 子服务可以自行配置进行覆盖
   data:
     redis:
-      host: 10.211.55.19
+      host: localhost
       port: 6379
       # redis 密码必须配置
-      password: plusgo@2025.
+      password: ruoyi123
       database: 0
       # 需要使用数字
       timeout: 10000
