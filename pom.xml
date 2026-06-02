@@ -57,6 +57,7 @@
         <warm-flow.version>1.8.5</warm-flow.version>
         <!-- mq配置 -->
         <rocketmq.version>2.3.5</rocketmq.version>
+        <magic-api.version>2.2.2</magic-api.version>
 
         <!-- 插件版本 -->
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
