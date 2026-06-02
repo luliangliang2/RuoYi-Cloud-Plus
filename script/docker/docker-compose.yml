@@ -165,6 +165,21 @@ services:
     privileged: true
     network_mode: "host"
 
+  ruoyi-snailai-server:
+    image: ruoyi/ruoyi-snailai-server:2.5.3
+    container_name: ruoyi-snailai-server
+    environment:
+      # 时区上海
+      TZ: Asia/Shanghai
+    ports:
+      - "8900:8900"
+      - "18888:18888"
+    volumes:
+      - /docker/snailai/logs/:/ruoyi/snailai/logs
+      - /docker/snailai/upload/:/ruoyi/snailai/upload
+    privileged: true
+    network_mode: "host"
+
   ruoyi-gateway:
     image: ruoyi/ruoyi-gateway:2.5.3
     container_name: ruoyi-gateway
@@ -276,6 +291,25 @@ services:
       - /docker/ruoyi-workflow/logs/:/ruoyi/workflow/logs
       # skywalking 探针
       - /docker/skywalking/agent/:/ruoyi/skywalking/agent
+    privileged: true
+    network_mode: "host"
+
+  ruoyi-ai:
+    image: ruoyi/ruoyi-ai:2.5.3
+    container_name: ruoyi-ai
+    environment:
+      # 时区上海
+      TZ: Asia/Shanghai
+    ports:
+      - "9206:9206"
+      - "18889:18889"
+    volumes:
+      # 配置文件
+      - /docker/ruoyi-ai/logs/:/ruoyi/ai/logs
+      # skywalking 探针
+      - /docker/skywalking/agent/:/ruoyi/skywalking/agent
+      # Snail AI Skill 临时目录
+      - /docker/snailai/agent/skills/:/tmp/snail-ai-agent/skills
     privileged: true
     network_mode: "host"
 

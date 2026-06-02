@@ -56,6 +56,11 @@ spring:
                 - Path=/resource/**
               filters:
                 - StripPrefix=1
+            # AI服务
+            - id: ruoyi-ai
+              uri: lb://ruoyi-ai
+              predicates:
+                - Path=/snail-ai/**
             # workflow服务
             - id: ruoyi-workflow
               uri: lb://ruoyi-workflow
