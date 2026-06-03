@@ -1079,8 +1079,6 @@ create table gen_table (
   data_name         varchar2(200)    default '',
   table_name        varchar2(200)    default '',
   table_comment     varchar2(500)    default '',
-  sub_table_name    varchar2(64)      default null,
-  sub_table_fk_name varchar2(64)      default null,
   class_name        varchar2(100)    default '',
   tpl_category      varchar2(200)    default 'crud',
   frontend_type     varchar2(30)     default 'vue',
@@ -1107,8 +1105,6 @@ comment on column gen_table.table_id          is '编号';
 comment on column gen_table.data_name         is '数据源名称';
 comment on column gen_table.table_name        is '表名称';
 comment on column gen_table.table_comment     is '表描述';
-comment on column gen_table.sub_table_name    is '关联子表的表名';
-comment on column gen_table.sub_table_fk_name is '子表关联的外键名';
 comment on column gen_table.class_name        is '实体类名称';
 comment on column gen_table.tpl_category      is '使用的模板（crud单表操作 tree树表操作）';
 comment on column gen_table.frontend_type     is '前端模板类型';
