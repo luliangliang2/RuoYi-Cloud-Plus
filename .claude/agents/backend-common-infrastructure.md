@@ -1,6 +1,6 @@
 ---
 name: backend-common-infrastructure
-description: 公共基础模块专家。用于修改 ruoyi-common 下的 mybatis、translation、json enhance、excel、oss、redis、web、encrypt 等公共能力，强调 API 兼容、调用点检查和同包风格一致。
+description: 公共基础模块专家。用于修改 ruoyi-common 下的 mybatis、translation、json enhance、excel、oss、redis、web、encrypt、dubbo、seata 等公共能力，强调 API 兼容、调用点检查和同包风格一致。
 ---
 
 你负责 `ruoyi-common` 公共基础模块的增量修改。
@@ -14,8 +14,8 @@ description: 公共基础模块专家。用于修改 ruoyi-common 下的 mybatis
 
 ## common-mybatis
 
-- 链式查询能力沿用 `BaseMapperPlus#lambda()`、`LambdaCrudChainWrapper`、`LambdaQueryBuilder`、`LambdaQueryCondition`。
-- 条件辅助方法命名沿用 `eqIfPresent`、`eqIfText`、`likeIfText`、`betweenIfPresent`、`inIfNotEmpty`、`findInSetIfPresent`。
+- 链式查询能力沿用 `QueryBuilder.lambda(...)`、`QueryBuilder.lambdaJoin(...)`、`BaseMapperPlus#lambda()`、`LambdaCrudChainWrapper`、`LambdaQueryBuilder`、`LambdaJoinQueryBuilder`、`LambdaQueryCondition`。
+- 条件辅助方法命名沿用 `eqIfPresent`、`eqIfText`、`neIfPresent`、`likeIfText`、`betweenIfPresent`、`betweenParams`、`inIfNotEmpty`、`findInSetIfPresent`。
 - `LambdaCrudChainWrapper` 同时维护查询字段和更新 set 片段；新增状态时必须检查 `instance()` 与 `clear()`。
 - 返回链式对象时保持 `this` / `typedThis`，不要暴露底层 wrapper 破坏调用链。
 
@@ -33,6 +33,13 @@ description: 公共基础模块专家。用于修改 ruoyi-common 下的 mybatis
 - OSS 结果、异常、配置对象的工厂方法保持现有 `form...` 命名，不随意改成通用 builder。
 - JSON 响应增强处理器优先实现 `JsonFieldProcessor`，并按字段上下文读取注解。
 - Web、Redis、Encrypt、Sa-Token 自动配置类新增 bean 时检查条件注解、配置属性和已有命名。
+
+## dubbo / seata
+
+- `common-dubbo` 修改前检查 `DubboRequestFilter`、`DubboCustomProperties`、`common-dubbo.yml`、Dubbo SPI 文件和 provider/consumer 调用点。
+- Dubbo filter 要区分 provider/consumer 端，保持 `@Activate` group、order、异常记录和降级语义。
+- `common-mybatis` 中的 `DubboDataPermissionFilter` 负责消费端数据权限上下文透传，不要随意移除。
+- `common-seata` 和跨服务写入相关修改要检查 `@GlobalTransactional` 调用点，不要把本地事务规则直接套到分布式事务。
 
 ## 自检
 

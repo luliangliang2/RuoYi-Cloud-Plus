@@ -1,6 +1,6 @@
 ---
 name: ruoyi-plus-ai-coding
-description: 在仓库内按代码生成器模板和项目既有约定生成或修改代码。用于新增或修改 CRUD 模块、controller/service/mapper/BO/VO/entity、MyBatis-Plus/MPJ 查询、数据权限、缓存、翻译/JSON 增强、公共 common 模块能力、JavaDoc 注释，以及与后端接口配套的 Vue 3 + TypeScript 页面、types 和 api 文件。
+description: 在仓库内按代码生成器模板、项目 reference 文档和既有约定生成或修改代码。用于新增或修改 CRUD 模块、controller/service/mapper/BO/VO/entity、MyBatis-Plus/MPJ 查询、数据权限、缓存、翻译/JSON 增强、公共 common 模块能力、JavaDoc 注释，以及与后端接口配套的 Vue 3 + TypeScript 页面、types 和 api 文件；触发后应先按任务类型读取对应 references，再阅读目标模块真实代码和 generator 模板。
 ---
 
 # RuoYi Plus AI 编码规范
@@ -15,6 +15,7 @@ description: 在仓库内按代码生成器模板和项目既有约定生成或�
 - 根据新表结构补齐 entity、bo、vo、mapper、service、controller。
 - 修改已有模块的查询、校验、导入导出、数据权限、事务逻辑。
 - 修改 `ruoyi-common` 公共能力，例如 mybatis 查询构造器、translation、json enhance、excel、oss、redis、web 配置。
+- 修改 Cloud 专属能力，例如 `ruoyi-api` 远程契约、Dubbo provider/consumer、Gateway/Auth、Nacos 配置约定、Seata 分布式事务、服务间数据权限透传。
 - 补充或修正 JavaDoc 注释，尤其是公共 API、接口、BO/VO/Entity 字段、Mapper 默认方法、Service/Controller 方法。
 - 在系统、监控、工作流、demo 等模块内按现有约定扩展业务代码。
 - 为后端新增接口同步补前端 `api/types/index.vue` 骨架。
@@ -30,14 +31,26 @@ description: 在仓库内按代码生成器模板和项目既有约定生成或�
 
 ## 执行流程
 
-1. 先确认目标模块，优先复用同模块中最近似功能的写法。
-2. 新增标准 CRUD 代码前，先读取 `ruoyi-modules/ruoyi-gen/src/main/resources/vm/` 下的模板。
-3. 命名和分层保持与仓库一致：
+1. 先判断任务类型，并按“文档读取规则”读取当前任务需要的 reference。
+2. 确认目标模块，优先复用同模块中最近似功能的写法。
+3. 新增标准 CRUD 代码前，先读取 `ruoyi-modules/ruoyi-gen/src/main/resources/vm/` 下的模板。
+4. 命名和分层保持与仓库一致：
    `domain` entity、`domain.bo`、`domain.vo`、`mapper`、`service`、`service.impl`、`controller`。
-4. 优先在生成器结构上扩展，不要自行发明新的分层。
-5. 修改 `ruoyi-system` 这类复杂模块前，先阅读同类现有实现，因为这些模块通常比生成器默认产物多出数据权限、联表、缓存、安全校验等逻辑。
-6. 修改 `ruoyi-common` 公共模块前，先阅读同包接口、实现类和调用点，优先保持已有 API 语义与兼容性。
-7. 只补注释或文档时，不运行无关格式化，不重排 import，不改代码逻辑。
+5. 优先在生成器结构上扩展，不要自行发明新的分层。
+6. 修改 `ruoyi-system` 这类复杂模块前，先阅读同类现有实现，因为这些模块通常比生成器默认产物多出数据权限、联表、缓存、安全校验等逻辑。
+7. 修改 `ruoyi-common` 公共模块前，先阅读同包接口、实现类和调用点，优先保持已有 API 语义与兼容性。
+8. 只补注释或文档时，不运行无关格式化，不重排 import，不改代码逻辑。
+
+## 文档读取规则
+
+使用本 skill 时，先按任务类型读取适用 reference，不一次性展开所有文档：
+
+- 后端 Java、Mapper、Service、Controller、BO、VO、Entity、权限、查询、公共模块或 JavaDoc 任务，先读 [references/backend.md](references/backend.md)。
+- Cloud 专属能力，例如 Dubbo 远程调用、`ruoyi-api` 契约、服务拆分、Gateway、Nacos、Seata 分布式事务、服务间数据权限透传，先读 [references/cloud.md](references/cloud.md)。
+- 前端 Vue、TypeScript、api、types 或页面任务，先读 [references/frontend.md](references/frontend.md)。
+- 不确定任务边界、需要标准调用方式或需要对照典型场景时，再读 [references/examples.md](references/examples.md)。
+
+reference 用来约束实现方式和自检范围；发生冲突时，仍以当前模块真实代码和实际调用点为准。
 
 ## 优先级规则
 
@@ -57,6 +70,10 @@ description: 在仓库内按代码生成器模板和项目既有约定生成或�
 ## 后端规则
 
 Java、MyBatis-Plus、BO/VO/entity、controller、mapper、service 的具体规则见 [references/backend.md](references/backend.md)。
+
+## Cloud 规则
+
+Dubbo、`ruoyi-api`、Gateway/Auth、Nacos、Seata、服务间数据权限透传的具体规则见 [references/cloud.md](references/cloud.md)。
 
 ## 前端规则
 
@@ -145,14 +162,16 @@ Vue 3、TypeScript API 文件、生成式列表页、表单状态、字典和日
 - Mapper 继承 `BaseMapperPlus<Entity, Vo>`。
 - 手写 Service 注入 Mapper 时使用具体业务短名；代码生成器模板按类名首字母小写命名，例如 `SysRoleMapper` 生成 `sysRoleMapper`。
 - Service 按场景返回 `PageResult` 或 `List<Vo>`。
-- 查询代码优先使用 `LambdaQueryWrapper`，复杂模块沿用既有 MPJ 联表风格。
-- 公共 Mapper 链式能力优先沿用 `LambdaCrudChainWrapper`、`LambdaQueryBuilder`、`LambdaQueryCondition` 的 `IfPresent` / `IfText` / `IfNotEmpty` 风格。
+- 查询代码优先使用 `QueryBuilder.lambda(...)` 构造 `LambdaQueryWrapper`，复杂模块沿用 `QueryBuilder.lambdaJoin(...)` 的 MPJ 联表风格。
+- 公共 Mapper 链式能力优先沿用 `QueryBuilder.lambda(...)`、`QueryBuilder.lambdaJoin(...)`、`LambdaCrudChainWrapper`、`LambdaQueryBuilder`、`LambdaJoinQueryBuilder`、`LambdaQueryCondition` 的 `IfPresent` / `IfText` / `IfNotEmpty` 风格。
 - 翻译能力优先沿用 `TranslationInterface` + `@TranslationType` + `@Translation`，批量翻译实现 `translationBatch`，避免退化成逐条查询。
 - JSON 响应增强优先沿用 `JsonFieldProcessor` 的 `collect` / `prepare` / `process` 三阶段模型。
+- Cloud 服务间调用优先通过 `ruoyi-api-*` 的 `RemoteXxxService` 契约和 `@DubboReference` / `@DubboService`，不要跨模块直接注入对方 mapper/service。
+- 涉及跨服务写入、文件上传、消息推送、工作流联动时检查是否需要 `@GlobalTransactional`、Dubbo 降级 `mock/stub`、数据权限上下文透传和 Nacos/Gateway 配置。
 - BO 使用 `@AutoMapper(target = Entity.class, reverseConvertGenerate = false)`。
 - VO 使用 `@AutoMapper(target = Entity.class)`。
 - 前端 API 路径与后端路由完全对应。
-- 前端列表页继续使用仓库里的 `proxy?.addDateRange`、`proxy?.$modal`、`proxy?.download`、`useDict`、`pagination` 等工具。
+- 前端列表页优先沿用 generator 模板里的 `useLoading`、`useSearchReset`、`useTableSelection`、`useFormDialog`、`useDateRangeQuery`、`modal.confirm`、`requestDownload`、`useDict`、`pagination` 等工具。
 
 ## 推荐提问方式
 
