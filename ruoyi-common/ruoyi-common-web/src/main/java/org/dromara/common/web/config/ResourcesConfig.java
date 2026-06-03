@@ -13,6 +13,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -37,6 +38,13 @@ public class ResourcesConfig implements WebMvcConfigurer {
                 return null;
             }
             return parse.toJdkDate();
+        });
+        registry.addConverter(String.class, LocalDateTime.class, source -> {
+            DateTime parse = DateUtil.parse(source);
+            if (ObjectUtils.isNull(parse)) {
+                return null;
+            }
+            return parse.toLocalDateTime();
         });
     }
 
