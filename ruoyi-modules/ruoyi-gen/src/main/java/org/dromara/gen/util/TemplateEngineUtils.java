@@ -9,6 +9,7 @@ import cn.hutool.extra.template.TemplateUtil;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
@@ -20,11 +21,13 @@ import org.dromara.gen.constant.GenConstants;
 import org.dromara.gen.domain.GenTable;
 import org.dromara.gen.domain.GenTableColumn;
 import org.dromara.gen.util.template.PathNamedTemplate;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
-
-import static org.dromara.gen.constant.GenConstants.TS_TYPES_TEMPLATE_PATH;
 
 /**
  * 模板引擎工具
@@ -51,6 +54,7 @@ public class TemplateEngineUtils {
     // 模板引擎
     private static final TemplateEngine TEMPLATE_ENGINE;
     private static final Map<String, PathNamedTemplate> TEMPLATE_MAPPER;
+    private static final ResourcePatternResolver RESOURCE_PATTERN_RESOLVER = new PathMatchingResourcePatternResolver();
 
     static {
         // 模板引擎初始化
@@ -87,6 +91,7 @@ public class TemplateEngineUtils {
         String functionName = genTable.getFunctionName();
 
         context.put("tplCategory", genTable.getTplCategory());
+        context.put("frontendType", resolveFrontendType(genTable.getFrontendType()));
         context.put("tableName", genTable.getTableName());
         context.put("functionName", StringUtils.isNotEmpty(functionName) ? functionName : "【请填写功能名称】");
         context.put("ClassName", genTable.getClassName());
@@ -140,9 +145,9 @@ public class TemplateEngineUtils {
     /**
      * 向树形模板上下文写入树字段相关变量。
      *
-     * @param context    模板上下文
-     * @param genTable   代码生成业务表对象
-     * @param paramsObj  已解析的 options 参数（避免重复解析）
+     * @param context   模板上下文
+     * @param genTable  代码生成业务表对象
+     * @param paramsObj 已解析的 options 参数（避免重复解析）
      */
     public static void setTreeContext(Dict context, GenTable genTable, Dict paramsObj) {
         String treeCode = getTreeCode(paramsObj);
@@ -188,6 +193,18 @@ public class TemplateEngineUtils {
      * @return 模板列表
      */
     public static List<PathNamedTemplate> getTemplateList(String tplCategory, String dsName) {
+        return getTemplateList(tplCategory, dsName, GenConstants.FRONTEND_TYPE_VUE);
+    }
+
+    /**
+     * 获取模板信息
+     *
+     * @param tplCategory  前端页面模板分类
+     * @param dsName       数据源名称
+     * @param frontendType 前端模板类型
+     * @return 模板列表
+     */
+    public static List<PathNamedTemplate> getTemplateList(String tplCategory, String dsName, String frontendType) {
         List<PathNamedTemplate> templates = new ArrayList<>();
         // 后端源码模板
         templates.add(TEMPLATE_MAPPER.get(GenConstants.JAVA_DOMAIN_TEMPLATE_PATH));
@@ -199,9 +216,9 @@ public class TemplateEngineUtils {
         templates.add(TEMPLATE_MAPPER.get(GenConstants.JAVA_CONTROLLER_TEMPLATE_PATH));
         // MyBatis MapperXML 模板
         templates.add(TEMPLATE_MAPPER.get(GenConstants.XML_MAPPER_TEMPLATE_PATH));
-        // 前端接口源码模板
-        templates.add(TEMPLATE_MAPPER.get(GenConstants.TS_API_TEMPLATE_PATH));
-        templates.add(TEMPLATE_MAPPER.get(TS_TYPES_TEMPLATE_PATH));
+        // 前端 API 与类型模板
+        templates.add(getTemplate(getFrontendApiTemplatePath(frontendType)));
+        templates.add(getTemplate(getFrontendTypesTemplatePath(frontendType)));
         // 数据库模板
         DataBaseType dataBaseType = DataBaseHelper.getDataBaseType(dsName);
         if (dataBaseType.isOracle()) {
@@ -214,13 +231,27 @@ public class TemplateEngineUtils {
             // 默认使用MySQL模板
             templates.add(TEMPLATE_MAPPER.get(GenConstants.SQL_MYSQL_TEMPLATE_PATH));
         }
-        // 前端页面源码模板
+        // 前端页面模板
         if (GenConstants.TPL_CRUD.equals(tplCategory)) {
-            templates.add(TEMPLATE_MAPPER.get(GenConstants.VUE_INDEX_TEMPLATE_PATH));
+            templates.add(getTemplate(getFrontendIndexTemplatePath(frontendType)));
         } else if (GenConstants.TPL_TREE.equals(tplCategory)) {
-            templates.add(TEMPLATE_MAPPER.get(GenConstants.VUE_INDEX_TREE_TEMPLATE_PATH));
+            templates.add(getTemplate(getFrontendIndexTreeTemplatePath(frontendType)));
         }
         return templates;
+    }
+
+    /**
+     * 获取模板，支持按前端模板类型动态加载 vm/{frontendType} 下的模板。
+     *
+     * @param templatePath 模板路径
+     * @return 带路径名的模板
+     */
+    private static PathNamedTemplate getTemplate(String templatePath) {
+        PathNamedTemplate template = TEMPLATE_MAPPER.get(templatePath);
+        if (ObjectUtil.isNotNull(template)) {
+            return template;
+        }
+        return PathNamedTemplate.form(TEMPLATE_ENGINE, templatePath);
     }
 
     /**
@@ -244,7 +275,7 @@ public class TemplateEngineUtils {
 
         String javaPath = PROJECT_PATH + "/" + StringUtils.replace(packageName, ".", "/");
         String mybatisPath = MYBATIS_PATH + "/" + moduleName;
-        String vuePath = "vue";
+        String frontendPath = getFrontendPath(genTable.getFrontendType());
         // templatePath
         // genFilePathFormat
         if (template.contains("domain.java.vm")) {
@@ -266,15 +297,110 @@ public class TemplateEngineUtils {
         } else if (template.contains("sql.vm")) {
             fileName = businessName + "Menu.sql";
         } else if (template.contains("api.ts.vm")) {
-            fileName = StringUtils.format("{}/api/{}/{}/index.ts", vuePath, moduleName, businessName);
+            fileName = StringUtils.format("{}/api/{}/{}/index.ts", frontendPath, moduleName, businessName);
         } else if (template.contains("types.ts.vm")) {
-            fileName = StringUtils.format("{}/api/{}/{}/types.ts", vuePath, moduleName, businessName);
-        } else if (template.contains("index.vue.vm")) {
-            fileName = StringUtils.format("{}/views/{}/{}/index.vue", vuePath, moduleName, businessName);
-        } else if (template.contains("index-tree.vue.vm")) {
-            fileName = StringUtils.format("{}/views/{}/{}/index.vue", vuePath, moduleName, businessName);
+            fileName = StringUtils.format("{}/api/{}/{}/types.ts", frontendPath, moduleName, businessName);
+        } else if (isFrontendPageTemplate(template, GenConstants.FRONTEND_INDEX_TEMPLATE_PREFIX)) {
+            fileName = StringUtils.format("{}/views/{}/{}/index.{}", frontendPath, moduleName, businessName,
+                getFrontendPageExtension(template, GenConstants.FRONTEND_INDEX_TEMPLATE_PREFIX));
+        } else if (isFrontendPageTemplate(template, GenConstants.FRONTEND_INDEX_TREE_TEMPLATE_PREFIX)) {
+            fileName = StringUtils.format("{}/views/{}/{}/index.{}", frontendPath, moduleName, businessName,
+                getFrontendPageExtension(template, GenConstants.FRONTEND_INDEX_TREE_TEMPLATE_PREFIX));
         }
         return fileName;
+    }
+
+    /**
+     * 获取前端输出目录。
+     *
+     * @param frontendType 前端模板类型
+     * @return 前端输出目录
+     */
+    private static String getFrontendPath(String frontendType) {
+        return resolveFrontendType(frontendType);
+    }
+
+    /**
+     * 获取前端页面文件扩展名。
+     *
+     * @param template       模板路径
+     * @param templatePrefix 模板文件名前缀
+     * @return 文件扩展名
+     */
+    private static String getFrontendPageExtension(String template, String templatePrefix) {
+        String fileName = getTemplateFileName(template);
+        return fileName.substring((templatePrefix + ".").length(), fileName.length() - ".vm".length());
+    }
+
+    private static String getFrontendApiTemplatePath(String frontendType) {
+        return getFrontendTemplatePath(frontendType, GenConstants.FRONTEND_API_TEMPLATE_NAME);
+    }
+
+    private static String getFrontendTypesTemplatePath(String frontendType) {
+        return getFrontendTemplatePath(frontendType, GenConstants.FRONTEND_TYPES_TEMPLATE_NAME);
+    }
+
+    private static String getFrontendIndexTemplatePath(String frontendType) {
+        return getFrontendPageTemplatePath(frontendType, GenConstants.FRONTEND_INDEX_TEMPLATE_PREFIX);
+    }
+
+    private static String getFrontendIndexTreeTemplatePath(String frontendType) {
+        return getFrontendPageTemplatePath(frontendType, GenConstants.FRONTEND_INDEX_TREE_TEMPLATE_PREFIX);
+    }
+
+    /**
+     * 解析前端模板类型。
+     *
+     * @param frontendType 前端模板类型
+     * @return 已规范化的模板目录名
+     */
+    private static String resolveFrontendType(String frontendType) {
+        String type = StringUtils.blankToDefault(frontendType, GenConstants.FRONTEND_TYPE_VUE);
+        if (!type.matches("[A-Za-z0-9_-]+")) {
+            throw new ServiceException("前端模板类型仅支持字母、数字、下划线和中划线");
+        }
+        return type;
+    }
+
+    private static String getFrontendTemplatePath(String frontendType, String templateName) {
+        return StringUtils.format("vm/{}/{}", resolveFrontendType(frontendType), templateName);
+    }
+
+    /**
+     * 获取前端页面模板路径，页面输出扩展名由模板文件名决定。
+     *
+     * @param frontendType   前端模板类型
+     * @param templatePrefix 页面模板文件名前缀
+     * @return 页面模板路径
+     */
+    private static String getFrontendPageTemplatePath(String frontendType, String templatePrefix) {
+        String type = resolveFrontendType(frontendType);
+        String pattern = StringUtils.format("classpath*:vm/{}/{}.*.vm", type, templatePrefix);
+        try {
+            Resource[] resources = RESOURCE_PATTERN_RESOLVER.getResources(pattern);
+            if (resources.length == 0) {
+                throw new ServiceException(StringUtils.format("未找到前端模板: vm/{}/{}.*.vm", type, templatePrefix));
+            }
+            return Arrays.stream(resources)
+                .map(Resource::getFilename)
+                .filter(StringUtils::isNotBlank)
+                .sorted()
+                .findFirst()
+                .map(fileName -> StringUtils.format("vm/{}/{}", type, fileName))
+                .orElseThrow(() -> new ServiceException(StringUtils.format("未找到前端模板: vm/{}/{}.*.vm", type, templatePrefix)));
+        } catch (IOException e) {
+            throw new ServiceException(StringUtils.format("读取前端模板失败: vm/{}/{}.*.vm", type, templatePrefix), e);
+        }
+    }
+
+    private static boolean isFrontendPageTemplate(String template, String templatePrefix) {
+        String fileName = getTemplateFileName(template);
+        return fileName.startsWith(templatePrefix + ".") && fileName.endsWith(".vm");
+    }
+
+    private static String getTemplateFileName(String template) {
+        int index = Math.max(template.lastIndexOf('/'), template.lastIndexOf('\\'));
+        return index >= 0 ? template.substring(index + 1) : template;
     }
 
     /**
@@ -328,14 +454,14 @@ public class TemplateEngineUtils {
     /**
      * 添加字典列表
      *
-     * @param dicts 字典列表
+     * @param dicts   字典列表
      * @param columns 列集合
      */
     public static void addDicts(Set<String> dicts, List<GenTableColumn> columns) {
         for (GenTableColumn column : columns) {
             if (!column.isSuperColumn() && StringUtils.isNotEmpty(column.getDictType()) && StringUtils.equalsAny(
                 column.getHtmlType(),
-                new String[] { GenConstants.HTML_SELECT, GenConstants.HTML_RADIO, GenConstants.HTML_CHECKBOX, GenConstants.HTML_SWITCH })) {
+                GenConstants.HTML_SELECT, GenConstants.HTML_RADIO, GenConstants.HTML_CHECKBOX, GenConstants.HTML_SWITCH)) {
                 dicts.add("'" + column.getDictType() + "'");
             }
         }
@@ -408,7 +534,7 @@ public class TemplateEngineUtils {
     /**
      * 获取树根节点值。
      *
-     * @param paramsObj 其他选项
+     * @param paramsObj        其他选项
      * @param treeParentColumn 父节点字段
      * @return 树根节点值
      */
@@ -423,6 +549,14 @@ public class TemplateEngineUtils {
         return defaultValue;
     }
 
+    /**
+     * 读取布尔类型生成选项。
+     *
+     * @param paramsObj    生成选项
+     * @param key          选项键
+     * @param defaultValue 默认值
+     * @return 选项值
+     */
     private static boolean getBooleanOption(Dict paramsObj, String key, boolean defaultValue) {
         if (CollUtil.isEmpty(paramsObj) || !paramsObj.containsKey(key)) {
             return defaultValue;
@@ -430,6 +564,13 @@ public class TemplateEngineUtils {
         return Convert.toBool(paramsObj.get(key), defaultValue);
     }
 
+    /**
+     * 根据字段名查找业务表字段。
+     *
+     * @param genTable 业务表
+     * @param field    字段名称或 Java 属性名
+     * @return 业务表字段
+     */
     private static GenTableColumn getColumn(GenTable genTable, String field) {
         if (StringUtils.isBlank(field) || CollUtil.isEmpty(genTable.getColumns())) {
             return null;
@@ -442,6 +583,13 @@ public class TemplateEngineUtils {
         return null;
     }
 
+    /**
+     * 根据字段配置查找业务表字段列表。
+     *
+     * @param genTable    业务表
+     * @param fieldValues 字段配置值
+     * @return 业务表字段列表
+     */
     private static List<GenTableColumn> getColumns(GenTable genTable, Object fieldValues) {
         List<String> fields = new ArrayList<>();
         if (fieldValues instanceof Collection<?> collection) {
@@ -459,6 +607,13 @@ public class TemplateEngineUtils {
         return columns;
     }
 
+    /**
+     * 转换为 Java 字面量。
+     *
+     * @param column 业务表字段
+     * @param value  字段值
+     * @return Java 字面量
+     */
     private static String getJavaLiteral(GenTableColumn column, String value) {
         if (ObjectUtil.isNull(column) || StringUtils.isBlank(value)) {
             return "null";
@@ -472,6 +627,13 @@ public class TemplateEngineUtils {
         return "\"" + value + "\"";
     }
 
+    /**
+     * 转换为 TypeScript 字面量。
+     *
+     * @param column 业务表字段
+     * @param value  字段值
+     * @return TypeScript 字面量
+     */
     private static String getTsLiteral(GenTableColumn column, String value) {
         if (ObjectUtil.isNull(column) || StringUtils.isBlank(value)) {
             return "undefined";

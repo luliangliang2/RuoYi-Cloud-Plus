@@ -81,6 +81,11 @@ public interface GenConstants {
     String SORT_FIELD = "sortField";
 
     /**
+     * 默认前端模板类型，对应 vm/vue 目录。
+     */
+    String FRONTEND_TYPE_VUE = "vue";
+
+    /**
      * 树根节点值
      */
     String TREE_ROOT_VALUE = "treeRootValue";
@@ -267,12 +272,11 @@ public interface GenConstants {
     String JAVA_CONTROLLER_TEMPLATE_PATH = "vm/java/controller.java.vm";
     // MyBatis MapperXML 模板
     String XML_MAPPER_TEMPLATE_PATH = "vm/xml/mapper.xml.vm";
-    // 前端接口源码模板
-    String TS_API_TEMPLATE_PATH = "vm/ts/api.ts.vm";
-    String TS_TYPES_TEMPLATE_PATH = "vm/ts/types.ts.vm";
-    // 前端页面源码模板
-    String VUE_INDEX_TEMPLATE_PATH = "vm/vue/index.vue.vm";
-    String VUE_INDEX_TREE_TEMPLATE_PATH = "vm/vue/index-tree.vue.vm";
+    // 前端源码模板
+    String FRONTEND_API_TEMPLATE_NAME = "api.ts.vm";
+    String FRONTEND_TYPES_TEMPLATE_NAME = "types.ts.vm";
+    String FRONTEND_INDEX_TEMPLATE_PREFIX = "index";
+    String FRONTEND_INDEX_TREE_TEMPLATE_PREFIX = "index-tree";
     // 数据库SQL模板
     String SQL_ORACLE_TEMPLATE_PATH = "vm/sql/oracle.sql.vm";
     String SQL_POSTGRES_TEMPLATE_PATH = "vm/sql/postgres.sql.vm";
@@ -280,7 +284,7 @@ public interface GenConstants {
     String SQL_MYSQL_TEMPLATE_PATH = "vm/sql/mysql.sql.vm";
 
     /**
-     * 所有模板路径集合
+     * 固定模板路径集合，前端模板按 frontendType 动态解析。
      */
     Set<String> TEMPLATE_PATHS = CollUtil.newHashSet(
         JAVA_DOMAIN_TEMPLATE_PATH
@@ -291,10 +295,6 @@ public interface GenConstants {
         , JAVA_SERVICE_IMPL_TEMPLATE_PATH
         , JAVA_CONTROLLER_TEMPLATE_PATH
         , XML_MAPPER_TEMPLATE_PATH
-        , TS_API_TEMPLATE_PATH
-        , TS_TYPES_TEMPLATE_PATH
-        , VUE_INDEX_TEMPLATE_PATH
-        , VUE_INDEX_TREE_TEMPLATE_PATH
         , SQL_ORACLE_TEMPLATE_PATH
         , SQL_POSTGRES_TEMPLATE_PATH
         , SQL_SQLSERVER_TEMPLATE_PATH

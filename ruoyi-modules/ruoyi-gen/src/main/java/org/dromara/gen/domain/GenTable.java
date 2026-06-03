@@ -1,16 +1,15 @@
 package org.dromara.gen.domain;
 
-import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import org.dromara.common.core.utils.StringUtils;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
+import org.dromara.gen.constant.GenConstants;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.mybatis.core.domain.BaseEntity;
-import org.dromara.gen.constant.GenConstants;
 
 import java.util.HashMap;
 import java.util.List;
@@ -61,6 +60,11 @@ public class GenTable extends BaseEntity {
      * 使用的模板（crud单表操作 tree树表操作）
      */
     private String tplCategory;
+
+    /**
+     * 前端模板类型，对应 vm 下的模板目录
+     */
+    private String frontendType;
 
     /**
      * 生成包路径

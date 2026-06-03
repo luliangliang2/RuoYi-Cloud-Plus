@@ -8,7 +8,6 @@ import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.dynamic.datasource.annotation.DS;
 import com.baomidou.dynamic.datasource.annotation.DSTransactional;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -22,7 +21,6 @@ import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.core.utils.file.FileUtils;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.mybatis.utils.IdGeneratorUtil;
@@ -38,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -55,7 +52,7 @@ import java.util.zip.ZipOutputStream;
 @Service
 public class GenTableServiceImpl implements IGenTableService {
 
-    private final GenTableMapper genTableMapper;
+    private final GenTableMapper tableMapper;
     private final GenTableColumnMapper genTableColumnMapper;
 
     private static final String[] TABLE_IGNORE = new String[]{"sj_", "flow_", "gen_"};
@@ -68,9 +65,10 @@ public class GenTableServiceImpl implements IGenTableService {
      */
     @Override
     public List<GenTableColumn> selectGenTableColumnListByTableId(Long tableId) {
-        return genTableColumnMapper.selectList(new LambdaQueryWrapper<GenTableColumn>()
+        return genTableColumnMapper.lambda()
             .eq(GenTableColumn::getTableId, tableId)
-            .orderByAsc(GenTableColumn::getSort));
+            .orderByAsc(GenTableColumn::getSort)
+            .list();
     }
 
     /**
@@ -95,7 +93,7 @@ public class GenTableServiceImpl implements IGenTableService {
      */
     @Override
     public PageResult<GenTable> selectPageGenTableList(GenTable genTable, PageQuery pageQuery) {
-        Page<GenTable> page = genTableMapper.selectPage(pageQuery.build(), this.buildGenTableQueryWrapper(genTable));
+        Page<GenTable> page = tableMapper.selectPage(pageQuery.build(), this.buildGenTableQueryWrapper(genTable));
         return PageResult.build(page.getRecords(), page.getTotal());
     }
 
@@ -136,7 +134,7 @@ public class GenTableServiceImpl implements IGenTableService {
         if (CollUtil.isEmpty(tablesMap)) {
             return PageResult.build();
         }
-        List<String> tableNames = genTableMapper.selectTableNameList(genTable.getDataName());
+        List<String> tableNames = tableMapper.selectTableNameList(genTable.getDataName());
         String[] tableArrays;
         if (CollUtil.isNotEmpty(tableNames)) {
             tableArrays = tableNames.toArray(new String[0]);
@@ -232,7 +230,7 @@ public class GenTableServiceImpl implements IGenTableService {
         normalizeColumnOptions(genTable.getColumns());
         String options = JsonUtils.toJsonString(genTable.getParams());
         genTable.setOptions(options);
-        int row = genTableMapper.updateById(genTable);
+        int row = tableMapper.updateById(genTable);
         if (row > 0) {
             genTableColumnMapper.updateBatchById(genTable.getColumns());
         }
@@ -247,8 +245,10 @@ public class GenTableServiceImpl implements IGenTableService {
     @Override
     public void deleteGenTableByIds(Long[] tableIds) {
         List<Long> ids = Arrays.asList(tableIds);
-        genTableMapper.deleteByIds(ids);
-        genTableColumnMapper.delete(new LambdaQueryWrapper<GenTableColumn>().in(GenTableColumn::getTableId, ids));
+        tableMapper.deleteByIds(ids);
+        genTableColumnMapper.lambda()
+            .in(GenTableColumn::getTableId, ids)
+            .deleteCount();
     }
 
     /**
@@ -265,7 +265,7 @@ public class GenTableServiceImpl implements IGenTableService {
                 String tableName = table.getTableName();
                 GenUtils.initTable(table);
                 table.setDataName(dataName);
-                int row = genTableMapper.insert(table);
+                int row = tableMapper.insert(table);
                 if (row > 0) {
                     // 保存列信息
                     List<GenTableColumn> genTableColumns = SpringUtils.getAopProxy(this).selectDbTableColumnsByName(tableName, dataName);
@@ -453,10 +453,17 @@ public class GenTableServiceImpl implements IGenTableService {
         table.setMenuIds(menuIds);
         setPkColumn(table);
         Dict context = TemplateEngineUtils.buildContext(table);
-        List<PathNamedTemplate> templates = TemplateEngineUtils.getTemplateList(table.getTplCategory(), table.getDataName());
+        List<PathNamedTemplate> templates = TemplateEngineUtils.getTemplateList(table.getTplCategory(), table.getDataName(), table.getFrontendType());
         return new RenderContext(table, context, templates);
     }
 
+    /**
+     * 模板渲染上下文。
+     *
+     * @param table     生成表信息
+     * @param context   模板上下文
+     * @param templates 待渲染模板
+     */
     private record RenderContext(GenTable table, Dict context, List<PathNamedTemplate> templates) {
     }
 
@@ -481,6 +488,11 @@ public class GenTableServiceImpl implements IGenTableService {
         }
     }
 
+    /**
+     * 校验生成选项中配置的字段是否存在。
+     *
+     * @param genTable 业务表信息
+     */
     private void validateOptionColumns(GenTable genTable) {
         Map<String, Object> params = genTable.getParams();
         if (CollUtil.isEmpty(params) || CollUtil.isEmpty(genTable.getColumns())) {
@@ -503,6 +515,13 @@ public class GenTableServiceImpl implements IGenTableService {
         }
     }
 
+    /**
+     * 校验单个选项字段。
+     *
+     * @param validFields 有效字段集合
+     * @param field       待校验字段
+     * @param label       字段显示名称
+     */
     private void validateOptionField(Set<String> validFields, Object field, String label) {
         if (ObjectUtil.isNull(field)) {
             return;
@@ -516,6 +535,11 @@ public class GenTableServiceImpl implements IGenTableService {
         }
     }
 
+    /**
+     * 规范化字段扩展配置。
+     *
+     * @param columns 表字段列表
+     */
     private void normalizeColumnOptions(List<GenTableColumn> columns) {
         if (CollUtil.isEmpty(columns)) {
             return;
@@ -534,7 +558,7 @@ public class GenTableServiceImpl implements IGenTableService {
      * @return 包含字段集合的业务表实体
      */
     private GenTable getGenTable(Long tableId) {
-        GenTable table = genTableMapper.selectById(tableId);
+        GenTable table = tableMapper.selectById(tableId);
         if (ObjectUtil.isNull(table)) {
             throw new ServiceException("业务表不存在");
         }
@@ -553,10 +577,11 @@ public class GenTableServiceImpl implements IGenTableService {
             return tables;
         }
         List<Long> tableIds = StreamUtils.toList(tables, GenTable::getTableId);
-        List<GenTableColumn> columns = genTableColumnMapper.selectList(new LambdaQueryWrapper<GenTableColumn>()
+        List<GenTableColumn> columns = genTableColumnMapper.lambda()
             .in(GenTableColumn::getTableId, tableIds)
             .orderByAsc(GenTableColumn::getTableId)
-            .orderByAsc(GenTableColumn::getSort));
+            .orderByAsc(GenTableColumn::getSort)
+            .list();
         Map<Long, List<GenTableColumn>> columnMap = StreamUtils.groupByKey(columns, GenTableColumn::getTableId);
         tables.forEach(table -> table.setColumns(columnMap.getOrDefault(table.getTableId(), new ArrayList<>())));
         return tables;
@@ -626,4 +651,3 @@ public class GenTableServiceImpl implements IGenTableService {
     }
 
 }
-

@@ -1086,6 +1086,7 @@ create table if not exists gen_table
     sub_table_fk_name varchar(64)   default ''::varchar,
     class_name        varchar(100)  default ''::varchar,
     tpl_category      varchar(200)  default 'crud'::varchar,
+    frontend_type     varchar(30)   default 'vue'::varchar,
     package_name      varchar(100)  default null::varchar,
     module_name       varchar(30)   default null::varchar,
     business_name     varchar(30)   default null::varchar,
@@ -1112,6 +1113,7 @@ comment on column gen_table.sub_table_name is '关联子表的表名';
 comment on column gen_table.sub_table_fk_name is '子表关联的外键名';
 comment on column gen_table.class_name is '实体类名称';
 comment on column gen_table.tpl_category is '使用的模板（CRUD单表操作 TREE树表操作）';
+comment on column gen_table.frontend_type is '前端模板类型';
 comment on column gen_table.package_name is '生成包路径';
 comment on column gen_table.module_name is '生成模块名';
 comment on column gen_table.business_name is '生成业务名';

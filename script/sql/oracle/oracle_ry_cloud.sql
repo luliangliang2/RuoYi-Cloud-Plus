@@ -1083,6 +1083,7 @@ create table gen_table (
   sub_table_fk_name varchar2(64)      default null,
   class_name        varchar2(100)    default '',
   tpl_category      varchar2(200)    default 'crud',
+  frontend_type     varchar2(30)     default 'vue',
   package_name      varchar2(100),
   module_name       varchar2(30),
   business_name     varchar2(30),
@@ -1110,6 +1111,7 @@ comment on column gen_table.sub_table_name    is '关联子表的表名';
 comment on column gen_table.sub_table_fk_name is '子表关联的外键名';
 comment on column gen_table.class_name        is '实体类名称';
 comment on column gen_table.tpl_category      is '使用的模板（crud单表操作 tree树表操作）';
+comment on column gen_table.frontend_type     is '前端模板类型';
 comment on column gen_table.package_name      is '生成包路径';
 comment on column gen_table.module_name       is '生成模块名';
 comment on column gen_table.business_name     is '生成业务名';
