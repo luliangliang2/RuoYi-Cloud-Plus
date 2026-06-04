@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.0.42
+    image: mysql:8.4.9
     container_name: mysql
     environment:
       # 时区上海
@@ -17,8 +17,6 @@ services:
       # 配置挂载
       - /docker/mysql/conf/:/etc/mysql/conf.d/
     command:
-      # 将mysql8.0默认密码策略 修改为 原先 策略 (mysql8.0对其默认策略做了更改 会导致密码无法匹配)
-      --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
       --explicit_defaults_for_timestamp=true
@@ -27,7 +25,7 @@ services:
     network_mode: "host"
 
   nacos:
-    image: nacos/nacos-server:v3.1.1
+    image: nacos/nacos-server:v3.2.2
     container_name: nacos
     ports:
       - "8848:8848"
@@ -47,7 +45,7 @@ services:
     network_mode: "host"
 
   redis:
-    image: redis:7.2.8
+    image: redis:8.6.3
     container_name: redis
     ports:
       - "6379:6379"
@@ -65,7 +63,7 @@ services:
 
   minio:
     # pgsty 开源社区 fork 重新维护的最新版 minio
-    image: pgsty/minio:RELEASE.2026-02-14T12-00-00Z
+    image: pgsty/minio:RELEASE.2026-04-17T00-00-00Z
     container_name: minio
     ports:
       # api 端口
@@ -115,7 +113,7 @@ services:
     network_mode: "host"
 
   nginx-web:
-    image: nginx:1.22.1
+    image: nginx:1.31.1
     container_name: nginx-web
     environment:
       # 时区上海
@@ -319,7 +317,7 @@ services:
 #################################################################################################
 
   elasticsearch:
-    image: elasticsearch:7.17.6
+    image: elasticsearch:8.19.16
     container_name: elasticsearch
     ports:
       - "9200:9200"
@@ -331,6 +329,8 @@ services:
       cluster.name: elasticsearch
       # 以单一节点模式启动
       discovery.type: single-node
+      # 默认关闭认证 便于本地联调; 如开启 xpack.security.enabled 需手动初始化 Kibana/Logstash/SkyWalking 账号密码
+      xpack.security.enabled: "false"
       ES_JAVA_OPTS: "-Xms512m -Xmx512m"
     volumes:
       - /docker/elk/elasticsearch/plugins:/usr/share/elasticsearch/plugins
@@ -339,7 +339,7 @@ services:
     network_mode: "host"
 
   kibana:
-    image: kibana:7.17.6
+    image: kibana:8.19.16
     container_name: kibana
     ports:
       - "5601:5601"
@@ -358,7 +358,7 @@ services:
     network_mode: "host"
 
   logstash:
-    image: logstash:7.17.6
+    image: logstash:8.19.16
     container_name: logstash
     ports:
       - "4560:4560"
@@ -373,7 +373,7 @@ services:
     network_mode: "host"
 
   rmqnamesrv:
-    image: apache/rocketmq:5.2.0
+    image: apache/rocketmq:5.5.0
     container_name: rmqnamesrv
     ports:
       - "9876:9876"
@@ -385,7 +385,7 @@ services:
     network_mode: "host"
 
   rmqbroker1:
-    image: apache/rocketmq:5.2.0
+    image: apache/rocketmq:5.5.0
     container_name: rmqbroker1
     ports:
       - "10911:10911"
@@ -395,11 +395,11 @@ services:
       JAVA_OPT: -server -Xms512M -Xmx512M
       NAMESRV_ADDR: 127.0.0.1:9876
     # --enable-proxy 开启broker与proxy共用模式 生产部署建议将proxy单独部署
-    command: sh mqbroker --enable-proxy -c /home/rocketmq/rocketmq-5.2.0/conf/broker.conf
+    command: sh mqbroker --enable-proxy -c /home/rocketmq/rocketmq-5.5.0/conf/broker.conf
     depends_on:
       - rmqnamesrv
     volumes:
-      - /docker/rocketmq/broker1/conf/broker.conf:/home/rocketmq/rocketmq-5.2.0/conf/broker.conf
+      - /docker/rocketmq/broker1/conf/broker.conf:/home/rocketmq/rocketmq-5.5.0/conf/broker.conf
       - /docker/rocketmq/broker1/logs:/home/rocketmq/logs/rocketmqlogs
       - /docker/rocketmq/broker1/store:/home/rocketmq/store
     privileged: true
@@ -432,7 +432,7 @@ services:
     network_mode: "host"
 
   kafka:
-    image: apache/kafka:3.9.1
+    image: apache/kafka:4.3.0
     container_name: kafka
     ports:
       - "9092:9092"
@@ -459,7 +459,7 @@ services:
     network_mode: "host"
 
   sky-oap:
-    image: apache/skywalking-oap-server:9.7.0
+    image: apache/skywalking-oap-server:10.4.0
     container_name: sky-oap
     ports:
       - "11800:11800"
@@ -476,7 +476,7 @@ services:
     network_mode: "host"
 
   sky-ui:
-    image: apache/skywalking-ui:9.7.0
+    image: apache/skywalking-ui:10.4.0
     container_name: sky-ui
     ports:
       - "18080:18080"
@@ -489,7 +489,7 @@ services:
     network_mode: "host"
 
   prometheus:
-    image: prom/prometheus:v2.40.1
+    image: prom/prometheus:v3.12.0
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -498,7 +498,7 @@ services:
     network_mode: "host"
 
   grafana:
-    image: grafana/grafana:9.2.4
+    image: grafana/grafana:13.0.2
     container_name: grafana
     environment:
       TZ: Asia/Shanghai

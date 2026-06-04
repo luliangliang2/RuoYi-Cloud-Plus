@@ -60,7 +60,7 @@
         <!-- mqtt客户端 -->
         <mica-mqtt.version>2.5.11</mica-mqtt.version>
         <!-- mq配置 -->
-        <rocketmq.version>2.3.4</rocketmq.version>
+        <rocketmq.version>2.3.5</rocketmq.version>
         <!-- Spring AI 2.0 预览版，正式版发布后仅需调整此版本号 -->
         <spring-ai.version>2.0.0-M8</spring-ai.version>
 
