@@ -57,7 +57,7 @@ public class EncryptorAutoConfiguration {
     /**
      * 创建加密字段处理器。
      *
-     * @param encryptorManager 加解密管理器
+     * @param encryptorManager      加解密管理器
      * @param encryptContextFactory 加密上下文工厂
      * @return 加密字段处理器
      */

@@ -3,11 +3,11 @@ package org.dromara.auth.listener;
 import cn.dev33.satoken.listener.SaTokenListener;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.auth.event.UserLoginSuccessEvent;
 import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.redis.utils.RedisUtils;
-import org.dromara.auth.event.UserLoginSuccessEvent;
 import org.springframework.stereotype.Component;
 
 /**

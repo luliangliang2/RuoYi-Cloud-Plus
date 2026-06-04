@@ -1,7 +1,6 @@
 package org.dromara.system.api;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**

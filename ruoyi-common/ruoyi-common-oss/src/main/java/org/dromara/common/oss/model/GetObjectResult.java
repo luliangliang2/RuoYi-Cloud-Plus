@@ -19,21 +19,21 @@ import java.util.Map;
  * @author 秋辞未寒
  */
 public record GetObjectResult(
-        String key,
-        String eTag,
-        LocalDateTime lastModified,
-        long size,
-        String contentType,
-        String contentDisposition,
-        String contentRange,
-        String contentEncoding,
-        String contentLanguage,
-        Map<String, String> metadata
+    String key,
+    String eTag,
+    LocalDateTime lastModified,
+    long size,
+    String contentType,
+    String contentDisposition,
+    String contentRange,
+    String contentEncoding,
+    String contentLanguage,
+    Map<String, String> metadata
 ) {
 
     public static GetObjectResult form(String key, String eTag, LocalDateTime lastModified, long size
-            , String contentType, String contentDisposition, String contentRange, String contentEncoding, String contentLanguage
-            , Map<String, String> metadata) {
+        , String contentType, String contentDisposition, String contentRange, String contentEncoding, String contentLanguage
+        , Map<String, String> metadata) {
         return new GetObjectResult(key, eTag, lastModified, size, contentType, contentDisposition, contentRange, contentEncoding, contentLanguage, metadata);
     }
 

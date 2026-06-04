@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Rabbit回调
+ *
  * @author JC
  */
 

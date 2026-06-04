@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.SystemConstants;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
+import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.web.core.BaseController;
 import org.dromara.system.domain.SysMenu;
@@ -152,15 +152,6 @@ public class SysMenuController extends BaseController {
     }
 
     /**
-     * 角色菜单列表树信息
-     *
-     * @param checkedKeys 选中菜单列表
-     * @param menus       菜单下拉树结构列表
-     */
-    public record MenuTreeSelectVo(List<Long> checkedKeys, List<Tree<Long>> menus) {
-    }
-
-    /**
      * 批量级联删除菜单
      *
      * @param menuIds 菜单ID串
@@ -176,6 +167,15 @@ public class SysMenuController extends BaseController {
         }
         menuService.deleteMenuById(menuIdList);
         return R.ok();
+    }
+
+    /**
+     * 角色菜单列表树信息
+     *
+     * @param checkedKeys 选中菜单列表
+     * @param menus       菜单下拉树结构列表
+     */
+    public record MenuTreeSelectVo(List<Long> checkedKeys, List<Tree<Long>> menus) {
     }
 
 }

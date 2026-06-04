@@ -25,6 +25,8 @@ import java.util.Map;
 @Component
 public class MyBatisDataSourceMonitor implements DataSourceMonitor {
 
+    private final Map<String, String> features = new HashMap<>();
+
     /**
      * 初始化 anyline 与动态数据源联动所需的元数据解析策略。
      */
@@ -34,8 +36,6 @@ public class MyBatisDataSourceMonitor implements DataSourceMonitor {
         // 禁用缓存
         ConfigTable.METADATA_CACHE_SCOPE = 0;
     }
-
-    private final Map<String, String> features = new HashMap<>();
 
     /**
      * 数据源特征 用来定准 adapter 包含数据库或JDBC协议关键字<br/>
@@ -82,9 +82,9 @@ public class MyBatisDataSourceMonitor implements DataSourceMonitor {
      */
     @Override
     public String key(DataRuntime runtime, Object datasource) {
-        if(datasource instanceof JdbcTemplate jdbc){
+        if (datasource instanceof JdbcTemplate jdbc) {
             DataSource ds = jdbc.getDataSource();
-            if(ds instanceof DynamicRoutingDataSource){
+            if (ds instanceof DynamicRoutingDataSource) {
                 return DynamicDataSourceContextHolder.peek();
             }
         }

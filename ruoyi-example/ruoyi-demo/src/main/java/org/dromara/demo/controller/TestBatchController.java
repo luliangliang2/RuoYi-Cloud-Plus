@@ -1,9 +1,9 @@
 package org.dromara.demo.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.web.core.BaseController;
 import org.dromara.demo.domain.TestDemo;
-import lombok.RequiredArgsConstructor;
 import org.dromara.demo.mapper.TestDemoMapper;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;

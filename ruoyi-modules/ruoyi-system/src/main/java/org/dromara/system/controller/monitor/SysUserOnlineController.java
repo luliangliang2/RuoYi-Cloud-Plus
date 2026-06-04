@@ -6,16 +6,16 @@ import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.ThreadUtils;
-import org.dromara.common.redis.annotation.RepeatSubmit;
-import org.dromara.common.web.core.BaseController;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.redis.utils.RedisUtils;
+import org.dromara.common.web.core.BaseController;
 import org.dromara.system.api.domain.SysUserOnline;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +46,7 @@ public class SysUserOnlineController extends BaseController {
         // 获取所有未过期的 token
         Collection<String> keys = RedisUtils.keys(CacheNames.ONLINE_TOKEN_KEY + "*");
         List<Supplier<SysUserOnline>> suppliers = keys.stream().map(key -> (Supplier<SysUserOnline>) () -> {
-            String token = StringUtils.substringAfterLast(key, ":");
+            String token = StringUtils.substringAfterLast(key, StringUtils.COLON);
             // 如果已经过期则跳过
             if (StpUtil.stpLogic.getTokenActiveTimeoutByToken(token) < -1) {
                 return null;

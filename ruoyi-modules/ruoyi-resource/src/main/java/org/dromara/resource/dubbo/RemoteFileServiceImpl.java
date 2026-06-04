@@ -90,7 +90,7 @@ public class RemoteFileServiceImpl implements RemoteFileService {
      * @return 列表
      */
     @Override
-    public List<RemoteFile> selectByIds(String ossIds){
+    public List<RemoteFile> selectByIds(String ossIds) {
         List<SysOssVo> sysOssVos = sysOssService.listByIds(StringUtils.splitTo(ossIds, Convert::toLong));
         return MapstructUtils.convert(sysOssVos, RemoteFile.class);
     }

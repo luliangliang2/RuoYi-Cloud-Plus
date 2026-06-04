@@ -23,22 +23,22 @@
 
     <dependencies>
         <!-- ELK 日志收集 -->
-<!--        <dependency>-->
-<!--            <groupId>org.dromara</groupId>-->
-<!--            <artifactId>ruoyi-common-logstash</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.dromara</groupId>-->
+        <!--            <artifactId>ruoyi-common-logstash</artifactId>-->
+        <!--        </dependency>-->
 
         <!-- skywalking 日志收集 -->
-<!--        <dependency>-->
-<!--            <groupId>org.dromara</groupId>-->
-<!--            <artifactId>ruoyi-common-skylog</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.dromara</groupId>-->
+        <!--            <artifactId>ruoyi-common-skylog</artifactId>-->
+        <!--        </dependency>-->
 
         <!-- prometheus 监控 -->
-<!--        <dependency>-->
-<!--            <groupId>org.dromara</groupId>-->
-<!--            <artifactId>ruoyi-common-prometheus</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.dromara</groupId>-->
+        <!--            <artifactId>ruoyi-common-prometheus</artifactId>-->
+        <!--        </dependency>-->
     </dependencies>
 
 </project>

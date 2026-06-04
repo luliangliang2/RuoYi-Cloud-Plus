@@ -133,8 +133,8 @@ public class SysMessageServiceImpl implements ISysMessageService {
             .ge(SysMessage::getCreateTime, LocalDateTime.now().minusDays(BOX_DAYS))
             .and(wrapper ->
                 wrapper.eq(SysMessage::getSendUserIds, GLOBAL_USER_IDS)
-                .or()
-                .findInSet(userId, SysMessage::getSendUserIds)
+                    .or()
+                    .findInSet(userId, SysMessage::getSendUserIds)
             )
             .orderByDesc(SysMessage::getCreateTime, SysMessage::getMessageId)
             .list(new Page<>(1, BOX_LIMIT, false));

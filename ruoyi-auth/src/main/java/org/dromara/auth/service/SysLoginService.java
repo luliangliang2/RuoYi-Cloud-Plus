@@ -1,11 +1,11 @@
 package org.dromara.auth.service;
 
 import cn.dev33.satoken.exception.NotLoginException;
-import cn.hutool.crypto.digest.BCrypt;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.lock.annotation.Lock4j;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,9 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.auth.form.RegisterBody;
 import org.dromara.auth.properties.CaptchaProperties;
 import org.dromara.auth.properties.UserPasswordProperties;
-import org.dromara.common.core.constant.*;
+import org.dromara.common.core.constant.CacheNames;
+import org.dromara.common.core.constant.Constants;
+import org.dromara.common.core.constant.GlobalConstants;
 import org.dromara.common.core.enums.LoginType;
 import org.dromara.common.core.enums.UserType;
 import org.dromara.common.core.exception.ServiceException;

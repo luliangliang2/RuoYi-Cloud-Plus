@@ -220,7 +220,7 @@ public final class MailBuilder {
      * 设置正文。
      *
      * @param content 正文
-     * @param html 是否 HTML
+     * @param html    是否 HTML
      * @return 当前构建器
      */
     public MailBuilder content(String content, boolean html) {
@@ -232,7 +232,7 @@ public final class MailBuilder {
     /**
      * 添加内联图片。
      *
-     * @param cid 图片 cid
+     * @param cid         图片 cid
      * @param inputStream 图片输入流
      * @return 当前构建器
      */

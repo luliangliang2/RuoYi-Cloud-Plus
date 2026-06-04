@@ -1,7 +1,7 @@
 package org.dromara.workflow.service;
 
-import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.mybatis.core.page.PageQuery;
 import org.dromara.system.api.domain.vo.RemoteUserVo;
 import org.dromara.warm.flow.core.entity.Node;
 import org.dromara.warm.flow.core.entity.Task;
@@ -111,8 +111,8 @@ public interface IFlwTaskService {
     /**
      * 获取可驳回的前置节点
      *
-     * @param taskId       任务id
-     * @param nowNodeCode  当前节点
+     * @param taskId      任务id
+     * @param nowNodeCode 当前节点
      * @return 结果
      */
     List<Node> getBackTaskNode(Long taskId, String nowNodeCode);

@@ -2,6 +2,7 @@ package org.dromara.system.api.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dromara.common.core.utils.StringUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -146,7 +147,7 @@ public class LoginUser implements Serializable {
         if (userId == null) {
             throw new IllegalArgumentException("用户ID不能为空");
         }
-        return userType + ":" + userId;
+        return userType + StringUtils.COLON + userId;
     }
 
 }

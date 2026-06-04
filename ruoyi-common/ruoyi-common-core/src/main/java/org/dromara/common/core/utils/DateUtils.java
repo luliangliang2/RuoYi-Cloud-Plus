@@ -2,6 +2,8 @@ package org.dromara.common.core.utils;
 
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.dromara.common.core.enums.FormatsType;
 import org.dromara.common.core.exception.ServiceException;
@@ -19,15 +21,16 @@ import java.util.concurrent.TimeUnit;
  *
  * @author ruoyi
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
+    /**
+     * 日期解析格式集合。
+     */
     private static final String[] PARSE_PATTERNS = {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM",
         "yyyy/MM/dd", "yyyy/MM/dd HH:mm:ss", "yyyy/MM/dd HH:mm", "yyyy/MM",
-        "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm", "yyyy.MM"};
-
-    @Deprecated
-    private DateUtils() {
-    }
+        "yyyy.MM.dd", "yyyy.MM.dd HH:mm:ss", "yyyy.MM.dd HH:mm", "yyyy.MM"
+    };
 
     /**
      * 获取当前日期和时间
@@ -124,7 +127,7 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     }
 
     /**
-     * 将指定 LocalDateTime 格式化为 YYYY-MM-DD HH:MM:SS 格式的字符串
+     * 将 LocalDateTime 格式化为 YYYY-MM-DD HH:MM:SS 格式的字符串
      *
      * @param dateTime 要格式化的 LocalDateTime 对象
      * @return 格式化后的日期时间字符串
@@ -264,12 +267,11 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @return 时间差字符串，格式为 "x天 x小时 x分钟 x秒"，若为 0 则不显示
      */
     public static String getTimeDifference(LocalDateTime endDate, LocalDateTime nowDate) {
-        Duration duration = Duration.between(nowDate, endDate);
-        long day = duration.toDays();
-        long hour = duration.toHours() % 24;
-        long min = duration.toMinutes() % 60;
-        long sec = duration.toSeconds() % 60;
-        // 构建时间差字符串，条件是值不为0才显示
+        long diffInMillis = java.time.Duration.between(nowDate, endDate).toMillis();
+        long day = TimeUnit.MILLISECONDS.toDays(diffInMillis);
+        long hour = TimeUnit.MILLISECONDS.toHours(diffInMillis) % 24;
+        long min = TimeUnit.MILLISECONDS.toMinutes(diffInMillis) % 60;
+        long sec = TimeUnit.MILLISECONDS.toSeconds(diffInMillis) % 60;
         StringBuilder result = new StringBuilder();
         if (day > 0) {
             result.append(String.format("%d天 ", day));

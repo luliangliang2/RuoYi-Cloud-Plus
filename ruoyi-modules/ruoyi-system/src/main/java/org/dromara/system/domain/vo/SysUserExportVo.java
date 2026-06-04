@@ -1,8 +1,8 @@
 package org.dromara.system.domain.vo;
 
-import org.apache.fesod.sheet.annotation.ExcelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 import org.dromara.common.excel.annotation.ExcelDictFormat;
 import org.dromara.common.excel.convert.ExcelDictConvert;
 import org.dromara.system.listener.DeptExcelConverter;

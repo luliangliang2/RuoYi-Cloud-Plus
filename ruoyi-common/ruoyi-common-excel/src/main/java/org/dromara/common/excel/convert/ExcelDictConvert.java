@@ -3,7 +3,7 @@ package org.dromara.common.excel.convert;
 import cn.hutool.core.annotation.AnnotationUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
-import org.dromara.common.excel.annotation.ExcelDictFormat;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.fesod.sheet.converters.Converter;
 import org.apache.fesod.sheet.enums.CellDataTypeEnum;
 import org.apache.fesod.sheet.metadata.GlobalConfiguration;
@@ -13,7 +13,7 @@ import org.apache.fesod.sheet.metadata.property.ExcelContentProperty;
 import org.dromara.common.core.service.DictService;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.excel.annotation.ExcelDictFormat;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;

@@ -41,8 +41,8 @@ public class SaPermissionImpl implements StpInterface {
     /**
      * 解析当前登录对象的权限列表。
      *
-     * @param loginId 登录ID
-     * @param localPermissionExtractor 当前登录用户权限提取器
+     * @param loginId                   登录ID
+     * @param localPermissionExtractor  当前登录用户权限提取器
      * @param remotePermissionExtractor 远程权限提取器
      * @return 权限列表
      */

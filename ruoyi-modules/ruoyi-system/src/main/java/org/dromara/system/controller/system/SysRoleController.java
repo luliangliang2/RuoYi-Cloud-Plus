@@ -4,14 +4,14 @@ import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.hutool.core.lang.tree.Tree;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.excel.utils.ExcelBuilder;
-import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.web.core.BaseController;
 import org.dromara.system.domain.SysUserRole;
 import org.dromara.system.domain.bo.SysDeptBo;
@@ -257,6 +257,7 @@ public class SysRoleController extends BaseController {
      * @param checkedKeys 选中部门列表
      * @param depts       下拉树结构列表
      */
-    public record DeptTreeSelectVo(List<Long> checkedKeys, List<Tree<Long>> depts) {}
+    public record DeptTreeSelectVo(List<Long> checkedKeys, List<Tree<Long>> depts) {
+    }
 
 }

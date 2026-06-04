@@ -44,23 +44,21 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
     // Lua script for atomic CAS on a hash field:
     // If the current value equals ticket (or field is absent, or ticket is empty), update and return 1; else return 0.
     private static final String CAS_LUA = """
-            local old = redis.call('HGET', KEYS[1], ARGV[1])
-            if old == false or ARGV[3] == '' or old == ARGV[3] then
-                redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
-                return 1
-            end
-            return 0""";
+        local old = redis.call('HGET', KEYS[1], ARGV[1])
+        if old == false or ARGV[3] == '' or old == ARGV[3] then
+            redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
+            return 1
+        end
+        return 0""";
 
     private final String root;
     private final long ttlMs;
-
-    // Lazily initialized — Dubbo SPI creates this class before Spring is fully ready
-    private volatile RedissonClient redissonClient;
-
     // topic key → RTopic (keeps the subscription alive)
     private final ConcurrentHashMap<String, RTopic> topicMap = new ConcurrentHashMap<>();
     // serviceKey → listeners (for dispatching mapping change events)
     private final ConcurrentHashMap<String, Set<MappingListener>> listenerMap = new ConcurrentHashMap<>();
+    // Lazily initialized — Dubbo SPI creates this class before Spring is fully ready
+    private volatile RedissonClient redissonClient;
 
     public RedissonMetadataReport(URL url) {
         super(url);

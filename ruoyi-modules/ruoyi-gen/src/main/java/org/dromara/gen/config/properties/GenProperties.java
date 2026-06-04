@@ -2,9 +2,7 @@ package org.dromara.gen.config.properties;
 
 import cn.hutool.extra.template.TemplateConfig;
 import lombok.Data;
-import org.dromara.common.core.factory.YmlPropertySourceFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;

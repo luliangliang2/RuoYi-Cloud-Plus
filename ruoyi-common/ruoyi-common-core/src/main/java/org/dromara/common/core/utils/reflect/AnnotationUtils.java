@@ -23,7 +23,7 @@ public final class AnnotationUtils extends AnnotationUtil {
     /**
      * 获取指定注解
      *
-     * @param annotationEle {@link AnnotatedElement}，可以是Class、Method、Field、Constructor、ReflectPermission
+     * @param annotationEle      {@link AnnotatedElement}，可以是Class、Method、Field、Constructor、ReflectPermission
      * @param annotationTypeName 注解类型名称
      * @return 注解对象
      */
@@ -40,7 +40,7 @@ public final class AnnotationUtils extends AnnotationUtil {
     /**
      * 获取指定注解中所有属性值
      *
-     * @param annotationEle {@link AnnotatedElement}，可以是Class、Method、Field、Constructor、ReflectPermission
+     * @param annotationEle      {@link AnnotatedElement}，可以是Class、Method、Field、Constructor、ReflectPermission
      * @param annotationTypeName 注解类型名称
      * @return 注解对象所有属性键值
      * @throws UtilException 调用注解中的方法时执行异常

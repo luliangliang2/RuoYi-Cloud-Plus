@@ -231,7 +231,7 @@ public class OpenApiHandler extends OpenAPIService {
         if (javadocProvider.isPresent()) {
             String description = javadocProvider.get().getMethodJavadocDescription(handlerMethod.getMethod());
             String summary = javadocProvider.get().getFirstSentence(description);
-            if (StringUtils.isNotBlank(description)){
+            if (StringUtils.isNotBlank(description)) {
                 operation.setSummary(summary);
             }
             // 调用解析器提取JavaDoc中的权限信息

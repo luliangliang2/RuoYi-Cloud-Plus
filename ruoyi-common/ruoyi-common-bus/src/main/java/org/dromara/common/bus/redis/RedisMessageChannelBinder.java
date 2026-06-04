@@ -4,21 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.bus.config.RedisBusProperties;
 import org.redisson.api.RStream;
 import org.redisson.api.RedissonClient;
-import org.redisson.api.stream.AutoClaimResult;
-import org.redisson.api.stream.StreamAddArgs;
-import org.redisson.api.stream.StreamCreateGroupArgs;
-import org.redisson.api.stream.StreamMessageId;
-import org.redisson.api.stream.StreamReadGroupArgs;
+import org.redisson.api.stream.*;
 import org.springframework.cloud.stream.binder.AbstractBinder;
 import org.springframework.cloud.stream.binder.Binding;
 import org.springframework.cloud.stream.binder.ConsumerProperties;
 import org.springframework.cloud.stream.binder.ProducerProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.SubscribableChannel;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -71,7 +67,7 @@ public class RedisMessageChannelBinder extends AbstractBinder<MessageChannel, Co
         Assert.isInstanceOf(SubscribableChannel.class, outboundBindTarget, "Redis bus producer requires a SubscribableChannel");
         RStream<String, Object> stream = redissonClient.getStream(buildStreamName(name));
         MessageHandler handler = message -> stream.add(StreamAddArgs.<String, Object>entry(
-            MESSAGE_FIELD, new RedisBusMessage(message.getPayload(), new HashMap<>(message.getHeaders())))
+                MESSAGE_FIELD, new RedisBusMessage(message.getPayload(), new HashMap<>(message.getHeaders())))
             .trimNonStrict().maxLen(properties.getStreamMaxLen()).noLimit());
         ((SubscribableChannel) outboundBindTarget).subscribe(handler);
         log.info("Redis bus producer bound to stream: {}", name);

@@ -458,16 +458,6 @@ public class GenTableServiceImpl implements IGenTableService {
     }
 
     /**
-     * 模板渲染上下文。
-     *
-     * @param table     生成表信息
-     * @param context   模板上下文
-     * @param templates 待渲染模板
-     */
-    private record RenderContext(GenTable table, Dict context, List<PathNamedTemplate> templates) {
-    }
-
-    /**
      * 修改保存参数校验
      *
      * @param genTable 业务信息
@@ -648,6 +638,16 @@ public class GenTableServiceImpl implements IGenTableService {
             genTable.setTreeAncestorsField(treeAncestorsField);
             genTable.setTreeOrderField(treeOrderField);
         }
+    }
+
+    /**
+     * 模板渲染上下文。
+     *
+     * @param table     生成表信息
+     * @param context   模板上下文
+     * @param templates 待渲染模板
+     */
+    private record RenderContext(GenTable table, Dict context, List<PathNamedTemplate> templates) {
     }
 
 }

@@ -121,11 +121,9 @@ public record ExcelWriterWrapper<T>(ExcelWriter excelWriter) {
      * @param excelWriter ExcelWriter
      * @return ExcelWriterWrapper
      */
-    public static  <T> ExcelWriterWrapper<T> of(ExcelWriter excelWriter) {
+    public static <T> ExcelWriterWrapper<T> of(ExcelWriter excelWriter) {
         return new ExcelWriterWrapper<>(excelWriter);
     }
-
-    // -------------------------------- sheet start
 
     /**
      * 创建工作表。
@@ -207,10 +205,6 @@ public record ExcelWriterWrapper<T>(ExcelWriter excelWriter) {
         return FesodSheet.writerSheet();
     }
 
-    // -------------------------------- sheet end
-
-    // -------------------------------- table start
-
     /**
      * 创建表格。
      *
@@ -248,7 +242,5 @@ public record ExcelWriterWrapper<T>(ExcelWriter excelWriter) {
     public static ExcelWriterTableBuilder tableBuilder() {
         return FesodSheet.writerTable();
     }
-
-    // -------------------------------- table end
 
 }

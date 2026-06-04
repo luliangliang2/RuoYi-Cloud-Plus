@@ -25,6 +25,7 @@ import org.dromara.system.api.model.LoginUser;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 /**
  * 第三方授权策略
  *
@@ -45,8 +46,8 @@ public class SocialAuthStrategy implements IAuthStrategy {
     /**
      * 登录-第三方授权登录
      *
-     * @param body     登录信息
-     * @param client   客户端信息
+     * @param body   登录信息
+     * @param client 客户端信息
      */
     @Override
     public LoginVo login(String body, RemoteClientVo client) {

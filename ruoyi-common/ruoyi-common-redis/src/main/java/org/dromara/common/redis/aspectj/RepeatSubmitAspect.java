@@ -11,8 +11,8 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.dromara.common.core.constant.HttpStatus;
 import org.dromara.common.core.constant.GlobalConstants;
+import org.dromara.common.core.constant.HttpStatus;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MessageUtils;
@@ -42,7 +42,7 @@ public class RepeatSubmitAspect {
     /**
      * 请求进入前校验是否重复提交。
      *
-     * @param point 切点
+     * @param point        切点
      * @param repeatSubmit 防重复提交注解
      */
     @Before("@annotation(repeatSubmit)")
@@ -62,7 +62,7 @@ public class RepeatSubmitAspect {
         // 唯一值（没有消息头则使用请求地址）
         String submitKey = StringUtils.trimToEmpty(request.getHeader(SaManager.getConfig().getTokenName()));
 
-        submitKey = SecureUtil.md5(submitKey + ":" + nowParams);
+        submitKey = SecureUtil.md5(submitKey + StringUtils.COLON + nowParams);
         // 唯一标识（指定key + url + 消息头）
         String cacheRepeatKey = GlobalConstants.REPEAT_SUBMIT_KEY + url + submitKey;
         if (RedisUtils.setObjectIfAbsent(cacheRepeatKey, "", Duration.ofMillis(interval))) {
@@ -111,6 +111,9 @@ public class RepeatSubmitAspect {
         }
     }
 
+    /**
+     * 删除当前请求写入的防重键。
+     */
     private void deleteRepeatKey() {
         String key = KEY_CACHE.get();
         if (StringUtils.isNotBlank(key)) {
@@ -120,6 +123,9 @@ public class RepeatSubmitAspect {
 
     /**
      * 参数拼装
+     *
+     * @param paramsArray 方法参数数组
+     * @return 拼装后的参数字符串
      */
     private String argsArrayToString(Object[] paramsArray) {
         StringJoiner params = new StringJoiner(" ");

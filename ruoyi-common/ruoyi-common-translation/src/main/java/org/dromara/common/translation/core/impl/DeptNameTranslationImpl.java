@@ -1,12 +1,12 @@
 package org.dromara.common.translation.core.impl;
 
 import cn.hutool.core.convert.Convert;
+import lombok.AllArgsConstructor;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.common.translation.annotation.TranslationType;
 import org.dromara.common.translation.constant.TransConstant;
 import org.dromara.common.translation.core.TranslationInterface;
 import org.dromara.system.api.RemoteDeptService;
-import lombok.AllArgsConstructor;
-import org.apache.dubbo.config.annotation.DubboReference;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,7 +27,7 @@ public class DeptNameTranslationImpl implements TranslationInterface<String> {
     /**
      * 将部门 ID 或 ID 集合翻译为部门名称。
      *
-     * @param key 部门 ID 或逗号分隔的 ID 字符串
+     * @param key   部门 ID 或逗号分隔的 ID 字符串
      * @param other 额外参数
      * @return 部门名称
      */
@@ -39,7 +39,7 @@ public class DeptNameTranslationImpl implements TranslationInterface<String> {
     /**
      * 批量将部门 ID 翻译为部门名称。
      *
-     * @param keys 部门 ID 集合
+     * @param keys  部门 ID 集合
      * @param other 额外参数
      * @return 部门 ID 与部门名称映射
      */
@@ -60,7 +60,7 @@ public class DeptNameTranslationImpl implements TranslationInterface<String> {
     /**
      * 根据原始键构建部门名称翻译值。
      *
-     * @param source 原始键
+     * @param source    原始键
      * @param deptNames 部门 ID 与部门名称映射
      * @return 部门名称
      */

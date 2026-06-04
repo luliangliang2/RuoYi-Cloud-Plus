@@ -6,15 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 加密字段处理器。
@@ -31,7 +23,7 @@ public class EncryptedFieldProcessor {
      * 构造加密字段处理器。
      *
      * @param encryptorManager 加解密管理器
-     * @param contextFactory 加密上下文工厂
+     * @param contextFactory   加密上下文工厂
      */
     public EncryptedFieldProcessor(EncryptorManager encryptorManager, EncryptContextFactory contextFactory) {
         this.encryptorManager = encryptorManager;

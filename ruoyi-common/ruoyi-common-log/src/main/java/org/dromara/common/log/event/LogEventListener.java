@@ -59,14 +59,13 @@ public class LogEventListener {
         }
 
         String address = AddressUtils.getRealAddressByIP(ip);
-        StringBuilder s = new StringBuilder();
-        s.append(getBlock(ip));
-        s.append(address);
-        s.append(getBlock(loginInfoEvent.getUsername()));
-        s.append(getBlock(loginInfoEvent.getStatus()));
-        s.append(getBlock(loginInfoEvent.getMessage()));
+        String s = getBlock(ip) +
+            address +
+            getBlock(loginInfoEvent.getUsername()) +
+            getBlock(loginInfoEvent.getStatus()) +
+            getBlock(loginInfoEvent.getMessage());
         // 打印信息到日志
-        log.info(s.toString(), loginInfoEvent.getArgs());
+        log.info(s, loginInfoEvent.getArgs());
         // 获取客户端操作系统
         String os = userAgent.getOs().getName();
         // 获取客户端浏览器

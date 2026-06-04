@@ -60,8 +60,8 @@ public class PlusDataPermissionHandler {
     /**
      * 获取数据过滤条件的 SQL 片段
      *
-     * @param where             原始的查询条件表达式
-     * @param isSelect          是否为查询语句
+     * @param where    原始的查询条件表达式
+     * @param isSelect 是否为查询语句
      * @return 数据过滤条件的 SQL 片段
      */
     public Expression getSqlSegment(Expression where, boolean isSelect) {

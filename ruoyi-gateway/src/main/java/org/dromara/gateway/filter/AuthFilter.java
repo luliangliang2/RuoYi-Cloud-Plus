@@ -5,7 +5,6 @@ import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.filter.SaTokenContextFilterForJakartaServlet;
 import cn.dev33.satoken.httpauth.basic.SaHttpBasicUtil;
-import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
@@ -24,8 +23,6 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -113,7 +110,7 @@ public class AuthFilter {
         return new SaServletFilter()
             .addInclude("/actuator", "/actuator/**")
             .setAuth(obj -> {
-                SaHttpBasicUtil.check(username + ":" + password);
+                SaHttpBasicUtil.check(username + StringUtils.COLON + password);
             })
             .setError(e -> {
                 HttpServletResponse response = ServletUtils.getResponse();

@@ -6,12 +6,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.constant.SystemConstants;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.api.domain.bo.RemoteTaskAssigneeBo;
 import org.dromara.system.api.domain.vo.RemoteTaskAssigneeVo;
@@ -49,7 +49,7 @@ public class FlwSpelServiceImpl implements IFlwSpelService {
      * @return 流程spel表达式定义
      */
     @Override
-    public FlowSpelVo queryById(Long id){
+    public FlowSpelVo queryById(Long id) {
         return spelMapper.selectVoById(id);
     }
 

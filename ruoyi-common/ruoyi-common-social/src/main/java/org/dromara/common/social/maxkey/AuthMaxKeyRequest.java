@@ -12,7 +12,7 @@ import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.json.utils.JsonUtils;
 
 /**
- *  @author 长春叭哥 2023年03月26日
+ * @author 长春叭哥 2023年03月26日
  */
 public class AuthMaxKeyRequest extends AuthDefaultRequest {
 

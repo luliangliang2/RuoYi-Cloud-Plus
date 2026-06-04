@@ -23,6 +23,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     public static final String SLASH = "/";
 
+    public static final String COLON = ":";
+
     private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
     @Deprecated
@@ -363,6 +365,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
             return input;
         }
     }
+
     /**
      * 将可迭代对象中的元素使用逗号拼接成字符串
      *
@@ -397,7 +400,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 判断字符串是否在指定的字符串列表中
      *
-     * @param string       字符串
+     * @param string        字符串
      * @param searchStrings 字符串列表
      * @return 是否在列表中
      */
@@ -408,7 +411,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 忽略大小写判断字符串是否在指定的字符串列表中
      *
-     * @param string       字符串
+     * @param string        字符串
      * @param searchStrings 字符串列表
      * @return 是否在列表中
      */
@@ -499,8 +502,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     /**
      * 移除字符串中的指定字符序列。
      *
-     * @param str       要处理的字符串，不能为null
-     * @param remove    要移除的字符序列，不能为null
+     * @param str    要处理的字符串，不能为null
+     * @param remove 要移除的字符序列，不能为null
      * @return 处理后的字符串
      */
     public static String remove(final String str, final String remove) {
@@ -548,7 +551,6 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         return Strings.CS.containsAny(cs, searchCharSequences);
     }
 
-
     /**
      * 将一个字符串替换为较大字符串内的另一个字符串，一次
      */
@@ -561,6 +563,13 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      */
     public static boolean endsWithAny(final CharSequence sequence, final CharSequence... searchStrings) {
         return Strings.CS.endsWithAny(sequence, searchStrings);
+    }
+
+    /**
+     * 测试 CharSequence 是否以指定的后缀结尾。
+     */
+    public static boolean endsWith(final CharSequence str, final CharSequence suffix) {
+        return Strings.CS.endsWith(str, suffix);
     }
 
 }

@@ -18,9 +18,9 @@ public record OssConfigChangeEvent(
     /**
      * 创建保存 OSS 配置后的变更事件。
      *
-     * @param configKey 当前配置 key
+     * @param configKey    当前配置 key
      * @param oldConfigKey 变更前配置 key
-     * @param configJson 当前配置 JSON
+     * @param configJson   当前配置 JSON
      * @return OSS 配置变更事件
      */
     public static OssConfigChangeEvent save(String configKey, String oldConfigKey, String configJson) {

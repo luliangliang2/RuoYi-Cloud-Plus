@@ -10,13 +10,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.constant.SystemConstants;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.system.api.model.LoginUser;
@@ -539,7 +539,7 @@ public class SysRoleServiceImpl implements ISysRoleService {
         }
         // 角色关联的在线用户量过大会导致redis阻塞卡顿 谨慎操作
         keys.parallelStream().forEach(key -> {
-            String token = StringUtils.substringAfterLast(key, ":");
+            String token = StringUtils.substringAfterLast(key, StringUtils.COLON);
             // 如果已经过期则跳过
             if (StpUtil.stpLogic.getTokenActiveTimeoutByToken(token) < -1) {
                 return;
@@ -575,7 +575,7 @@ public class SysRoleServiceImpl implements ISysRoleService {
         }
         // 角色关联的在线用户量过大会导致redis阻塞卡顿 谨慎操作
         keys.parallelStream().forEach(key -> {
-            String token = StringUtils.substringAfterLast(key, ":");
+            String token = StringUtils.substringAfterLast(key, StringUtils.COLON);
             // 如果已经过期则跳过
             if (StpUtil.stpLogic.getTokenActiveTimeoutByToken(token) < -1) {
                 return;

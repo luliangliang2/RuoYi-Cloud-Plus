@@ -41,7 +41,7 @@ public class GenController extends BaseController {
     /**
      * 分页查询代码生成业务列表。
      *
-     * @param genTable 查询条件
+     * @param genTable  查询条件
      * @param pageQuery 分页参数
      * @return 代码生成列表
      */
@@ -72,7 +72,7 @@ public class GenController extends BaseController {
     /**
      * 分页查询数据库表列表。
      *
-     * @param genTable 查询条件
+     * @param genTable  查询条件
      * @param pageQuery 分页参数
      * @return 数据库表列表
      */
@@ -162,7 +162,7 @@ public class GenController extends BaseController {
      * 生成代码（下载方式）
      *
      * @param response HTTP 响应
-     * @param tableId 表ID
+     * @param tableId  表ID
      */
     @SaCheckPermission("tool:gen:code")
     @Log(title = "代码生成", businessType = BusinessType.GENCODE)
@@ -190,7 +190,7 @@ public class GenController extends BaseController {
     /**
      * 批量生成代码
      *
-     * @param response HTTP 响应
+     * @param response   HTTP 响应
      * @param tableIdStr 表ID串
      */
     @SaCheckPermission("tool:gen:code")
@@ -206,7 +206,7 @@ public class GenController extends BaseController {
      * 将生成结果写出为 zip 文件流。
      *
      * @param response HTTP 响应
-     * @param data zip 二进制数据
+     * @param data     zip 二进制数据
      */
     private void genCode(HttpServletResponse response, byte[] data) throws IOException {
         response.reset();

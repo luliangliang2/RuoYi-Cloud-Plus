@@ -1,7 +1,7 @@
 package org.dromara.common.bus.config;
 
-import org.dromara.common.bus.redis.RedisMessageChannelBinder;
 import org.dromara.common.bus.redis.RedisBusHealthIndicator;
+import org.dromara.common.bus.redis.RedisMessageChannelBinder;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

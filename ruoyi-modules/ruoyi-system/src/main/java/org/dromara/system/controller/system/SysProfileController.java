@@ -12,10 +12,10 @@ import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.file.MimeTypeUtils;
 import org.dromara.common.encrypt.annotation.ApiEncrypt;
-import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.helper.DataPermissionHelper;
+import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.web.core.BaseController;
 import org.dromara.resource.api.RemoteFileService;
@@ -141,7 +141,8 @@ public class SysProfileController extends BaseController {
      *
      * @param imgUrl 头像地址
      */
-    public record AvatarVo(String imgUrl) {}
+    public record AvatarVo(String imgUrl) {
+    }
 
     /**
      * 用户个人信息
@@ -150,7 +151,8 @@ public class SysProfileController extends BaseController {
      * @param roleGroup 用户所属角色组
      * @param postGroup 用户所属岗位组
      */
-    public record ProfileVo(ProfileUserVo user, String roleGroup, String postGroup) {}
+    public record ProfileVo(ProfileUserVo user, String roleGroup, String postGroup) {
+    }
 
     /**
      * 用户密码修改

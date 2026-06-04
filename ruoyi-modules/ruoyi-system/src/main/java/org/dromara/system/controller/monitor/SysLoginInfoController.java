@@ -5,13 +5,13 @@ import com.baomidou.lock.annotation.Lock4j;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.excel.utils.ExcelBuilder;
-import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.core.domain.PageResult;
+import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.redis.utils.RedisUtils;
 import org.dromara.common.web.core.BaseController;
 import org.dromara.system.domain.bo.SysLoginInfoBo;
@@ -57,6 +57,7 @@ public class SysLoginInfoController extends BaseController {
 
     /**
      * 批量删除登录日志
+     *
      * @param infoIds 日志ids
      */
     @SaCheckPermission("monitor:logininfo:remove")

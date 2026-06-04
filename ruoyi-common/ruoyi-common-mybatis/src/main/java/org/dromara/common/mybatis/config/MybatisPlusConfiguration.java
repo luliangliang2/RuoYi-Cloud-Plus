@@ -71,6 +71,7 @@ public class MybatisPlusConfiguration {
     public DataPermissionPointcutAdvisor dataPermissionPointcutAdvisor() {
         return new DataPermissionPointcutAdvisor();
     }
+
     /**
      * 分页插件，自动识别数据库类型
      */

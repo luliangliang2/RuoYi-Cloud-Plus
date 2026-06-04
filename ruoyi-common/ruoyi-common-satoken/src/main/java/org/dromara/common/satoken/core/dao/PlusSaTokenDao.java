@@ -4,6 +4,7 @@ import cn.dev33.satoken.dao.auto.SaTokenDaoBySessionFollowObject;
 import cn.dev33.satoken.util.SaFoxUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.redis.utils.RedisUtils;
 
 import java.time.Duration;
@@ -157,7 +158,7 @@ public class PlusSaTokenDao implements SaTokenDaoBySessionFollowObject {
     @Override
     public List<String> searchData(String prefix, String keyword, int start, int size, boolean sortType) {
         String pattern = prefix + "*" + keyword + "*";
-        String cacheKey = pattern + start + ":" + size + ":" + sortType;
+        String cacheKey = pattern + start + StringUtils.COLON + size + StringUtils.COLON + sortType;
         return (List<String>) CAFFEINE.get(cacheKey, k -> {
             Collection<String> keys = RedisUtils.keys(pattern);
             List<String> list = new ArrayList<>(keys);
@@ -179,8 +180,8 @@ public class PlusSaTokenDao implements SaTokenDaoBySessionFollowObject {
     /**
      * 写入缓存值并刷新本地缓存。
      *
-     * @param key 缓存键
-     * @param value 缓存值
+     * @param key     缓存键
+     * @param value   缓存值
      * @param timeout 超时时间
      */
     private void writeValue(String key, Object value, long timeout) {

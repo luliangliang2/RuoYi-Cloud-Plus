@@ -1,13 +1,13 @@
 package org.dromara.common.translation.core.impl;
 
 import cn.hutool.core.convert.Convert;
+import lombok.AllArgsConstructor;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.translation.annotation.TranslationType;
 import org.dromara.common.translation.constant.TransConstant;
 import org.dromara.common.translation.core.TranslationInterface;
 import org.dromara.resource.api.RemoteFileService;
-import lombok.AllArgsConstructor;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.dromara.resource.api.domain.RemoteFile;
 
 import java.util.LinkedHashMap;
@@ -30,7 +30,7 @@ public class OssUrlTranslationImpl implements TranslationInterface<String> {
     /**
      * 将 OSS ID 或 ID 集合翻译为访问地址。
      *
-     * @param key OSS ID 或逗号分隔的 ID 字符串
+     * @param key   OSS ID 或逗号分隔的 ID 字符串
      * @param other 额外参数
      * @return 访问地址
      */
@@ -42,7 +42,7 @@ public class OssUrlTranslationImpl implements TranslationInterface<String> {
     /**
      * 批量将 OSS ID 翻译为访问地址。
      *
-     * @param keys OSS ID 集合
+     * @param keys  OSS ID 集合
      * @param other 额外参数
      * @return OSS ID 与访问地址映射
      */
@@ -64,7 +64,7 @@ public class OssUrlTranslationImpl implements TranslationInterface<String> {
     /**
      * 根据原始键构建 OSS 地址翻译值。
      *
-     * @param source 原始键
+     * @param source  原始键
      * @param ossUrls OSS ID 与访问地址映射
      * @return OSS 访问地址
      */

@@ -9,6 +9,7 @@ import org.mapstruct.ReportingPolicy;
 
 /**
  * 登录日志转换器
+ *
  * @author zhujie
  */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE)

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.LambdaMeta;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.ibatis.reflection.property.PropertyNamer;
 
 import java.util.regex.Pattern;
@@ -14,12 +16,13 @@ import java.util.regex.Pattern;
  *
  * @author Lion Li
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class AggregateSelectUtils {
 
+    /**
+     * 查询别名合法性匹配规则。
+     */
     private static final Pattern ALIAS_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
-
-    private AggregateSelectUtils() {
-    }
 
     /**
      * 追加查询字段 SQL。

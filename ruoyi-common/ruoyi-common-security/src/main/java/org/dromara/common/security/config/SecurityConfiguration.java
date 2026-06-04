@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.dromara.common.core.constant.HttpStatus;
 import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.SpringUtils;
+import org.dromara.common.core.utils.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -62,7 +63,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
         return new SaServletFilter()
             .addInclude("/actuator", "/actuator/**")
             .setAuth(obj -> {
-                SaHttpBasicUtil.check(username + ":" + password);
+                SaHttpBasicUtil.check(username + StringUtils.COLON + password);
             })
             .setError(e -> SaResult.error(e.getMessage()).setCode(HttpStatus.UNAUTHORIZED));
     }
