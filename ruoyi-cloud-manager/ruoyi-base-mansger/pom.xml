@@ -97,6 +97,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.dromara</groupId>
+			<artifactId>ruoyi-geo-tools</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.taosdata.jdbc</groupId>
 			<artifactId>taos-jdbcdriver</artifactId>
 			<version>3.8.3</version>

@@ -16,7 +16,7 @@ import org.dromara.manager.domain.vo.BizSceneAreaVo;
 import org.dromara.manager.mapper.BizSceneAreaMapper;
 import org.dromara.manager.service.IBizSceneAreaService;
 import org.dromara.manager.service.support.TreeCategoryBindSupport;
-import org.dromara.manager.utils.CoordinateConvertUtils;
+import org.dromara.gis.utils.GeoCoordinateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,16 +150,16 @@ public class BizSceneAreaServiceImpl implements IBizSceneAreaService {
         if (!JSONUtil.isTypeJSONArray(entity.getGcj02Path())) {
             throw new ServiceException("场景范围格式不正确");
         }
-        if (CoordinateConvertUtils.parsePath(entity.getGcj02Path()).size() < 3) {
+        if (GeoCoordinateUtils.parsePath(entity.getGcj02Path()).size() < 3) {
             throw new ServiceException("场景范围至少需要三个坐标点");
         }
-        entity.setBd09Path(CoordinateConvertUtils.convertPath(
+        entity.setBd09Path(GeoCoordinateUtils.convertPath(
             entity.getGcj02Path(),
-            point -> CoordinateConvertUtils.gcj02ToBd09(point.lng(), point.lat())
+            point -> GeoCoordinateUtils.gcj02ToBd09(point.lng(), point.lat())
         ));
-        entity.setWgs84Path(CoordinateConvertUtils.convertPath(
+        entity.setWgs84Path(GeoCoordinateUtils.convertPath(
             entity.getGcj02Path(),
-            point -> CoordinateConvertUtils.gcj02ToWgs84(point.lng(), point.lat())
+            point -> GeoCoordinateUtils.gcj02ToWgs84(point.lng(), point.lat())
         ));
 
         Long count = baseMapper.selectCount(new LambdaQueryWrapper<BizSceneArea>()

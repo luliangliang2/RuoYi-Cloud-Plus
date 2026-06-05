@@ -63,6 +63,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.dromara</groupId>
+			<artifactId>ruoyi-geo-tools</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.ssssssss</groupId>
 			<artifactId>magic-api-plugin-mqtt</artifactId>
 			<version>${magic-api.version}</version>

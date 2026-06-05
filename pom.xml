@@ -58,6 +58,7 @@
 		<!-- mq配置 -->
 		<rocketmq.version>2.3.5</rocketmq.version>
 		<magic-api.version>2.2.2</magic-api.version>
+		<geotools.version>30.1</geotools.version>
 
 		<!-- 插件版本 -->
 		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -509,6 +510,17 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
+		<repository>
+			<id>osgeo</id>
+			<name>OSGeo Release Repository</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -526,4 +538,3 @@
 	</pluginRepositories>
 
 </project>
-

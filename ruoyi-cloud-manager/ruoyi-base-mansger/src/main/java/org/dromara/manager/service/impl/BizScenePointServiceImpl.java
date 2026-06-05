@@ -17,7 +17,7 @@ import org.dromara.manager.mapper.BizScenePointMapper;
 import org.dromara.manager.mapper.BizSceneRouteMapper;
 import org.dromara.manager.service.IBizScenePointService;
 import org.dromara.manager.service.support.TreeCategoryBindSupport;
-import org.dromara.manager.utils.CoordinateConvertUtils;
+import org.dromara.gis.utils.GeoCoordinateUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,15 +150,15 @@ public class BizScenePointServiceImpl implements IBizScenePointService {
             throw new ServiceException("点位分类与路线分类不一致");
         }
 
-        CoordinateConvertUtils.Coordinate bd09 = CoordinateConvertUtils.convertPoint(
+        GeoCoordinateUtils.Coordinate bd09 = GeoCoordinateUtils.convertPoint(
             entity.getGcj02Lng().doubleValue(),
             entity.getGcj02Lat().doubleValue(),
-            point -> CoordinateConvertUtils.gcj02ToBd09(point.lng(), point.lat())
+            point -> GeoCoordinateUtils.gcj02ToBd09(point.lng(), point.lat())
         );
-        CoordinateConvertUtils.Coordinate wgs84 = CoordinateConvertUtils.convertPoint(
+        GeoCoordinateUtils.Coordinate wgs84 = GeoCoordinateUtils.convertPoint(
             entity.getGcj02Lng().doubleValue(),
             entity.getGcj02Lat().doubleValue(),
-            point -> CoordinateConvertUtils.gcj02ToWgs84(point.lng(), point.lat())
+            point -> GeoCoordinateUtils.gcj02ToWgs84(point.lng(), point.lat())
         );
         entity.setBd09Lng(BigDecimal.valueOf(bd09.lng()));
         entity.setBd09Lat(BigDecimal.valueOf(bd09.lat()));
