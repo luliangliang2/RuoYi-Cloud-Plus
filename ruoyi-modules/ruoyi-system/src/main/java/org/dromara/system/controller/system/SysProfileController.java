@@ -1,16 +1,11 @@
 package org.dromara.system.controller.system;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.dromara.common.core.domain.R;
 import org.dromara.common.core.utils.StringUtils;
-import org.dromara.common.core.utils.file.MimeTypeUtils;
 import org.dromara.common.encrypt.annotation.ApiEncrypt;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
@@ -18,20 +13,13 @@ import org.dromara.common.mybatis.helper.DataPermissionHelper;
 import org.dromara.common.redis.annotation.RepeatSubmit;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.common.web.core.BaseController;
-import org.dromara.resource.api.RemoteFileService;
-import org.dromara.resource.api.domain.RemoteFile;
 import org.dromara.system.domain.bo.SysUserBo;
 import org.dromara.system.domain.bo.SysUserProfileBo;
 import org.dromara.system.domain.vo.ProfileUserVo;
 import org.dromara.system.domain.vo.SysUserVo;
 import org.dromara.system.service.ISysUserService;
-import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * 个人信息 业务处理
@@ -45,9 +33,6 @@ import java.util.Arrays;
 public class SysProfileController extends BaseController {
 
     private final ISysUserService userService;
-
-    @DubboReference
-    private RemoteFileService remoteFileService;
 
     /**
      * 个人信息
@@ -109,39 +94,6 @@ public class SysProfileController extends BaseController {
             return R.ok();
         }
         return R.fail("修改密码异常，请联系管理员");
-    }
-
-    /**
-     * 头像上传
-     *
-     * @param avatarfile 用户头像
-     */
-    @RepeatSubmit
-    @GlobalTransactional(rollbackFor = Exception.class)
-    @Log(title = "用户头像", businessType = BusinessType.UPDATE)
-    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public R<AvatarVo> avatar(@RequestPart("avatarfile") MultipartFile avatarfile) throws IOException {
-        if (ObjectUtil.isNotNull(avatarfile) && !avatarfile.isEmpty()) {
-            String extension = FileUtil.extName(avatarfile.getOriginalFilename());
-            if (!StringUtils.equalsAnyIgnoreCase(extension, MimeTypeUtils.IMAGE_EXTENSION)) {
-                return R.fail("文件格式不正确，请上传" + Arrays.toString(MimeTypeUtils.IMAGE_EXTENSION) + "格式");
-            }
-            RemoteFile oss = remoteFileService.upload(avatarfile.getName(), avatarfile.getOriginalFilename(), avatarfile.getContentType(), avatarfile.getBytes());
-            String avatar = oss.getUrl();
-            boolean updateSuccess = DataPermissionHelper.ignore(() -> userService.updateUserAvatar(LoginHelper.getUserId(), oss.getOssId()));
-            if (updateSuccess) {
-                return R.ok(new AvatarVo(avatar));
-            }
-        }
-        return R.fail("上传图片异常，请联系管理员");
-    }
-
-    /**
-     * 用户头像信息
-     *
-     * @param imgUrl 头像地址
-     */
-    public record AvatarVo(String imgUrl) {
     }
 
     /**
