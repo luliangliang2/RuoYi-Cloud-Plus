@@ -34,8 +34,9 @@ public class GatewayExceptionHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, Throwable ex) throws IOException {
         int code;
         String msg;
+        String exceptionMessage = ex.getMessage();
         if ("NotFoundException".equals(ex.getClass().getSimpleName())
-            || ex.getMessage().contains("Unable to find instance")) {
+            || (exceptionMessage != null && exceptionMessage.contains("Unable to find instance"))) {
             code = HttpStatus.NOT_FOUND;
             msg = "服务未找到";
         } else if (ex instanceof ResponseStatusException responseStatusException) {
@@ -46,7 +47,7 @@ public class GatewayExceptionHandler {
             msg = "内部服务器错误";
         }
 
-        log.error("[网关异常处理]请求路径:{},异常信息:{}", request.getRequestURI(), ex.getMessage(), ex);
+        log.error("[网关异常处理]请求路径:{},异常信息:{}", request.getRequestURI(), exceptionMessage, ex);
         writeJson(response, code, msg);
     }
 
