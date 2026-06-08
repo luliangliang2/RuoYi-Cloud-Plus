@@ -36,43 +36,6 @@ public class RemoteFileServiceImpl implements RemoteFileService {
     private final ISysOssService sysOssService;
 
     /**
-     * 文件上传请求
-     */
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public RemoteFile upload(String name, String originalFilename, String contentType, byte[] file) throws ServiceException {
-        try {
-            String suffix = StringUtils.substring(originalFilename, originalFilename.lastIndexOf("."), originalFilename.length());
-            OssClient instance = OssFactory.instance();
-            String pathKey = instance.buildPathKey(originalFilename);
-            PutObjectResult result = instance.upload(pathKey, file);
-            // 保存文件信息
-            SysOssBo oss = new SysOssBo();
-            oss.setUrl(result.url());
-            oss.setFileSuffix(suffix);
-            oss.setFileName(result.key());
-            oss.setOriginalName(originalFilename);
-            oss.setService(instance.clientId());
-            SysOssExt ext1 = new SysOssExt();
-            ext1.setFileSize((long) file.length);
-            String extStr = JsonUtils.toJsonString(ext1);
-            oss.setExt1(extStr);
-            sysOssService.insertByBo(oss);
-            RemoteFile sysFile = new RemoteFile();
-            sysFile.setOssId(oss.getOssId());
-            sysFile.setName(result.key());
-            sysFile.setUrl(result.url());
-            sysFile.setOriginalName(originalFilename);
-            sysFile.setFileSuffix(suffix);
-            sysFile.setExt1(extStr);
-            return sysFile;
-        } catch (Exception e) {
-            log.error("上传文件失败", e);
-            throw new ServiceException("上传文件失败");
-        }
-    }
-
-    /**
      * 通过ossId查询对应的url
      *
      * @param ossIds ossId串逗号分隔
