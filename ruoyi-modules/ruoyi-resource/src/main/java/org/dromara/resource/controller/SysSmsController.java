@@ -40,7 +40,7 @@ public class SysSmsController extends BaseController {
      *
      * @param phoneNumber 用户手机号
      */
-    @RateLimiter(key = "#phonenumber", time = 60, count = 1)
+    @RateLimiter(key = "#phoneNumber", time = 60, count = 1)
     @GetMapping("/code")
     public R<Void> smsCaptcha(@NotBlank(message = "{user.phonenumber.not.blank}") String phoneNumber) {
         if (!RegexValidator.isMobile(phoneNumber)) {
@@ -48,7 +48,6 @@ public class SysSmsController extends BaseController {
         }
         String key = GlobalConstants.CAPTCHA_CODE_KEY + phoneNumber;
         String code = RandomUtil.randomNumbers(4);
-        RedisUtils.setCacheObject(key, code, Duration.ofMinutes(Constants.CAPTCHA_EXPIRATION));
         // 验证码模板id 自行处理 (查数据库或写死均可)
         String templateId = "";
         LinkedHashMap<String, String> map = new LinkedHashMap<>(1);
@@ -57,8 +56,10 @@ public class SysSmsController extends BaseController {
         SmsResponse smsResponse = smsBlend.sendMessage(phoneNumber, templateId, map);
         if (!smsResponse.isSuccess()) {
             log.error("验证码短信发送异常 => {}", smsResponse);
-            return R.fail(smsResponse.getData().toString());
+            Object data = smsResponse.getData();
+            return R.fail(data == null ? "验证码短信发送失败" : data.toString());
         }
+        RedisUtils.setCacheObject(key, code, Duration.ofMinutes(Constants.CAPTCHA_EXPIRATION));
         return R.ok();
     }
 

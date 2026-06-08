@@ -10,6 +10,7 @@ import org.apache.fesod.sheet.metadata.GlobalConfiguration;
 import org.apache.fesod.sheet.metadata.data.ReadCellData;
 import org.apache.fesod.sheet.metadata.data.WriteCellData;
 import org.apache.fesod.sheet.metadata.property.ExcelContentProperty;
+import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.TreeBuildUtils;
@@ -88,7 +89,11 @@ public class DeptExcelConverter implements Converter<Long> {
         if (StringUtils.isBlank(deptName)) {
             return null;
         }
-        return getDeptMaps().nameToId().get(deptName);
+        Long deptId = getDeptMaps().nameToId().get(deptName);
+        if (deptId == null) {
+            throw new ServiceException("部门不存在：" + deptName);
+        }
+        return deptId;
     }
 
     /**
