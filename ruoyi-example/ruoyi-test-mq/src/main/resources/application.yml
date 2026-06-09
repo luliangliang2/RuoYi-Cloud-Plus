@@ -55,11 +55,11 @@ spring:
       discovery:
         # 注册组
         group: @nacos.discovery.group@
-        namespace: ${spring.profiles.active}
+        namespace: @nacos.namespace@
       config:
         # 配置组
         group: @nacos.config.group@
-        namespace: ${spring.profiles.active}
+        namespace: @nacos.namespace@
   config:
     import:
       - optional:nacos:application-common.yml

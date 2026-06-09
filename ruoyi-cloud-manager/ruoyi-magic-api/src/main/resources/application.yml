@@ -6,19 +6,19 @@ spring:
     name: ruoyi-magic-api
 
   profiles:
-    active: public
+    active: @profiles.active@
 
   cloud:
     nacos:
-      server-addr: 10.211.55.19:8848
-      username: nacos
-      password: nacos
+      server-addr: @nacos.server@
+      username: @nacos.username@
+      password: @nacos.password@
       discovery:
-        group: DEFAULT_GROUP
-        namespace: public
+        group: @nacos.discovery.group@
+        namespace: @nacos.namespace@
       config:
-        group: DEFAULT_GROUP
-        namespace: public
+        group: @nacos.config.group@
+        namespace: @nacos.namespace@
   config:
     import:
       - optional:nacos:application-common.yml
