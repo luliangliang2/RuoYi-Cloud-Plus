@@ -249,7 +249,7 @@ services:
       # 时区上海
       TZ: Asia/Shanghai
       SERVER_PORT: 9203
-      SNAIL_PORT: 19203
+      SNAIL_PORT: 29203
     ports:
       - "9203:9203"
     volumes:
@@ -300,7 +300,7 @@ services:
       TZ: Asia/Shanghai
     ports:
       - "9206:9206"
-      - "18889:18889"
+      - "29206:29206"
     volumes:
       # 配置文件
       - /docker/ruoyi-ai/logs/:/ruoyi/ai/logs

@@ -10,16 +10,18 @@ RUN mkdir -p /ruoyi/ai/logs \
 
 WORKDIR /ruoyi/ai
 
-ENV SERVER_PORT=9206 LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
+ENV SERVER_PORT=9206 SNAIL_PORT=29206 LANG=C.UTF-8 LC_ALL=C.UTF-8 JAVA_OPTS=""
 
 EXPOSE ${SERVER_PORT}
-EXPOSE 18889
+# 暴露 snail ai 客户端端口
+EXPOSE ${SNAIL_PORT}
 
 ADD ./target/ruoyi-ai.jar ./app.jar
 
 SHELL ["/bin/bash", "-c"]
 
 ENTRYPOINT java -Djava.security.egd=file:/dev/./urandom -Dserver.port=${SERVER_PORT} \
+           -Dsnail-ai.port=${SNAIL_PORT} \
            #-Dskywalking.agent.service_name=ruoyi-ai \
            #-javaagent:/ruoyi/skywalking/agent/skywalking-agent.jar \
            -XX:+HeapDumpOnOutOfMemoryError -XX:+UseZGC ${JAVA_OPTS} \
