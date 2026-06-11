@@ -111,6 +111,7 @@ public class LambdaCrudChainWrapper<T, V> extends AbstractLambdaWrapper<T, Lambd
      * @param columns 查询字段
      * @return this
      */
+    @Override
     @SafeVarargs
     public final LambdaCrudChainWrapper<T, V> select(SFunction<T, ?>... columns) {
         return select(true, CollectionUtils.toList(columns));
@@ -123,6 +124,7 @@ public class LambdaCrudChainWrapper<T, V> extends AbstractLambdaWrapper<T, Lambd
      * @param columns   查询字段
      * @return this
      */
+    @Override
     @SafeVarargs
     public final LambdaCrudChainWrapper<T, V> select(boolean condition, SFunction<T, ?>... columns) {
         return select(condition, CollectionUtils.toList(columns));

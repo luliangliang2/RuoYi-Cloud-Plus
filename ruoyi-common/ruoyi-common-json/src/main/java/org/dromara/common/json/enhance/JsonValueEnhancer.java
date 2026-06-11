@@ -87,16 +87,20 @@ public class JsonValueEnhancer {
     }
 
     private void collectValue(Object value, JsonEnhancementContext context, IdentityHashMap<Object, Boolean> visited) {
-        if (value == null) {
-            return;
-        }
-        if (value instanceof Map<?, ?> map) {
-            map.values().forEach(child -> collectValue(child, context, visited));
-            return;
-        }
-        if (value instanceof Iterable<?> iterable) {
-            iterable.forEach(child -> collectValue(child, context, visited));
-            return;
+        switch (value) {
+            case null -> {
+                return;
+            }
+            case Map<?, ?> map -> {
+                map.values().forEach(child -> collectValue(child, context, visited));
+                return;
+            }
+            case Iterable<?> iterable -> {
+                iterable.forEach(child -> collectValue(child, context, visited));
+                return;
+            }
+            default -> {
+            }
         }
         if (value.getClass().isArray()) {
             int length = Array.getLength(value);
