@@ -211,7 +211,7 @@ public class WorkflowGlobalListener implements GlobalListener {
             }
             if (!BusinessStatusEnum.initialState(instance.getFlowStatus())) {
                 if (task != null && CollUtil.isNotEmpty(nextTasks) && nextTasks.size() == 1
-                    && flwCommonService.applyNodeCode(definition.getId()).equals(nextTasks.get(0).getNodeCode())) {
+                    && flwCommonService.applyNodeCode(definition.getId()).equals(nextTasks.getFirst().getNodeCode())) {
                     // 如果为画线指定驳回 线条指定为驳回 驳回得节点为申请人节点 则修改流程状态为退回
                     flowProcessEventHandler.processHandler(definition.getFlowCode(), instance, BusinessStatusEnum.BACK.getStatus(), params, false);
                     notifyInitiatorIfNeeded(definition, instance, BusinessStatusEnum.BACK.getStatus(), variable);
@@ -266,7 +266,7 @@ public class WorkflowGlobalListener implements GlobalListener {
             return true;
         }
         String applyNodeCode = flwCommonService.applyNodeCode(definition.getId());
-        return !StringUtils.equals(applyNodeCode, nextTasks.get(0).getNodeCode());
+        return !StringUtils.equals(applyNodeCode, nextTasks.getFirst().getNodeCode());
     }
 
     private void notifyInitiatorIfNeeded(Definition definition, Instance instance, String status, Map<String, Object> variable) {

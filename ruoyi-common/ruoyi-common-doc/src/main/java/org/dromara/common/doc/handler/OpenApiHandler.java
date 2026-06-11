@@ -196,8 +196,8 @@ public class OpenApiHandler extends OpenAPIService {
                     // 自定义部分 修改使用java注释当tag名
                     List<String> list = IoUtil.readLines(new StringReader(description), new ArrayList<>());
                     // tag.setName(tagAutoName);
-                    tag.setName(list.get(0));
-                    operation.addTagsItem(list.get(0));
+                    tag.setName(list.getFirst());
+                    operation.addTagsItem(list.getFirst());
 
                     tag.setDescription(description);
                     if (openAPI.getTags() == null || !openAPI.getTags().contains(tag)) {
