@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizTaskTemplatePointActionMapper">
+
+    <select id="selectByTemplateId" resultType="org.dromara.manager.domain.vo.BizTaskTemplateActionVo">
+        select ta.template_action_id,
+               ta.template_point_id,
+               ta.point_id,
+               ta.action_id,
+               ta.action_code,
+               ta.action_name,
+               ta.action_type,
+               ta.sequence,
+               ta.action_params,
+               ta.remark
+        from biz_task_template_point_action ta
+        where ta.del_flag = '0'
+          and ta.template_id = #{templateId}
+        order by ta.template_point_id asc, ta.sequence asc, ta.template_action_id asc
+    </select>
+
+</mapper>
