@@ -1,7 +1,6 @@
 package org.dromara.gateway.filter;
 
 import cn.hutool.core.map.MapUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,13 +22,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * 全局日志过滤器
@@ -116,34 +110,11 @@ public class GlobalLogFilter extends OncePerRequestFilter {
 
     private String removeSensitiveFields(String jsonParam) {
         try {
-            JsonMapper jsonMapper = JsonUtils.getJsonMapper();
-            JsonNode rootNode = jsonMapper.readTree(jsonParam);
-            removeSensitiveFields(rootNode, SystemConstants.EXCLUDE_PROPERTIES);
+            JsonNode rootNode = JsonUtils.getJsonMapper().readTree(jsonParam);
+            JsonUtils.removeFields(rootNode, SystemConstants.EXCLUDE_PROPERTIES);
             return rootNode.toString();
         } catch (Exception ex) {
             return jsonParam;
-        }
-    }
-
-    private void removeSensitiveFields(JsonNode node, String[] excludeProperties) {
-        if (node == null) {
-            return;
-        }
-        if (node.isObject()) {
-            ObjectNode objectNode = (ObjectNode) node;
-            Set<String> fieldsToRemove = new HashSet<>();
-            objectNode.propertyNames().forEach(fieldName -> {
-                if (ArrayUtil.contains(excludeProperties, fieldName)) {
-                    fieldsToRemove.add(fieldName);
-                }
-            });
-            fieldsToRemove.forEach(objectNode::remove);
-            objectNode.values().forEach(child -> removeSensitiveFields(child, excludeProperties));
-        } else if (node.isArray()) {
-            ArrayNode arrayNode = (ArrayNode) node;
-            for (JsonNode child : arrayNode) {
-                removeSensitiveFields(child, excludeProperties);
-            }
         }
     }
 
