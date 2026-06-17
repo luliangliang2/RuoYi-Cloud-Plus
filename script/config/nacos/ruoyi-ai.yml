@@ -1,8 +1,6 @@
 snail-ai:
   # 启用客户端模式
   enabled: true
-  # 聊天发送模式: stream(流式) / sync(同步)
-  chat-mode: stream
   # ==================== Server 连接 ====================
   # Server 端 gRPC 地址（即 ruoyi-snailai-server 的 snail-ai.server.grpc-port）
   server-host: 127.0.0.1
@@ -11,7 +9,7 @@ snail-ai:
   # 应用 ID（在 Server「应用管理」页面创建后获取）
   app-id: 1
   # 认证令牌（在 Server「应用管理」页面创建时自动生成）
-  token: SAI_8f1c789e35454ebdabce0b739963da9a
+  token: SAI_566a6bfbc26e4998b4841cc927d50c5d
   # 本客户端 gRPC 端口（Server 通过此端口分发 Chat 请求）
   port: 2${server.port}
   # 客户端 IP 指定，留空默认自动获取本地 IP
