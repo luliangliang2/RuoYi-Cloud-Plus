@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @Validated
 @RestController
-@RequestMapping("/snail-ai")
+@RequestMapping
 @RequiredArgsConstructor
 public class SnailAiController extends BaseController {
 
