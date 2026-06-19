@@ -18,7 +18,7 @@
 	</dependencies>
 	<modules>
 		<module>ruoyi-geo-tools</module>
-		<module>ruoyi-base-mansger</module>
+		<module>ruoyi-base-manager</module>
 		<module>ruoyi-magic-api</module>
 	</modules>
 </project>

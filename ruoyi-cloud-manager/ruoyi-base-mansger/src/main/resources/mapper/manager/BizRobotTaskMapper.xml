@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizRobotTaskMapper">
+
+    <sql id="selectRobotTaskVo">
+        select t.task_id,
+               t.task_no,
+               t.task_name,
+               t.task_type,
+               t.template_id,
+               tpl.template_name,
+               t.route_id,
+               r.route_name,
+               t.assign_mode,
+               t.vehicle_id,
+               t.vin,
+               t.plate_no,
+               t.loop_flag,
+               t.loop_count,
+               t.schedule_flag,
+               t.start_time,
+               t.actual_start_time,
+               t.finish_time,
+               t.task_status,
+               t.current_loop_no,
+               t.current_point_seq,
+               t.current_action_seq,
+               t.command_json,
+               t.error_message,
+               t.create_time,
+               t.remark
+        from biz_robot_task t
+            left join biz_task_template tpl on tpl.template_id = t.template_id and tpl.del_flag = '0'
+            left join biz_scene_route r on r.route_id = t.route_id and r.del_flag = '0'
+    </sql>
+
+    <sql id="queryWhere">
+        <where>
+            t.del_flag = '0'
+            <if test="bo.taskNo != null and bo.taskNo != ''">
+                and t.task_no like concat('%', #{bo.taskNo}, '%')
+            </if>
+            <if test="bo.taskName != null and bo.taskName != ''">
+                and t.task_name like concat('%', #{bo.taskName}, '%')
+            </if>
+            <if test="bo.taskType != null and bo.taskType != ''">
+                and t.task_type = #{bo.taskType}
+            </if>
+            <if test="bo.taskStatus != null and bo.taskStatus != ''">
+                and t.task_status = #{bo.taskStatus}
+            </if>
+            <if test="bo.templateId != null">
+                and t.template_id = #{bo.templateId}
+            </if>
+            <if test="bo.routeId != null">
+                and t.route_id = #{bo.routeId}
+            </if>
+            <if test="bo.vehicleId != null">
+                and t.vehicle_id = #{bo.vehicleId}
+            </if>
+            <if test="bo.vin != null and bo.vin != ''">
+                and t.vin like concat('%', #{bo.vin}, '%')
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and t.plate_no like concat('%', #{bo.plateNo}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectRobotTaskList" resultType="org.dromara.manager.domain.vo.BizRobotTaskVo">
+        <include refid="selectRobotTaskVo"/>
+        <include refid="queryWhere"/>
+        order by case t.task_status
+                     when 'pending' then 1
+                     when 'running' then 2
+                     when 'abnormal' then 3
+                     when 'canceled' then 4
+                     when 'completed' then 5
+                     else 9 end,
+                 t.start_time asc,
+                 t.create_time desc,
+                 t.task_id desc
+    </select>
+
+    <select id="selectRobotTaskPage" resultType="org.dromara.manager.domain.vo.BizRobotTaskVo">
+        <include refid="selectRobotTaskVo"/>
+        <include refid="queryWhere"/>
+        order by case t.task_status
+                     when 'pending' then 1
+                     when 'running' then 2
+                     when 'abnormal' then 3
+                     when 'canceled' then 4
+                     when 'completed' then 5
+                     else 9 end,
+                 t.start_time asc,
+                 t.create_time desc,
+                 t.task_id desc
+    </select>
+
+</mapper>
