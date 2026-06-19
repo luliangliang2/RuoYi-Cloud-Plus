@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -127,33 +126,6 @@ public class BizTaskTemplateServiceImpl implements IBizTaskTemplateService {
         query.setRouteId(routeId);
         query.setStatus("0");
         return scenePointMapper.selectScenePointList(query);
-    }
-
-    /**
-     * 预览任务模板下发指令
-     *
-     * @param templateId 模板ID
-     * @return 指令JSON结构
-     */
-    @Override
-    public Map<String, Object> previewCommand(Long templateId) {
-        BizTaskTemplateVo template = queryById(templateId);
-        if (template == null) {
-            throw new ServiceException("任务模板不存在");
-        }
-        BizSceneRoute route = sceneRouteMapper.selectById(template.getRouteId());
-
-        Map<String, Object> command = new LinkedHashMap<>();
-        command.put("command", "executeTaskTemplate");
-        command.put("version", "1.0");
-        command.put("templateId", template.getTemplateId());
-        command.put("templateCode", template.getTemplateCode());
-        command.put("templateName", template.getTemplateName());
-        command.put("templateDesc", template.getTemplateDesc());
-        command.put("route", buildRouteCommand(template, route));
-        command.put("points", buildPointCommands(template.getPoints()));
-        command.put("remark", template.getRemark());
-        return command;
     }
 
     /**
@@ -326,91 +298,6 @@ public class BizTaskTemplateServiceImpl implements IBizTaskTemplateService {
 
     private Integer defaultSequence(Integer sequence) {
         return sequence == null ? Integer.MAX_VALUE : sequence;
-    }
-
-    private Map<String, Object> buildRouteCommand(BizTaskTemplateVo template, BizSceneRoute route) {
-        Map<String, Object> routeCommand = new LinkedHashMap<>();
-        routeCommand.put("routeId", template.getRouteId());
-        routeCommand.put("routeName", template.getRouteName());
-        if (route != null) {
-            routeCommand.put("gcj02Path", parseJsonValue(route.getGcj02Path()));
-            routeCommand.put("bd09Path", parseJsonValue(route.getBd09Path()));
-            routeCommand.put("wgs84Path", parseJsonValue(route.getWgs84Path()));
-        }
-        return routeCommand;
-    }
-
-    private List<Map<String, Object>> buildPointCommands(List<BizTaskTemplatePointVo> points) {
-        if (points == null || points.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return points.stream()
-            .sorted(Comparator.comparing(point -> defaultSequence(point.getSequence())))
-            .map(this::buildPointCommand)
-            .toList();
-    }
-
-    private Map<String, Object> buildPointCommand(BizTaskTemplatePointVo point) {
-        Map<String, Object> pointCommand = new LinkedHashMap<>();
-        pointCommand.put("sequence", point.getSequence());
-        pointCommand.put("pointId", point.getPointId());
-        pointCommand.put("pointName", point.getPointName());
-        pointCommand.put("required", "1".equals(point.getRequiredFlag()));
-        pointCommand.put("coordinate", buildCoordinate(point));
-        pointCommand.put("actions", buildActionCommands(point.getActions()));
-        pointCommand.put("remark", point.getRemark());
-        return pointCommand;
-    }
-
-    private Map<String, Object> buildCoordinate(BizTaskTemplatePointVo point) {
-        Map<String, Object> coordinate = new LinkedHashMap<>();
-        Map<String, Object> gcj02 = new LinkedHashMap<>();
-        gcj02.put("lng", point.getGcj02Lng());
-        gcj02.put("lat", point.getGcj02Lat());
-        coordinate.put("gcj02", gcj02);
-
-        Map<String, Object> bd09 = new LinkedHashMap<>();
-        bd09.put("lng", point.getBd09Lng());
-        bd09.put("lat", point.getBd09Lat());
-        coordinate.put("bd09", bd09);
-
-        Map<String, Object> wgs84 = new LinkedHashMap<>();
-        wgs84.put("lng", point.getWgs84Lng());
-        wgs84.put("lat", point.getWgs84Lat());
-        coordinate.put("wgs84", wgs84);
-        return coordinate;
-    }
-
-    private List<Map<String, Object>> buildActionCommands(List<BizTaskTemplateActionVo> actions) {
-        if (actions == null || actions.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return actions.stream()
-            .sorted(Comparator.comparing(action -> defaultSequence(action.getSequence())))
-            .map(this::buildActionCommand)
-            .toList();
-    }
-
-    private Map<String, Object> buildActionCommand(BizTaskTemplateActionVo action) {
-        Map<String, Object> actionCommand = new LinkedHashMap<>();
-        actionCommand.put("sequence", action.getSequence());
-        actionCommand.put("actionId", action.getActionId());
-        actionCommand.put("actionCode", action.getActionCode());
-        actionCommand.put("actionName", action.getActionName());
-        actionCommand.put("actionType", action.getActionType());
-        actionCommand.put("params", parseJsonValue(action.getActionParams()));
-        actionCommand.put("remark", action.getRemark());
-        return actionCommand;
-    }
-
-    private Object parseJsonValue(String value) {
-        if (StringUtils.isBlank(value)) {
-            return null;
-        }
-        if (!JSONUtil.isTypeJSON(value)) {
-            return value;
-        }
-        return JSONUtil.parse(value);
     }
 
     private void fillDetails(BizTaskTemplateVo vo) {
