@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -126,6 +127,30 @@ public class BizTaskTemplateServiceImpl implements IBizTaskTemplateService {
         query.setRouteId(routeId);
         query.setStatus("0");
         return scenePointMapper.selectScenePointList(query);
+    }
+
+    /**
+     * 预览任务模板下发指令
+     *
+     * @param templateId 模板ID
+     * @return 指令JSON
+     */
+    @Override
+    public Map<String, Object> previewCommand(Long templateId) {
+        BizTaskTemplateVo template = queryById(templateId);
+        if (template == null) {
+            throw new ServiceException("任务模板不存在");
+        }
+        Map<String, Object> root = new LinkedHashMap<>();
+        root.put("commandType", "taskTemplate");
+        root.put("templateId", template.getTemplateId());
+        root.put("templateCode", template.getTemplateCode());
+        root.put("templateName", template.getTemplateName());
+        root.put("routeId", template.getRouteId());
+        root.put("routeName", template.getRouteName());
+        root.put("templateDesc", template.getTemplateDesc());
+        root.put("points", buildPreviewPoints(template.getPoints()));
+        return root;
     }
 
     /**
@@ -298,6 +323,57 @@ public class BizTaskTemplateServiceImpl implements IBizTaskTemplateService {
 
     private Integer defaultSequence(Integer sequence) {
         return sequence == null ? Integer.MAX_VALUE : sequence;
+    }
+
+    private List<Map<String, Object>> buildPreviewPoints(List<BizTaskTemplatePointVo> points) {
+        if (points == null || points.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<BizTaskTemplatePointVo> sortedPoints = new ArrayList<>(points);
+        sortedPoints.sort(Comparator.comparing(point -> defaultSequence(point.getSequence())));
+        List<Map<String, Object>> result = new ArrayList<>();
+        int pointSequence = 1;
+        for (BizTaskTemplatePointVo point : sortedPoints) {
+            Map<String, Object> pointJson = new LinkedHashMap<>();
+            pointJson.put("templatePointId", point.getTemplatePointId());
+            pointJson.put("pointId", point.getPointId());
+            pointJson.put("pointName", point.getPointName());
+            pointJson.put("sequence", point.getSequence() == null ? pointSequence : point.getSequence());
+            pointJson.put("requiredFlag", point.getRequiredFlag());
+            pointJson.put("gcj02Lng", point.getGcj02Lng());
+            pointJson.put("gcj02Lat", point.getGcj02Lat());
+            pointJson.put("bd09Lng", point.getBd09Lng());
+            pointJson.put("bd09Lat", point.getBd09Lat());
+            pointJson.put("wgs84Lng", point.getWgs84Lng());
+            pointJson.put("wgs84Lat", point.getWgs84Lat());
+            pointJson.put("actions", buildPreviewActions(point.getActions()));
+            result.add(pointJson);
+            pointSequence++;
+        }
+        return result;
+    }
+
+    private List<Map<String, Object>> buildPreviewActions(List<BizTaskTemplateActionVo> actions) {
+        if (actions == null || actions.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<BizTaskTemplateActionVo> sortedActions = new ArrayList<>(actions);
+        sortedActions.sort(Comparator.comparing(action -> defaultSequence(action.getSequence())));
+        List<Map<String, Object>> result = new ArrayList<>();
+        int actionSequence = 1;
+        for (BizTaskTemplateActionVo action : sortedActions) {
+            Map<String, Object> actionJson = new LinkedHashMap<>();
+            actionJson.put("templateActionId", action.getTemplateActionId());
+            actionJson.put("actionId", action.getActionId());
+            actionJson.put("actionCode", action.getActionCode());
+            actionJson.put("actionName", action.getActionName());
+            actionJson.put("actionType", action.getActionType());
+            actionJson.put("sequence", action.getSequence() == null ? actionSequence : action.getSequence());
+            actionJson.put("params", StringUtils.isBlank(action.getActionParams()) ? null : JSONUtil.parse(action.getActionParams()));
+            result.add(actionJson);
+            actionSequence++;
+        }
+        return result;
     }
 
     private void fillDetails(BizTaskTemplateVo vo) {
