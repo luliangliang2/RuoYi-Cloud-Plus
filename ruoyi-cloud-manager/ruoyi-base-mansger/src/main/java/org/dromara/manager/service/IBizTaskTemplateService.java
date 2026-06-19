@@ -8,6 +8,7 @@ import org.dromara.manager.domain.vo.BizTaskTemplateVo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务模板Service接口
@@ -49,6 +50,14 @@ public interface IBizTaskTemplateService {
      * @return 点位列表
      */
     List<BizScenePointVo> queryRoutePoints(Long routeId);
+
+    /**
+     * 预览任务模板下发指令
+     *
+     * @param templateId 模板ID
+     * @return 指令JSON结构
+     */
+    Map<String, Object> previewCommand(Long templateId);
 
     /**
      * 新增任务模板

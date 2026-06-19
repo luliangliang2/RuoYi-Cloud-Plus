@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 任务模板
@@ -88,6 +89,18 @@ public class BizTaskTemplateController extends BaseController {
     public R<List<BizScenePointVo>> routePoints(@NotNull(message = "路线ID不能为空")
                                                 @PathVariable("routeId") Long routeId) {
         return R.ok(taskTemplateService.queryRoutePoints(routeId));
+    }
+
+    /**
+     * 预览任务模板下发指令
+     *
+     * @param templateId 主键
+     */
+    @SaCheckPermission("manager:taskTemplate:preview")
+    @GetMapping("/{templateId}/command/preview")
+    public R<Map<String, Object>> previewCommand(@NotNull(message = "主键不能为空")
+                                                 @PathVariable("templateId") Long templateId) {
+        return R.ok(taskTemplateService.previewCommand(templateId));
     }
 
     /**
