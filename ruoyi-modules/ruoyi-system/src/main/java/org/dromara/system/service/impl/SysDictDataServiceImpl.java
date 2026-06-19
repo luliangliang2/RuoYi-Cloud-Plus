@@ -1,16 +1,14 @@
 package org.dromara.system.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.CacheNames;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.redis.utils.CacheUtils;
 import org.dromara.system.domain.SysDictData;
 import org.dromara.system.domain.bo.SysDictDataBo;
@@ -31,7 +29,7 @@ import java.util.List;
 @Service
 public class SysDictDataServiceImpl implements ISysDictDataService {
 
-    private final SysDictDataMapper baseMapper;
+    private final SysDictDataMapper dictDataMapper;
 
     /**
      * 分页查询字典数据列表
@@ -41,10 +39,10 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      * @return 字典数据分页列表
      */
     @Override
-    public TableDataInfo<SysDictDataVo> selectPageDictDataList(SysDictDataBo dictData, PageQuery pageQuery) {
+    public PageResult<SysDictDataVo> selectPageDictDataList(SysDictDataBo dictData, PageQuery pageQuery) {
         LambdaQueryWrapper<SysDictData> lqw = buildQueryWrapper(dictData);
-        Page<SysDictDataVo> page = baseMapper.selectVoPage(pageQuery.build(), lqw);
-        return TableDataInfo.build(page);
+        Page<SysDictDataVo> page = dictDataMapper.selectVoPage(pageQuery.build(), lqw);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -56,16 +54,16 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public List<SysDictDataVo> selectDictDataList(SysDictDataBo dictData) {
         LambdaQueryWrapper<SysDictData> lqw = buildQueryWrapper(dictData);
-        return baseMapper.selectVoList(lqw);
+        return dictDataMapper.selectVoList(lqw);
     }
 
     private LambdaQueryWrapper<SysDictData> buildQueryWrapper(SysDictDataBo bo) {
-        LambdaQueryWrapper<SysDictData> lqw = Wrappers.lambdaQuery();
-        lqw.eq(bo.getDictSort() != null, SysDictData::getDictSort, bo.getDictSort());
-        lqw.like(StringUtils.isNotBlank(bo.getDictLabel()), SysDictData::getDictLabel, bo.getDictLabel());
-        lqw.eq(StringUtils.isNotBlank(bo.getDictType()), SysDictData::getDictType, bo.getDictType());
-        lqw.orderByAsc(SysDictData::getDictSort, SysDictData::getDictCode);
-        return lqw;
+        return QueryBuilder.lambda(SysDictData.class)
+            .eqIfPresent(SysDictData::getDictSort, bo.getDictSort())
+            .likeIfText(SysDictData::getDictLabel, bo.getDictLabel())
+            .eqIfText(SysDictData::getDictType, bo.getDictType())
+            .orderByAsc(SysDictData::getDictSort, SysDictData::getDictCode)
+            .build();
     }
 
     /**
@@ -77,10 +75,11 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public String selectDictLabel(String dictType, String dictValue) {
-        return baseMapper.selectOne(new LambdaQueryWrapper<SysDictData>()
-                .select(SysDictData::getDictLabel)
-                .eq(SysDictData::getDictType, dictType)
-                .eq(SysDictData::getDictValue, dictValue))
+        return dictDataMapper.lambda()
+            .select(SysDictData::getDictLabel)
+            .eq(SysDictData::getDictType, dictType)
+            .eq(SysDictData::getDictValue, dictValue)
+            .one()
             .getDictLabel();
     }
 
@@ -92,7 +91,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public SysDictDataVo selectDictDataById(Long dictCode) {
-        return baseMapper.selectVoById(dictCode);
+        return dictDataMapper.selectVoById(dictCode);
     }
 
     /**
@@ -102,8 +101,8 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public void deleteDictDataByIds(List<Long> dictCodes) {
-        List<SysDictData> list = baseMapper.selectByIds(dictCodes);
-        baseMapper.deleteByIds(dictCodes);
+        List<SysDictData> list = dictDataMapper.selectByIds(dictCodes);
+        dictDataMapper.deleteByIds(dictCodes);
         list.forEach(x -> CacheUtils.evict(CacheNames.SYS_DICT, x.getDictType()));
     }
 
@@ -117,9 +116,9 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public List<SysDictDataVo> insertDictData(SysDictDataBo bo) {
         SysDictData data = MapstructUtils.convert(bo, SysDictData.class);
-        int row = baseMapper.insert(data);
+        int row = dictDataMapper.insert(data);
         if (row > 0) {
-            return baseMapper.selectDictDataByType(data.getDictType());
+            return dictDataMapper.selectDictDataByType(data.getDictType());
         }
         throw new ServiceException("操作失败");
     }
@@ -134,9 +133,9 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
     @Override
     public List<SysDictDataVo> updateDictData(SysDictDataBo bo) {
         SysDictData data = MapstructUtils.convert(bo, SysDictData.class);
-        int row = baseMapper.updateById(data);
+        int row = dictDataMapper.updateById(data);
         if (row > 0) {
-            return baseMapper.selectDictDataByType(data.getDictType());
+            return dictDataMapper.selectDictDataByType(data.getDictType());
         }
         throw new ServiceException("操作失败");
     }
@@ -149,10 +148,11 @@ public class SysDictDataServiceImpl implements ISysDictDataService {
      */
     @Override
     public boolean checkDictDataUnique(SysDictDataBo dict) {
-        boolean exist = baseMapper.exists(new LambdaQueryWrapper<SysDictData>()
+        boolean exist = dictDataMapper.lambda()
             .eq(SysDictData::getDictType, dict.getDictType())
             .eq(SysDictData::getDictValue, dict.getDictValue())
-            .ne(ObjectUtil.isNotNull(dict.getDictCode()), SysDictData::getDictCode, dict.getDictCode()));
+            .neIfPresent(SysDictData::getDictCode, dict.getDictCode())
+            .exists();
         return !exist;
     }
 

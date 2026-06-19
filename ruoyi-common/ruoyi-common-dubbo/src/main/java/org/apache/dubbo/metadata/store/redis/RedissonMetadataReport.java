@@ -5,10 +5,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.report.identifier.*;
+import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 import org.dromara.common.core.utils.SpringUtils;
@@ -18,10 +22,14 @@ import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
@@ -35,7 +43,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
 
     // Lua script for atomic CAS on a hash field:
     // If the current value equals ticket (or field is absent, or ticket is empty), update and return 1; else return 0.
-    private static final String CAS_LUA ="""
+    private static final String CAS_LUA = """
             local old = redis.call('HGET', KEYS[1], ARGV[1])
             if old == false or ARGV[3] == '' or old == ARGV[3] then
                 redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
@@ -48,7 +56,6 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
 
     // Lazily initialized — Dubbo SPI creates this class before Spring is fully ready
     private volatile RedissonClient redissonClient;
-
     // topic key → RTopic (keeps the subscription alive)
     private final ConcurrentHashMap<String, RTopic> topicMap = new ConcurrentHashMap<>();
     // serviceKey → listeners (for dispatching mapping change events)
@@ -137,7 +144,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
     @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier id, Map<String, String> instanceMetadata) {
         String content = getMetadata(id.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        return org.apache.dubbo.common.utils.JsonUtils.toJavaObject(content, MetadataInfo.class);
+        return JsonUtils.toJavaObject(content, MetadataInfo.class);
     }
 
     @Override
@@ -162,7 +169,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
                 newConfigContent,
                 (String) ticket);
         } catch (Exception e) {
-            log.warn("registerServiceAppMapping failed.", e);
+            logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "registerServiceAppMapping failed.", e);
             return false;
         }
     }
@@ -230,7 +237,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
             }
         } catch (Exception e) {
             String msg = "Failed to store metadata key=" + key + ", cause: " + e.getMessage();
-            log.error(msg, e);
+            logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
     }
@@ -240,7 +247,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
             return getRedisson().<String>getBucket(key, StringCodec.INSTANCE).get();
         } catch (Exception e) {
             String msg = "Failed to get metadata key=" + key + ", cause: " + e.getMessage();
-            log.error(msg, e);
+            logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
     }
@@ -250,7 +257,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
             getRedisson().getBucket(key, StringCodec.INSTANCE).delete();
         } catch (Exception e) {
             String msg = "Failed to delete metadata key=" + key + ", cause: " + e.getMessage();
-            log.error(msg, e);
+            logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
     }
@@ -260,7 +267,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
             return getRedisson().<String, String>getMap(key, StringCodec.INSTANCE).get(field);
         } catch (Exception e) {
             String msg = "Failed to get mapping key=" + key + " field=" + field + ", cause: " + e.getMessage();
-            log.error(msg, e);
+            logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
     }
@@ -275,7 +282,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
             Long result = getRedisson().getScript(StringCodec.INSTANCE).eval(
                 RScript.Mode.READ_WRITE,
                 CAS_LUA,
-                RScript.ReturnType.INTEGER,
+                RScript.ReturnType.LONG,
                 Collections.singletonList(key),
                 field, newValue, ticket == null ? "" : ticket
             );
@@ -286,7 +293,7 @@ public class RedissonMetadataReport extends AbstractMetadataReport {
             return false;
         } catch (Exception e) {
             String msg = "Failed to store mapping key=" + key + " field=" + field + ", cause: " + e.getMessage();
-            log.error(msg, e);
+            logger.error(TRANSPORT_FAILED_RESPONSE, "", "", msg, e);
             throw new RpcException(msg, e);
         }
     }

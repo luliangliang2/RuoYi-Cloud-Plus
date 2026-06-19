@@ -1,11 +1,12 @@
 package org.dromara.system.service;
 
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
 import org.dromara.system.domain.bo.SysUserBo;
 import org.dromara.system.domain.vo.SysUserExportVo;
 import org.dromara.system.domain.vo.SysUserVo;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public interface ISysUserService {
      * @param pageQuery 发呢也
      * @return 用户信息
      */
-    TableDataInfo<SysUserVo> selectPageUserList(SysUserBo user, PageQuery pageQuery);
+    PageResult<SysUserVo> selectPageUserList(SysUserBo user, PageQuery pageQuery);
 
     /**
      * 导出用户列表
@@ -38,7 +39,7 @@ public interface ISysUserService {
      * @param user 用户信息
      * @return 用户信息集合信息
      */
-    TableDataInfo<SysUserVo> selectAllocatedList(SysUserBo user, PageQuery pageQuery);
+    PageResult<SysUserVo> selectAllocatedList(SysUserBo user, PageQuery pageQuery);
 
     /**
      * 根据条件分页查询未分配用户角色列表
@@ -46,7 +47,7 @@ public interface ISysUserService {
      * @param user 用户信息
      * @return 用户信息集合信息
      */
-    TableDataInfo<SysUserVo> selectUnallocatedList(SysUserBo user, PageQuery pageQuery);
+    PageResult<SysUserVo> selectUnallocatedList(SysUserBo user, PageQuery pageQuery);
 
     /**
      * 通过用户名查询用户
@@ -59,10 +60,10 @@ public interface ISysUserService {
     /**
      * 通过手机号查询用户
      *
-     * @param phonenumber 手机号
+     * @param phoneNumber 手机号
      * @return 用户对象信息
      */
-    SysUserVo selectUserByPhonenumber(String phonenumber);
+    SysUserVo selectUserByPhoneNumber(String phoneNumber);
 
     /**
      * 通过用户ID查询用户
@@ -149,7 +150,7 @@ public interface ISysUserService {
      * @param user 用户信息
      * @return 结果
      */
-    boolean registerUser(SysUserBo user, String tenantId);
+    boolean registerUser(SysUserBo user);
 
     /**
      * 修改用户信息
@@ -183,15 +184,6 @@ public interface ISysUserService {
      * @return 结果
      */
     int updateUserProfile(SysUserBo user);
-
-    /**
-     * 修改用户头像
-     *
-     * @param userId 用户ID
-     * @param avatar 头像地址
-     * @return 结果
-     */
-    boolean updateUserAvatar(Long userId, Long avatar);
 
     /**
      * 重置用户密码
@@ -272,6 +264,6 @@ public interface ISysUserService {
      * @param roleIds 角色ids
      * @return 用户ids
      */
-    List<Long> selectUserIdsByRoleIds(List<Long> roleIds);
+    List<Long> selectUserIdsByRoleIds(Collection<Long> roleIds);
 
 }

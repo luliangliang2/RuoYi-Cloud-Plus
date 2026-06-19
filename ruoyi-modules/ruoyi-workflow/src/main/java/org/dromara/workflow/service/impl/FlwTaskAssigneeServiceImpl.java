@@ -9,7 +9,6 @@ import cn.hutool.core.util.StrUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.dromara.common.core.enums.FormatsType;
 import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
@@ -112,8 +111,7 @@ public class FlwTaskAssigneeServiceImpl implements IFlwTaskAssigneeService, Hand
         }
 
         // 查询所有类型对应的 ID 名称映射
-        Map<TaskAssigneeEnum, Map<String, String>> nameMap = new EnumMap<>(TaskAssigneeEnum.class);
-        typeIdMap.forEach((type, ids) -> nameMap.put(type, this.getNamesByType(type, ids)));
+        Map<TaskAssigneeEnum, Map<String, String>> nameMap = this.getNamesByTypes(typeIdMap);
         // 组装返回结果，保持原始顺序
         return parsedMap.entrySet().stream()
             .map(entry -> {
@@ -185,7 +183,7 @@ public class FlwTaskAssigneeServiceImpl implements IFlwTaskAssigneeService, Hand
             .setHandlerCode(assignee -> StringUtils.blankToDefault(assignee.getHandlerCode(), "无"))
             .setHandlerName(assignee -> StringUtils.blankToDefault(assignee.getHandlerName(), "无"))
             .setGroupName(assignee -> this.getGroupName(type, assignee.getGroupName()))
-            .setCreateTime(assignee -> DateUtils.parseDateToStr(FormatsType.YYYY_MM_DD_HH_MM_SS, assignee.getCreateTime()));
+            .setCreateTime(assignee -> DateUtils.formatDateTime(assignee.getCreateTime()));
     }
 
     /**
@@ -208,10 +206,23 @@ public class FlwTaskAssigneeServiceImpl implements IFlwTaskAssigneeService, Hand
                 typeIdMap.computeIfAbsent(parsed.getKey(), k -> new ArrayList<>()).add(parsed.getValue());
             }
         }
-        return typeIdMap.entrySet().stream()
-            .flatMap(entry -> this.getUsersByType(entry.getKey(), entry.getValue()).stream())
+        return this.getUsersByTypes(typeIdMap).stream()
             .distinct()
             .toList();
+    }
+
+    private List<RemoteUserVo> getUsersByTypes(Map<TaskAssigneeEnum, List<String>> typeIdMap) {
+        return typeIdMap.entrySet().stream()
+            .map(entry -> this.getUsersByType(entry.getKey(), entry.getValue()))
+            .filter(CollUtil::isNotEmpty)
+            .flatMap(Collection::stream)
+            .toList();
+    }
+
+    private Map<TaskAssigneeEnum, Map<String, String>> getNamesByTypes(Map<TaskAssigneeEnum, List<String>> typeIdMap) {
+        Map<TaskAssigneeEnum, Map<String, String>> nameMap = new EnumMap<>(TaskAssigneeEnum.class);
+        typeIdMap.forEach((type, ids) -> nameMap.put(type, this.getNamesByType(type, ids)));
+        return nameMap;
     }
 
     /**

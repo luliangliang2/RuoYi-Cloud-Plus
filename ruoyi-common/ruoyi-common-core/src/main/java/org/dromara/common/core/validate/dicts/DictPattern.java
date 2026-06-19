@@ -19,14 +19,14 @@ import java.lang.annotation.Target;
 public @interface DictPattern {
 
     /**
-     * 字典类型，如 "sys_user_sex"
+     * 字典类型，如 "sys_user_gender"
      */
     String dictType();
 
     /**
      * 分隔符
      */
-    String separator();
+    String separator() default ",";
 
     /**
      * 默认校验失败提示信息

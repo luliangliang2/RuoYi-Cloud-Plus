@@ -1,22 +1,21 @@
 package org.dromara.system.controller.system;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.domain.R;
-import org.dromara.common.idempotent.annotation.RepeatSubmit;
-import org.dromara.common.web.core.BaseController;
-import org.dromara.common.excel.utils.ExcelUtil;
+import org.dromara.common.excel.utils.ExcelBuilder;
 import org.dromara.common.log.annotation.Log;
 import org.dromara.common.log.enums.BusinessType;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.redis.annotation.RepeatSubmit;
+import org.dromara.common.web.core.BaseController;
 import org.dromara.system.domain.bo.SysConfigBo;
 import org.dromara.system.domain.vo.SysConfigVo;
 import org.dromara.system.service.ISysConfigService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +38,8 @@ public class SysConfigController extends BaseController {
      */
     @SaCheckPermission("system:config:list")
     @GetMapping("/list")
-    public TableDataInfo<SysConfigVo> list(SysConfigBo config, PageQuery pageQuery) {
-        return configService.selectPageConfigList(config, pageQuery);
+    public R<PageResult<SysConfigVo>> list(SysConfigBo config, PageQuery pageQuery) {
+        return R.ok(configService.selectPageConfigList(config, pageQuery));
     }
 
     /**
@@ -51,7 +50,7 @@ public class SysConfigController extends BaseController {
     @PostMapping("/export")
     public void export(SysConfigBo config, HttpServletResponse response) {
         List<SysConfigVo> list = configService.selectConfigList(config);
-        ExcelUtil.exportExcel(list, "参数数据", SysConfigVo.class, response);
+        ExcelBuilder.of(list, SysConfigVo.class).sheetName("参数数据").toResponse(response);
     }
 
     /**
@@ -72,7 +71,7 @@ public class SysConfigController extends BaseController {
      */
     @GetMapping(value = "/configKey/{configKey}")
     public R<String> getConfigKey(@PathVariable String configKey) {
-        return R.ok("操作成功", configService.selectConfigByKey(configKey));
+        return R.data(configService.selectConfigByKey(configKey));
     }
 
     /**

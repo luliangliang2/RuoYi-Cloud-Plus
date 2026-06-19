@@ -22,10 +22,10 @@
             <artifactId>ruoyi-common-nacos</artifactId>
         </dependency>
 
-        <!-- Apache Velocity -->
+        <!-- FreeMarker代码生成模板 -->
         <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity-engine-core</artifactId>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
         </dependency>
 
         <!-- RuoYi Common Log -->
@@ -36,7 +36,7 @@
 
         <dependency>
             <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-idempotent</artifactId>
+            <artifactId>ruoyi-common-redis</artifactId>
         </dependency>
 
         <dependency>
@@ -59,10 +59,6 @@
             <artifactId>ruoyi-common-dubbo</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-tenant</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.dromara</groupId>

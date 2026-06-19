@@ -1,46 +1,25 @@
 package org.dromara.auth.listener;
 
 import cn.dev33.satoken.listener.SaTokenListener;
-import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
-import cn.hutool.core.convert.Convert;
-import cn.hutool.http.useragent.UserAgent;
-import cn.hutool.http.useragent.UserAgentUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.DubboReference;
-import org.dromara.common.core.constant.CacheConstants;
-import org.dromara.common.core.constant.Constants;
-import org.dromara.common.core.utils.MessageUtils;
-import org.dromara.common.core.utils.ServletUtils;
+import org.dromara.auth.event.UserLoginSuccessEvent;
+import org.dromara.common.core.constant.CacheNames;
 import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.core.utils.ip.AddressUtils;
 import org.dromara.common.log.event.LogininforEvent;
 import org.dromara.common.redis.utils.RedisUtils;
-import org.dromara.common.satoken.utils.LoginHelper;
-import org.dromara.common.tenant.helper.TenantHelper;
-import org.dromara.resource.api.RemoteMessageService;
-import org.dromara.system.api.RemoteUserService;
-import org.dromara.system.api.domain.SysUserOnline;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
 
 /**
  * 用户行为 侦听器的实现
  *
  * @author Lion Li
  */
-@RequiredArgsConstructor
 @Component
 @Slf4j
 public class UserActionListener implements SaTokenListener {
-
-    @DubboReference
-    private RemoteUserService remoteUserService;
-    @DubboReference
-    private RemoteMessageService remoteMessageService;
 
     /**
      * 每次登录时触发

@@ -6,20 +6,21 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.ReflectionKit;
+import com.baomidou.mybatisplus.core.toolkit.reflect.GenericTypeUtils;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 import org.dromara.common.core.utils.MapstructUtils;
+import org.dromara.common.core.utils.StreamUtils;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * 自定义 Mapper 接口, 实现 自定义扩展
@@ -34,26 +35,42 @@ public interface BaseMapperPlus<T, V> extends BaseMapper<T> {
 
     Log log = LogFactory.getLog(BaseMapperPlus.class);
 
+    ClassValue<Class<?>[]> TYPE_ARGUMENT_CACHE = new ClassValue<>() {
+        @Override
+        protected Class<?>[] computeValue(Class<?> type) {
+            return GenericTypeUtils.resolveTypeArguments(type, BaseMapperPlus.class);
+        }
+    };
+
     /**
-     * 获取当前类的泛型类型 V 的 Class 对象
-     * <p>
-     * 该方法使用反射机制从当前类（继承自 BaseMapperPlus 类）的泛型参数中获取第一个泛型类型 V 的 Class 对象
+     * 获取当前实例对象关联的泛型类型 V 的 Class 对象
      *
-     * @return 当前类的泛型类型 V 的 Class 对象
+     * @return 返回当前实例对象关联的泛型类型 V 的 Class 对象
      */
     default Class<V> currentVoClass() {
-        return (Class<V>) ReflectionKit.getSuperClassGenericType(this.getClass(), BaseMapperPlus.class, 1);
+        return (Class<V>) currentMapperTypes()[1];
     }
 
     /**
-     * 获取当前类的泛型类型 T 的 Class 对象
-     * <p>
-     * 该方法使用反射机制从当前类（继承自 BaseMapperPlus 类）的泛型参数中获取第一个泛型类型 T 的 Class 对象
+     * 获取当前实例对象关联的泛型类型 T 的 Class 对象
      *
-     * @return 当前类的泛型类型 T 的 Class 对象
+     * @return 返回当前实例对象关联的泛型类型 T 的 Class 对象
      */
     default Class<T> currentModelClass() {
-        return (Class<T>) ReflectionKit.getSuperClassGenericType(this.getClass(), BaseMapperPlus.class, 0);
+        return (Class<T>) currentMapperTypes()[0];
+    }
+
+    /**
+     * 获取当前 Mapper 的实体与 VO 泛型类型。
+     *
+     * @return 泛型类型数组
+     */
+    private Class<?>[] currentMapperTypes() {
+        Class<?>[] types = TYPE_ARGUMENT_CACHE.get(this.getClass());
+        if (types == null || types.length < 2) {
+            throw new IllegalStateException("无法解析 Mapper 泛型类型: " + this.getClass().getName());
+        }
+        return types;
     }
 
     /**
@@ -63,6 +80,24 @@ public interface BaseMapperPlus<T, V> extends BaseMapper<T> {
      */
     default List<T> selectList() {
         return this.selectList(new QueryWrapper<>());
+    }
+
+    /**
+     * 创建当前 Mapper 绑定的 Lambda CRUD 链式操作。
+     *
+     * @return Lambda CRUD 链式包装器
+     */
+    default LambdaCrudChainWrapper<T, V> lambda() {
+        return new LambdaCrudChainWrapper<>(this);
+    }
+
+    /**
+     * 创建当前 Mapper 绑定的 Lambda 链式更新。
+     *
+     * @return Lambda 链式更新包装器
+     */
+    default LambdaUpdateChainWrapper<T> lambdaUpdate() {
+        return ChainWrappers.lambdaUpdateChain(this);
     }
 
     /**
@@ -236,11 +271,7 @@ public interface BaseMapperPlus<T, V> extends BaseMapper<T> {
      * @return 查询到的单个VO对象，经过类型转换为指定的VO类后返回
      */
     default <C> C selectVoOne(Wrapper<T> wrapper, Class<C> voClass) {
-        T obj = this.selectOne(wrapper);
-        if (ObjectUtil.isNull(obj)) {
-            return null;
-        }
-        return MapstructUtils.convert(obj, voClass);
+        return selectVoOne(wrapper, voClass, true);
     }
 
     /**
@@ -337,7 +368,7 @@ public interface BaseMapperPlus<T, V> extends BaseMapper<T> {
      * @return 查询到的符合条件的对象列表，经过转换为指定类型的对象后返回
      */
     default <C> List<C> selectObjs(Wrapper<T> wrapper, Function<? super Object, C> mapper) {
-        return this.selectObjs(wrapper).stream().filter(Objects::nonNull).map(mapper).collect(Collectors.toList());
+        return StreamUtils.toList(this.selectObjs(wrapper), mapper);
     }
 
 }

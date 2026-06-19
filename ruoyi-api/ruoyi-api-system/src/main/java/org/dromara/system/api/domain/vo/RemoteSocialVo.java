@@ -1,6 +1,7 @@
 package org.dromara.system.api.domain.vo;
 
 import lombok.Data;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -25,11 +26,6 @@ public class RemoteSocialVo implements Serializable {
      * 用户ID
      */
     private Long userId;
-
-    /**
-     * 租户ID
-     */
-    private String tenantId;
 
     /**
      * 认证唯一ID

@@ -1,9 +1,9 @@
 package org.dromara.system.domain.vo;
 
-import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
-import cn.idev.excel.annotation.ExcelProperty;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
+import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 import org.dromara.common.excel.annotation.ExcelDictFormat;
 import org.dromara.common.excel.convert.ExcelDictConvert;
 import org.dromara.common.translation.annotation.Translation;
@@ -12,8 +12,7 @@ import org.dromara.system.domain.SysPost;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
-
+import java.time.LocalDateTime;
 
 
 /**
@@ -82,7 +81,7 @@ public class SysPostVo implements Serializable {
      * 创建时间
      */
     @ExcelProperty(value = "创建时间")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      * 部门名

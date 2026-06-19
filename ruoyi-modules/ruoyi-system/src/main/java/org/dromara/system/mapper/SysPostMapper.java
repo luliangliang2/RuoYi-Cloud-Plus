@@ -1,14 +1,17 @@
 package org.dromara.system.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.yulichang.base.MPJBaseMapper;
 import org.dromara.common.mybatis.annotation.DataColumn;
 import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.domain.SysPost;
+import org.dromara.system.domain.SysUserPost;
 import org.dromara.system.domain.vo.SysPostVo;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,7 +19,7 @@ import java.util.List;
  *
  * @author Lion Li
  */
-public interface SysPostMapper extends BaseMapperPlus<SysPost, SysPostVo> {
+public interface SysPostMapper extends BaseMapperPlus<SysPost, SysPostVo>, MPJBaseMapper<SysPost> {
 
     /**
      * 分页查询岗位列表
@@ -57,8 +60,8 @@ public interface SysPostMapper extends BaseMapperPlus<SysPost, SysPostVo> {
         @DataColumn(key = "deptName", value = "dept_id"),
         @DataColumn(key = "userName", value = "create_by")
     })
-    default long selectPostCount(List<Long> postIds) {
-        return this.selectCount(new LambdaQueryWrapper<SysPost>().in(SysPost::getPostId, postIds));
+    default long selectPostCount(Collection<Long> postIds) {
+        return this.lambda().in(SysPost::getPostId, postIds).count();
     }
 
     /**
@@ -68,8 +71,11 @@ public interface SysPostMapper extends BaseMapperPlus<SysPost, SysPostVo> {
      * @return 岗位信息列表
      */
     default List<SysPostVo> selectPostsByUserId(Long userId) {
-        return this.selectVoList(new LambdaQueryWrapper<SysPost>()
-            .inSql(SysPost::getPostId, "select post_id from sys_user_post where user_id = " + userId));
+        return this.selectJoinList(SysPostVo.class, QueryBuilder.lambdaJoin("p", SysPost.class)
+            .selectAll(SysPost.class)
+            .leftJoin(SysUserPost.class, "sup", SysUserPost::getPostId, SysPost::getPostId)
+            .eq("sup", SysUserPost::getUserId, userId)
+            .build());
     }
 
 }

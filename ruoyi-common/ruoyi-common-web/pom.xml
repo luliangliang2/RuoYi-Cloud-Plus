@@ -33,10 +33,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- web 容器使用 undertow 性能更强 -->
+        <!-- web 容器使用 jetty -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-undertow</artifactId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+            <version>${spring-boot.version}</version>
         </dependency>
 
         <!-- SpringBoot Actuator -->
@@ -49,25 +50,6 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>net.dreamlu</groupId>
-            <artifactId>mica-metrics</artifactId>
-            <version>2.7.6</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.dreamlu</groupId>
-                    <artifactId>mica-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>net.dreamlu</groupId>
-            <artifactId>mica-core</artifactId>
-            <version>2.7.6</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 

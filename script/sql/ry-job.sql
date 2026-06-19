@@ -311,6 +311,7 @@ CREATE TABLE `sj_job`
     `create_dt`        datetime            NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_dt`        datetime            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_sj_job_01` (`namespace_id`, `biz_id`),
     KEY `idx_namespace_id_group_name` (`namespace_id`, `group_name`),
     KEY `idx_job_status_bucket_index` (`job_status`, `bucket_index`),
     KEY `idx_create_dt` (`create_dt`),
@@ -467,6 +468,7 @@ CREATE TABLE `sj_workflow`
     `create_dt`        datetime            NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_dt`        datetime            NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_sj_workflow_01` (`namespace_id`, `biz_id`),
     KEY `idx_create_dt` (`create_dt`),
     KEY `idx_namespace_id_group_name` (`namespace_id`, `group_name`),
     UNIQUE KEY `uk_sj_workflow_01` (`namespace_id`, `biz_id`)

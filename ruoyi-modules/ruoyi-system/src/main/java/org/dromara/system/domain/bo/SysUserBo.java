@@ -5,12 +5,15 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dromara.common.core.constant.SystemConstants;
 import org.dromara.common.core.xss.Xss;
-import org.dromara.common.mybatis.core.domain.BaseEntity;
 import org.dromara.system.domain.SysUser;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 用户信息业务对象 sys_user
@@ -20,9 +23,11 @@ import org.dromara.system.domain.SysUser;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @AutoMapper(target = SysUser.class, reverseConvertGenerate = false)
-public class SysUserBo extends BaseEntity {
+public class SysUserBo implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 用户ID
@@ -39,7 +44,7 @@ public class SysUserBo extends BaseEntity {
      */
     @Xss(message = "用户账号不能包含脚本字符")
     @NotBlank(message = "用户账号不能为空")
-    @Size(min = 0, max = 30, message = "用户账号长度不能超过{max}个字符")
+    @Size(min = 2, max = 30, message = "用户账号长度必须在{min}到{max}个字符之间")
     private String userName;
 
     /**
@@ -65,12 +70,17 @@ public class SysUserBo extends BaseEntity {
     /**
      * 手机号码
      */
-    private String phonenumber;
+    private String phoneNumber;
 
     /**
      * 用户性别（0男 1女 2未知）
      */
-    private String sex;
+    private String gender;
+
+    /**
+     * 头像 OSS ID
+     */
+    private Long avatar;
 
     /**
      * 密码
@@ -113,12 +123,28 @@ public class SysUserBo extends BaseEntity {
      */
     private String excludeUserIds;
 
-    public SysUserBo(Long userId) {
-        this.userId = userId;
-    }
+    /**
+     * 创建者
+     */
+    private Long createBy;
 
+    /**
+     * 更新者
+     */
+    private Long updateBy;
+
+    /**
+     * 请求参数
+     */
+    private Map<String, Object> params = new HashMap<>();
+
+    /**
+     * 判断当前用户是否为超级管理员。
+     *
+     * @return true 是超级管理员 false 不是超级管理员
+     */
     public boolean isSuperAdmin() {
-        return SystemConstants.SUPER_ADMIN_ID.equals(this.userId);
+        return SystemConstants.SUPER_ADMIN_USER_ID.equals(this.userId);
     }
 
 }

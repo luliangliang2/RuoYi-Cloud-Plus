@@ -7,13 +7,11 @@ import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.lock.annotation.Lock4j;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.enums.BusinessStatusEnum;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.StreamUtils;
@@ -23,7 +21,7 @@ import org.dromara.common.core.validate.AddGroup;
 import org.dromara.common.core.validate.EditGroup;
 import org.dromara.common.json.utils.JsonUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.mybatis.utils.IdGeneratorUtil;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.system.api.RemoteUserService;
@@ -45,7 +43,7 @@ import org.dromara.warm.flow.orm.mapper.FlowNodeMapper;
 import org.dromara.warm.flow.orm.mapper.FlowTaskMapper;
 import org.dromara.workflow.api.domain.RemoteStartProcessReturn;
 import org.dromara.workflow.common.ConditionalOnEnable;
-import org.dromara.workflow.common.constant.FlowConstant;
+import org.dromara.workflow.common.enums.MessageTypeEnum;
 import org.dromara.workflow.common.enums.TaskAssigneeType;
 import org.dromara.workflow.common.enums.TaskOperationEnum;
 import org.dromara.workflow.common.enums.TaskStatusEnum;
@@ -55,9 +53,7 @@ import org.dromara.workflow.domain.vo.FlowCopyVo;
 import org.dromara.workflow.domain.vo.FlowHisTaskVo;
 import org.dromara.workflow.domain.vo.FlowTaskVo;
 import org.dromara.workflow.domain.vo.NodeExtVo;
-import org.dromara.workflow.mapper.FlwCategoryMapper;
-import org.dromara.workflow.mapper.FlwInstanceBizExtMapper;
-import org.dromara.workflow.mapper.FlwTaskMapper;
+import org.dromara.workflow.mapper.*;
 import org.dromara.workflow.service.IFlwCommonService;
 import org.dromara.workflow.service.IFlwNodeExtService;
 import org.dromara.workflow.service.IFlwTaskAssigneeService;
@@ -89,6 +85,8 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
     private final FlowTaskMapper flowTaskMapper;
     private final FlowHisTaskMapper flowHisTaskMapper;
     private final FlwTaskMapper flwTaskMapper;
+    private final FlwHisTaskMapper flwHisTaskMapper;
+    private final FlwUserMapper flwUserMapper;
     private final FlwCategoryMapper flwCategoryMapper;
     private final FlowNodeMapper flowNodeMapper;
     private final IFlwTaskAssigneeService flwTaskAssigneeService;
@@ -124,8 +122,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
         FlowInstanceBizExt bizExt = startProcessBo.getBizExt();
 
         // 获取已有流程实例
-        FlowInstance flowInstance = flowInstanceMapper.selectOne(new LambdaQueryWrapper<>(FlowInstance.class)
-            .eq(FlowInstance::getBusinessId, businessId));
+        FlowInstance flowInstance = flowInstanceMapper.selectOne(QueryBuilder.lambda(FlowInstance.class)
+            .eq(FlowInstance::getBusinessId, businessId)
+            .build());
 
         if (ObjectUtil.isNotNull(flowInstance)) {
             // 已存在流程
@@ -137,8 +136,8 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
             taskService.mergeVariable(flowInstance, variables);
             insService.updateById(flowInstance);
             RemoteStartProcessReturn dto = new RemoteStartProcessReturn();
-            dto.setProcessInstanceId(taskList.get(0).getInstanceId());
-            dto.setTaskId(taskList.get(0).getId());
+            dto.setProcessInstanceId(taskList.getFirst().getInstanceId());
+            dto.setTaskId(taskList.getFirst().getId());
             // 保存流程实例业务信息
             this.buildFlowInstanceBizExt(flowInstance, bizExt);
             return dto;
@@ -171,7 +170,7 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
         }
         RemoteStartProcessReturn dto = new RemoteStartProcessReturn();
         dto.setProcessInstanceId(instance.getId());
-        dto.setTaskId(taskList.get(0).getId());
+        dto.setTaskId(taskList.getFirst().getId());
         return dto;
     }
 
@@ -340,9 +339,14 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
             return;
         }
         // 添加抄送人记录
-        FlowHisTask flowHisTask = flowHisTaskMapper.selectList(
-            new LambdaQueryWrapper<>(FlowHisTask.class)
-                .eq(FlowHisTask::getTaskId, task.getId())).get(0);
+        List<FlowHisTask> flowHisTasks = flowHisTaskMapper.selectList(
+            QueryBuilder.lambda(FlowHisTask.class)
+                .eq(FlowHisTask::getTaskId, task.getId())
+                .build());
+        if (CollUtil.isEmpty(flowHisTasks)) {
+            throw new ServiceException("流程历史任务不存在，无法添加抄送记录");
+        }
+        FlowHisTask flowHisTask = flowHisTasks.getFirst();
         FlowNode flowNode = new FlowNode();
         flowNode.setNodeCode(flowHisTask.getTargetNodeCode());
         flowNode.setNodeName(flowHisTask.getTargetNodeName());
@@ -366,6 +370,13 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
                 .setAssociated(taskId));
         // 批量保存抄送人员
         FlowEngine.userService().saveBatch(userList);
+        flwCommonService.sendMessage(
+            Collections.singletonList(MessageTypeEnum.SYSTEM_MESSAGE.getCode()),
+            "您收到一条新的流程抄送，请及时查看。",
+            "单据抄送提醒",
+            remoteUserService.selectListByIds(StreamUtils.toList(flowCopyList, FlowCopyBo::getUserId)),
+            PATH_TASK_COPY
+        );
     }
 
     /**
@@ -375,14 +386,10 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      * @param pageQuery  分页
      */
     @Override
-    public TableDataInfo<FlowTaskVo> pageByTaskWait(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
-        QueryWrapper<FlowTaskBo> queryWrapper = buildQueryWrapper(flowTaskBo);
-        queryWrapper.eq("t.node_type", NodeType.BETWEEN.getKey());
-        queryWrapper.in("t.processed_by", LoginHelper.getUserIdStr());
-        queryWrapper.in("t.flow_status", BusinessStatusEnum.WAITING.getStatus());
-        Page<FlowTaskVo> page = flwTaskMapper.getListRunTask(pageQuery.build(), queryWrapper);
+    public PageResult<FlowTaskVo> pageByTaskWait(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
+        Page<FlowTaskVo> page = flwTaskMapper.getListRunTask(pageQuery.build(), flowTaskBo, categoryIds(flowTaskBo), LoginHelper.getUserIdStr());
         this.wrapAssigneeInfo(page.getRecords());
-        return TableDataInfo.build(page);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -392,12 +399,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      * @param pageQuery  分页
      */
     @Override
-    public TableDataInfo<FlowHisTaskVo> pageByTaskFinish(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
-        QueryWrapper<FlowTaskBo> queryWrapper = buildQueryWrapper(flowTaskBo);
-        queryWrapper.eq("t.node_type", NodeType.BETWEEN.getKey());
-        queryWrapper.in("t.approver", LoginHelper.getUserIdStr());
-        Page<FlowHisTaskVo> page = flwTaskMapper.getListFinishTask(pageQuery.build(), queryWrapper);
-        return TableDataInfo.build(page);
+    public PageResult<FlowHisTaskVo> pageByTaskFinish(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
+        Page<FlowHisTaskVo> page = flwHisTaskMapper.getListFinishTask(pageQuery.build(), flowTaskBo, categoryIds(flowTaskBo), LoginHelper.getUserIdStr());
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -407,12 +411,10 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      * @param pageQuery  分页
      */
     @Override
-    public TableDataInfo<FlowTaskVo> pageByAllTaskWait(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
-        QueryWrapper<FlowTaskBo> queryWrapper = buildQueryWrapper(flowTaskBo);
-        queryWrapper.eq("t.node_type", NodeType.BETWEEN.getKey());
-        Page<FlowTaskVo> page = flwTaskMapper.getListRunTask(pageQuery.build(), queryWrapper);
+    public PageResult<FlowTaskVo> pageByAllTaskWait(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
+        Page<FlowTaskVo> page = flwTaskMapper.getListRunTask(pageQuery.build(), flowTaskBo, categoryIds(flowTaskBo), null);
         this.wrapAssigneeInfo(page.getRecords());
-        return TableDataInfo.build(page);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -440,10 +442,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      * @param pageQuery  分页
      */
     @Override
-    public TableDataInfo<FlowHisTaskVo> pageByAllTaskFinish(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
-        QueryWrapper<FlowTaskBo> queryWrapper = buildQueryWrapper(flowTaskBo);
-        Page<FlowHisTaskVo> page = flwTaskMapper.getListFinishTask(pageQuery.build(), queryWrapper);
-        return TableDataInfo.build(page);
+    public PageResult<FlowHisTaskVo> pageByAllTaskFinish(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
+        Page<FlowHisTaskVo> page = flwHisTaskMapper.getListFinishTask(pageQuery.build(), flowTaskBo, categoryIds(flowTaskBo), null);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -453,29 +454,17 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      * @param pageQuery  分页
      */
     @Override
-    public TableDataInfo<FlowTaskVo> pageByTaskCopy(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
-        QueryWrapper<FlowTaskBo> queryWrapper = buildQueryWrapper(flowTaskBo);
-        queryWrapper.in("t.processed_by", LoginHelper.getUserIdStr());
-        Page<FlowTaskVo> page = flwTaskMapper.getTaskCopyByPage(pageQuery.build(), queryWrapper);
-        return TableDataInfo.build(page);
+    public PageResult<FlowTaskVo> pageByTaskCopy(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
+        Page<FlowTaskVo> page = flwTaskMapper.getTaskCopyByPage(pageQuery.build(), flowTaskBo, categoryIds(flowTaskBo), LoginHelper.getUserIdStr());
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
-    private QueryWrapper<FlowTaskBo> buildQueryWrapper(FlowTaskBo flowTaskBo) {
-        Map<String, Object> params = flowTaskBo.getParams();
-        QueryWrapper<FlowTaskBo> wrapper = Wrappers.query();
-        wrapper.like(StringUtils.isNotBlank(flowTaskBo.getNodeName()), "t.node_name", flowTaskBo.getNodeName());
-        wrapper.like(StringUtils.isNotBlank(flowTaskBo.getFlowName()), "t.flow_name", flowTaskBo.getFlowName());
-        wrapper.like(StringUtils.isNotBlank(flowTaskBo.getFlowCode()), "t.flow_code", flowTaskBo.getFlowCode());
-        wrapper.like(StringUtils.isNotBlank(flowTaskBo.getFlowStatus()), "t.flow_status", flowTaskBo.getFlowStatus());
-        wrapper.in(CollUtil.isNotEmpty(flowTaskBo.getCreateByIds()), "t.create_by", flowTaskBo.getCreateByIds());
+    private List<String> categoryIds(FlowTaskBo flowTaskBo) {
         if (StringUtils.isNotBlank(flowTaskBo.getCategory())) {
             List<Long> categoryIds = flwCategoryMapper.selectCategoryIdsByParentId(Convert.toLong(flowTaskBo.getCategory()));
-            wrapper.in("t.category", StreamUtils.toList(categoryIds, Convert::toStr));
+            return StreamUtils.toList(categoryIds, Convert::toStr);
         }
-        wrapper.between(params.get("beginTime") != null && params.get("endTime") != null,
-            "t.create_time", params.get("beginTime"), params.get("endTime"));
-        wrapper.orderByDesc("t.create_time").orderByDesc("t.update_time");
-        return wrapper;
+        return null;
     }
 
     /**
@@ -542,7 +531,7 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
             return nodeCodes;
         }
         //判断是否配置了固定驳回节点
-        Node node = nodeCodes.get(0);
+        Node node = nodeCodes.getFirst();
         if (StringUtils.isNotBlank(node.getAnyNodeSkip())) {
             return nodeService.getByNodeCodes(Collections.singletonList(node.getAnyNodeSkip()), task.getDefinitionId());
         }
@@ -600,7 +589,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      */
     @Override
     public List<FlowTask> selectByIdList(List<Long> taskIdList) {
-        return flowTaskMapper.selectList(new LambdaQueryWrapper<>(FlowTask.class).in(FlowTask::getId, taskIdList));
+        return flowTaskMapper.selectList(QueryBuilder.lambda(FlowTask.class)
+            .in(FlowTask::getId, taskIdList)
+            .build());
     }
 
     /**
@@ -712,7 +703,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      */
     @Override
     public FlowHisTask selectHisTaskById(Long taskId) {
-        return flowHisTaskMapper.selectOne(new LambdaQueryWrapper<>(FlowHisTask.class).eq(FlowHisTask::getId, taskId));
+        return flowHisTaskMapper.selectOne(QueryBuilder.lambda(FlowHisTask.class)
+            .eq(FlowHisTask::getId, taskId)
+            .build());
     }
 
     /**
@@ -722,7 +715,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      */
     @Override
     public List<FlowTask> selectByInstId(Long instanceId) {
-        return flowTaskMapper.selectList(new LambdaQueryWrapper<>(FlowTask.class).eq(FlowTask::getInstanceId, instanceId));
+        return flowTaskMapper.selectList(QueryBuilder.lambda(FlowTask.class)
+            .eq(FlowTask::getInstanceId, instanceId)
+            .build());
     }
 
     /**
@@ -732,7 +727,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      */
     @Override
     public List<FlowTask> selectByInstIds(List<Long> instanceIds) {
-        return flowTaskMapper.selectList(new LambdaQueryWrapper<>(FlowTask.class).in(FlowTask::getInstanceId, instanceIds));
+        return flowTaskMapper.selectList(QueryBuilder.lambda(FlowTask.class)
+            .in(FlowTask::getInstanceId, instanceIds)
+            .build());
     }
 
     /**
@@ -743,7 +740,9 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      */
     @Override
     public boolean isTaskEnd(Long instanceId) {
-        boolean exists = flowTaskMapper.exists(new LambdaQueryWrapper<FlowTask>().eq(FlowTask::getInstanceId, instanceId));
+        boolean exists = flowTaskMapper.exists(QueryBuilder.lambda(FlowTask.class)
+            .eq(FlowTask::getInstanceId, instanceId)
+            .build());
         return !exists;
     }
 
@@ -763,7 +762,7 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
         }
 
         FlowParams flowParams = FlowParams.build().message(bo.getMessage());
-        if (LoginHelper.isSuperAdmin() || LoginHelper.isTenantAdmin()) {
+        if (LoginHelper.isSuperAdmin()) {
             flowParams.ignore(true);
         }
 
@@ -833,7 +832,8 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
                     bo.getMessageType(),
                     StringUtils.isNotBlank(bo.getMessage()) ? bo.getMessage() : "单据「" + op.getDesc() + "」通知",
                     "单据「" + op.getDesc() + "」提醒",
-                    remoteUserService.selectListByIds(userIdList)
+                    remoteUserService.selectListByIds(userIdList),
+                    PATH_TASK_WAITING
                 );
             }
         }
@@ -880,7 +880,7 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
         if (CollUtil.isEmpty(userList)) {
             return Collections.emptyList();
         }
-        return remoteUserService.selectListByIds(StreamUtils.toList(userList, e -> Convert.toLong(e.getProcessedBy())));
+        return remoteUserService.selectListByIds(StreamUtils.toSet(userList, e -> Convert.toLong(e.getProcessedBy())));
     }
 
     /**
@@ -891,9 +891,10 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
      */
     @Override
     public FlowNode getByNodeCode(String nodeCode, Long definitionId) {
-        return flowNodeMapper.selectOne(new LambdaQueryWrapper<FlowNode>()
+        return flowNodeMapper.selectOne(QueryBuilder.lambda(FlowNode.class)
             .eq(FlowNode::getNodeCode, nodeCode)
-            .eq(FlowNode::getDefinitionId, definitionId));
+            .eq(FlowNode::getDefinitionId, definitionId)
+            .build());
     }
 
     /**
@@ -912,7 +913,7 @@ public class FlwTaskServiceImpl implements IFlwTaskService {
         }
         List<String> messageType = bo.getMessageType();
         String message = bo.getMessage();
-        flwCommonService.sendMessage(messageType, message, "单据审批提醒", userList);
+        flwCommonService.sendMessage(messageType, message, "单据审批提醒", userList, PATH_TASK_WAITING);
         return true;
     }
 

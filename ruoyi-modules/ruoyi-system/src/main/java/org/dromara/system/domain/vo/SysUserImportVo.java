@@ -1,10 +1,13 @@
 package org.dromara.system.domain.vo;
 
-import cn.idev.excel.annotation.ExcelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 import org.dromara.common.excel.annotation.ExcelDictFormat;
+import org.dromara.common.excel.annotation.ExcelDynamicOptions;
 import org.dromara.common.excel.convert.ExcelDictConvert;
+import org.dromara.system.listener.DeptExcelConverter;
+import org.dromara.system.listener.DeptExcelOptions;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -33,7 +36,8 @@ public class SysUserImportVo implements Serializable {
     /**
      * 部门ID
      */
-    @ExcelProperty(value = "部门编号")
+    @ExcelProperty(value = "部门名称", converter = DeptExcelConverter.class)
+    @ExcelDynamicOptions(providerClass = DeptExcelOptions.class)
     private Long deptId;
 
     /**
@@ -58,14 +62,14 @@ public class SysUserImportVo implements Serializable {
      * 手机号码
      */
     @ExcelProperty(value = "手机号码")
-    private String phonenumber;
+    private String phoneNumber;
 
     /**
-     * 用户性别
+     * 用户性别（0男 1女 2未知）
      */
     @ExcelProperty(value = "用户性别", converter = ExcelDictConvert.class)
-    @ExcelDictFormat(dictType = "sys_user_sex")
-    private String sex;
+    @ExcelDictFormat(dictType = "sys_user_gender")
+    private String gender;
 
     /**
      * 账号状态（0正常 1停用）

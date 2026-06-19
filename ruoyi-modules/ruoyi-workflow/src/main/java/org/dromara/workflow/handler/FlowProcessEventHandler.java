@@ -2,7 +2,6 @@ package org.dromara.workflow.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dromara.common.core.utils.SpringUtils;
-import org.dromara.common.tenant.helper.TenantHelper;
 import org.dromara.warm.flow.core.entity.Instance;
 import org.dromara.warm.flow.core.entity.Task;
 import org.dromara.workflow.api.event.ProcessDeleteEvent;
@@ -34,11 +33,9 @@ public class FlowProcessEventHandler {
      * @param submit   当为true时为申请人节点办理
      */
     public void processHandler(String flowCode, Instance instance, String status, Map<String, Object> params, boolean submit) {
-        String tenantId = TenantHelper.getTenantId();
-        log.info("【流程事件发布】租户ID: {}, 流程编码: {}, 业务ID: {}, 流程状态: {}, 节点类型: {}, 节点编码: {}, 节点名称: {}, 是否申请人节点: {}, 参数: {}",
-            tenantId, flowCode, instance.getBusinessId(), status, instance.getNodeType(), instance.getNodeCode(), instance.getNodeName(), submit, params);
+        log.info("【流程事件发布】流程编码: {}, 业务ID: {}, 流程状态: {}, 节点类型: {}, 节点编码: {}, 节点名称: {}, 是否申请人节点: {}, 参数: {}",
+            flowCode, instance.getBusinessId(), status, instance.getNodeType(), instance.getNodeCode(), instance.getNodeName(), submit, params);
         ProcessEvent processEvent = new ProcessEvent();
-        processEvent.setTenantId(tenantId);
         processEvent.setFlowCode(flowCode);
         processEvent.setInstanceId(instance.getId());
         processEvent.setBusinessId(instance.getBusinessId());
@@ -54,17 +51,15 @@ public class FlowProcessEventHandler {
     /**
      * 执行创建任务监听
      *
-     * @param flowCode   流程定义编码
-     * @param instance   实例数据
-     * @param nextTask   任务
-     * @param params     上一个任务的办理参数
+     * @param flowCode 流程定义编码
+     * @param instance 实例数据
+     * @param nextTask 任务
+     * @param params   上一个任务的办理参数
      */
     public void processTaskHandler(String flowCode, Instance instance, Task nextTask, Map<String, Object> params) {
-        String tenantId = TenantHelper.getTenantId();
-        log.info("【流程任务事件发布】租户ID: {}, 流程编码: {}, 业务ID: {}, 节点类型: {}, 节点编码: {}, 节点名称: {}, 任务ID: {}",
-            tenantId, flowCode, instance.getBusinessId(), nextTask.getNodeType(), nextTask.getNodeCode(), nextTask.getNodeName(), nextTask.getId());
+        log.info("【流程任务事件发布】流程编码: {}, 业务ID: {}, 节点类型: {}, 节点编码: {}, 节点名称: {}, 任务ID: {}",
+            flowCode, instance.getBusinessId(), nextTask.getNodeType(), nextTask.getNodeCode(), nextTask.getNodeName(), nextTask.getId());
         ProcessTaskEvent processTaskEvent = new ProcessTaskEvent();
-        processTaskEvent.setTenantId(tenantId);
         processTaskEvent.setFlowCode(flowCode);
         processTaskEvent.setInstanceId(instance.getId());
         processTaskEvent.setBusinessId(instance.getBusinessId());
@@ -80,14 +75,12 @@ public class FlowProcessEventHandler {
     /**
      * 删除流程监听
      *
-     * @param flowCode    流程定义编码
-     * @param businessId  业务ID
+     * @param flowCode   流程定义编码
+     * @param businessId 业务ID
      */
     public void processDeleteHandler(String flowCode, String businessId) {
-        String tenantId = TenantHelper.getTenantId();
-        log.info("【流程删除事件发布】租户ID: {}, 流程编码: {}, 业务ID: {}", tenantId, flowCode, businessId);
+        log.info("【流程删除事件发布】流程编码: {}, 业务ID: {}", flowCode, businessId);
         ProcessDeleteEvent processDeleteEvent = new ProcessDeleteEvent();
-        processDeleteEvent.setTenantId(tenantId);
         processDeleteEvent.setFlowCode(flowCode);
         processDeleteEvent.setBusinessId(businessId);
         SpringUtils.context().publishEvent(processDeleteEvent);

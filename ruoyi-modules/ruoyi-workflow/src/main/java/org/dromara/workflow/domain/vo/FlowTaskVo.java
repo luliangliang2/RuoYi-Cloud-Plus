@@ -1,7 +1,6 @@
 package org.dromara.workflow.domain.vo;
 
 import lombok.Data;
-import org.dromara.common.core.utils.DateUtils;
 import org.dromara.common.translation.annotation.Translation;
 import org.dromara.common.translation.constant.TransConstant;
 import org.dromara.warm.flow.core.entity.User;
@@ -9,7 +8,7 @@ import org.dromara.workflow.common.constant.FlowConstant;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -29,17 +28,12 @@ public class FlowTaskVo implements Serializable {
     /**
      * 创建时间
      */
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    private Date updateTime;
-
-    /**
-     * 租户ID
-     */
-    private String tenantId;
+    private LocalDateTime updateTime;
 
     /**
      * 删除标记
@@ -211,9 +205,5 @@ public class FlowTaskVo implements Serializable {
      */
     private String businessTitle;
     //业务扩展信息结束
-
-    public String getCreateTime() {
-        return DateUtils.formatFriendlyTime(createTime);
-    }
 
 }

@@ -1,16 +1,16 @@
 package org.dromara.system.domain.vo;
 
-import cn.idev.excel.annotation.ExcelIgnoreUnannotated;
-import cn.idev.excel.annotation.ExcelProperty;
 import io.github.linpeilie.annotations.AutoMapper;
 import lombok.Data;
+import org.apache.fesod.sheet.annotation.ExcelIgnoreUnannotated;
+import org.apache.fesod.sheet.annotation.ExcelProperty;
 import org.dromara.common.excel.annotation.ExcelDictFormat;
 import org.dromara.common.excel.convert.ExcelDictConvert;
 import org.dromara.system.domain.SysOperLog;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 
 /**
@@ -32,11 +32,6 @@ public class SysOperLogVo implements Serializable {
      */
     @ExcelProperty(value = "日志主键")
     private Long operId;
-
-    /**
-     * 租户编号
-     */
-    private String tenantId;
 
     /**
      * 模块标题
@@ -82,10 +77,47 @@ public class SysOperLogVo implements Serializable {
     private String operName;
 
     /**
+     * 操作用户ID
+     */
+    @ExcelProperty(value = "操作用户ID")
+    private Long userId;
+
+    /**
+     * 操作部门ID
+     */
+    @ExcelProperty(value = "操作部门ID")
+    private Long deptId;
+
+    /**
      * 部门名称
      */
     @ExcelProperty(value = "部门名称")
     private String deptName;
+
+    /**
+     * 客户端
+     */
+    @ExcelProperty(value = "客户端")
+    private String clientKey;
+
+    /**
+     * 设备类型
+     */
+    @ExcelProperty(value = "设备类型", converter = ExcelDictConvert.class)
+    @ExcelDictFormat(dictType = "sys_device_type")
+    private String deviceType;
+
+    /**
+     * 浏览器类型
+     */
+    @ExcelProperty(value = "浏览器")
+    private String browser;
+
+    /**
+     * 操作系统
+     */
+    @ExcelProperty(value = "操作系统")
+    private String os;
 
     /**
      * 请求URL
@@ -134,7 +166,7 @@ public class SysOperLogVo implements Serializable {
      * 操作时间
      */
     @ExcelProperty(value = "操作时间")
-    private Date operTime;
+    private LocalDateTime operTime;
 
     /**
      * 消耗时间

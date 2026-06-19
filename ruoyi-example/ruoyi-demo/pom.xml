@@ -54,7 +54,7 @@
 
         <dependency>
             <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-idempotent</artifactId>
+            <artifactId>ruoyi-common-redis</artifactId>
         </dependency>
 
         <dependency>
@@ -72,10 +72,6 @@
             <artifactId>ruoyi-common-encrypt</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-tenant</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.dromara</groupId>
@@ -90,6 +86,21 @@
         <dependency>
             <groupId>org.dromara</groupId>
             <artifactId>ruoyi-common-sensitive</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-common-mqtt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-common-mcp</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-common-excel</artifactId>
         </dependency>
 
         <!-- 测试消息总线使用 搭配 TestBusController -->

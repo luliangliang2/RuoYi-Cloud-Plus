@@ -4,10 +4,11 @@ import cn.hutool.core.util.ArrayUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.domain.SysOperLog;
 import org.dromara.system.domain.bo.SysOperLogBo;
 import org.dromara.system.domain.vo.SysOperLogVo;
@@ -15,8 +16,8 @@ import org.dromara.system.mapper.SysOperLogMapper;
 import org.dromara.system.service.ISysOperLogService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ import java.util.Map;
 @Service
 public class SysOperLogServiceImpl implements ISysOperLogService {
 
-    private final SysOperLogMapper baseMapper;
+    private final SysOperLogMapper operLogMapper;
 
     /**
      * 分页查询操作日志列表
@@ -39,20 +40,20 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
      * @return 操作日志分页列表
      */
     @Override
-    public TableDataInfo<SysOperLogVo> selectPageOperLogList(SysOperLogBo operLog, PageQuery pageQuery) {
+    public PageResult<SysOperLogVo> selectPageOperLogList(SysOperLogBo operLog, PageQuery pageQuery) {
         LambdaQueryWrapper<SysOperLog> lqw = buildQueryWrapper(operLog);
         if (StringUtils.isBlank(pageQuery.getOrderByColumn())) {
             lqw.orderByDesc(SysOperLog::getOperId);
         }
-        Page<SysOperLogVo> page = baseMapper.selectVoPage(pageQuery.build(), lqw);
-        return TableDataInfo.build(page);
+        Page<SysOperLogVo> page = operLogMapper.selectVoPage(pageQuery.build(), lqw);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     private LambdaQueryWrapper<SysOperLog> buildQueryWrapper(SysOperLogBo operLog) {
         Map<String, Object> params = operLog.getParams();
-        return new LambdaQueryWrapper<SysOperLog>()
-            .like(StringUtils.isNotBlank(operLog.getOperIp()), SysOperLog::getOperIp, operLog.getOperIp())
-            .like(StringUtils.isNotBlank(operLog.getTitle()), SysOperLog::getTitle, operLog.getTitle())
+        return QueryBuilder.lambda(SysOperLog.class)
+            .likeIfText(SysOperLog::getOperIp, operLog.getOperIp())
+            .likeIfText(SysOperLog::getTitle, operLog.getTitle())
             .eq(operLog.getBusinessType() != null && operLog.getBusinessType() > 0,
                 SysOperLog::getBusinessType, operLog.getBusinessType())
             .func(f -> {
@@ -60,11 +61,16 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
                     f.in(SysOperLog::getBusinessType, Arrays.asList(operLog.getBusinessTypes()));
                 }
             })
-            .eq(operLog.getStatus() != null,
-                SysOperLog::getStatus, operLog.getStatus())
-            .like(StringUtils.isNotBlank(operLog.getOperName()), SysOperLog::getOperName, operLog.getOperName())
-            .between(params.get("beginTime") != null && params.get("endTime") != null,
-                SysOperLog::getOperTime, params.get("beginTime"), params.get("endTime"));
+            .eqIfPresent(SysOperLog::getStatus, operLog.getStatus())
+            .likeIfText(SysOperLog::getOperName, operLog.getOperName())
+            .eqIfPresent(SysOperLog::getUserId, operLog.getUserId())
+            .eqIfPresent(SysOperLog::getDeptId, operLog.getDeptId())
+            .eqIfText(SysOperLog::getClientKey, operLog.getClientKey())
+            .eqIfText(SysOperLog::getDeviceType, operLog.getDeviceType())
+            .likeIfText(SysOperLog::getBrowser, operLog.getBrowser())
+            .likeIfText(SysOperLog::getOs, operLog.getOs())
+            .betweenParams(SysOperLog::getOperTime, params, "beginTime", "endTime")
+            .build();
     }
 
     /**
@@ -75,8 +81,8 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
     @Override
     public void insertOperlog(SysOperLogBo bo) {
         SysOperLog operLog = MapstructUtils.convert(bo, SysOperLog.class);
-        operLog.setOperTime(new Date());
-        baseMapper.insert(operLog);
+        operLog.setOperTime(LocalDateTime.now());
+        operLogMapper.insert(operLog);
     }
 
     /**
@@ -88,7 +94,7 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
     @Override
     public List<SysOperLogVo> selectOperLogList(SysOperLogBo operLog) {
         LambdaQueryWrapper<SysOperLog> lqw = buildQueryWrapper(operLog);
-        return baseMapper.selectVoList(lqw.orderByDesc(SysOperLog::getOperId));
+        return operLogMapper.selectVoList(lqw.orderByDesc(SysOperLog::getOperId));
     }
 
     /**
@@ -99,7 +105,7 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
      */
     @Override
     public int deleteOperLogByIds(Long[] operIds) {
-        return baseMapper.deleteByIds(Arrays.asList(operIds));
+        return operLogMapper.deleteByIds(Arrays.asList(operIds));
     }
 
     /**
@@ -110,7 +116,7 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
      */
     @Override
     public SysOperLogVo selectOperLogById(Long operId) {
-        return baseMapper.selectVoById(operId);
+        return operLogMapper.selectVoById(operId);
     }
 
     /**
@@ -118,6 +124,6 @@ public class SysOperLogServiceImpl implements ISysOperLogService {
      */
     @Override
     public void cleanOperLog() {
-        baseMapper.delete(new LambdaQueryWrapper<>());
+        operLogMapper.lambda().delete();
     }
 }

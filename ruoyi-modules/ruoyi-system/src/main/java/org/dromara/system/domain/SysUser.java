@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dromara.common.core.constant.SystemConstants;
-import org.dromara.common.tenant.core.TenantEntity;
+import org.dromara.common.mybatis.core.domain.BaseEntity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * 用户对象 sys_user
@@ -19,7 +19,7 @@ import java.util.Date;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_user")
-public class SysUser extends TenantEntity {
+public class SysUser extends BaseEntity {
 
     /**
      * 用户ID
@@ -55,12 +55,12 @@ public class SysUser extends TenantEntity {
     /**
      * 手机号码
      */
-    private String phonenumber;
+    private String phoneNumber;
 
     /**
      * 用户性别
      */
-    private String sex;
+    private String gender;
 
     /**
      * 用户头像
@@ -96,7 +96,7 @@ public class SysUser extends TenantEntity {
     /**
      * 最后登录时间
      */
-    private Date loginDate;
+    private LocalDateTime loginDate;
 
     /**
      * 备注
@@ -104,12 +104,22 @@ public class SysUser extends TenantEntity {
     private String remark;
 
 
+    /**
+     * 使用用户ID构造系统用户对象。
+     *
+     * @param userId 用户ID
+     */
     public SysUser(Long userId) {
         this.userId = userId;
     }
 
+    /**
+     * 判断当前用户是否为超级管理员。
+     *
+     * @return true 是超级管理员 false 不是超级管理员
+     */
     public boolean isSuperAdmin() {
-        return SystemConstants.SUPER_ADMIN_ID.equals(this.userId);
+        return SystemConstants.SUPER_ADMIN_USER_ID.equals(this.userId);
     }
 
 }

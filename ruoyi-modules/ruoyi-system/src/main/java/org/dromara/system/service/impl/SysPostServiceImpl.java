@@ -1,18 +1,17 @@
 package org.dromara.system.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.constant.SystemConstants;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.MapstructUtils;
 import org.dromara.common.core.utils.StreamUtils;
-import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.mybatis.core.query.LambdaQueryBuilder;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.system.domain.SysPost;
 import org.dromara.system.domain.SysUserPost;
 import org.dromara.system.domain.bo.SysPostBo;
@@ -35,7 +34,7 @@ import java.util.Map;
 @Service
 public class SysPostServiceImpl implements ISysPostService {
 
-    private final SysPostMapper baseMapper;
+    private final SysPostMapper postMapper;
     private final SysDeptMapper deptMapper;
     private final SysUserPostMapper userPostMapper;
 
@@ -47,9 +46,9 @@ public class SysPostServiceImpl implements ISysPostService {
      * @return 岗位分页列表
      */
     @Override
-    public TableDataInfo<SysPostVo> selectPagePostList(SysPostBo post, PageQuery pageQuery) {
-        Page<SysPostVo> page = baseMapper.selectPagePostList(pageQuery.build(), buildQueryWrapper(post));
-        return TableDataInfo.build(page);
+    public PageResult<SysPostVo> selectPagePostList(SysPostBo post, PageQuery pageQuery) {
+        Page<SysPostVo> page = postMapper.selectPagePostList(pageQuery.build(), buildQueryWrapper(post));
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -60,7 +59,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostList(SysPostBo post) {
-        return baseMapper.selectVoList(buildQueryWrapper(post));
+        return postMapper.selectVoList(buildQueryWrapper(post));
     }
 
     /**
@@ -71,7 +70,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostsByUserId(Long userId) {
-        return baseMapper.selectPostsByUserId(userId);
+        return postMapper.selectPostsByUserId(userId);
     }
 
     /**
@@ -80,15 +79,14 @@ public class SysPostServiceImpl implements ISysPostService {
      * @param bo 查询条件对象
      * @return 构建好的查询包装器
      */
-    private LambdaQueryWrapper<SysPost> buildQueryWrapper(SysPostBo bo) {
+    private Wrapper<SysPost> buildQueryWrapper(SysPostBo bo) {
         Map<String, Object> params = bo.getParams();
-        LambdaQueryWrapper<SysPost> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(StringUtils.isNotBlank(bo.getPostCode()), SysPost::getPostCode, bo.getPostCode())
-            .like(StringUtils.isNotBlank(bo.getPostCategory()), SysPost::getPostCategory, bo.getPostCategory())
-            .like(StringUtils.isNotBlank(bo.getPostName()), SysPost::getPostName, bo.getPostName())
-            .eq(StringUtils.isNotBlank(bo.getStatus()), SysPost::getStatus, bo.getStatus())
-            .between(params.get("beginTime") != null && params.get("endTime") != null,
-                SysPost::getCreateTime, params.get("beginTime"), params.get("endTime"))
+        LambdaQueryBuilder<SysPost> wrapper = QueryBuilder.lambda(SysPost.class)
+            .likeIfText(SysPost::getPostCode, bo.getPostCode())
+            .likeIfText(SysPost::getPostCategory, bo.getPostCategory())
+            .likeIfText(SysPost::getPostName, bo.getPostName())
+            .eqIfText(SysPost::getStatus, bo.getStatus())
+            .betweenParams(SysPost::getCreateTime, params, "beginTime", "endTime")
             .orderByAsc(SysPost::getPostSort);
         if (ObjectUtil.isNotNull(bo.getDeptId())) {
             //优先单部门搜索
@@ -100,7 +98,7 @@ public class SysPostServiceImpl implements ISysPostService {
                 x.in(SysPost::getDeptId, deptIds);
             });
         }
-        return wrapper;
+        return wrapper.build();
     }
 
     /**
@@ -110,7 +108,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostAll() {
-        return baseMapper.selectVoList(new QueryWrapper<>());
+        return postMapper.lambda().voList();
     }
 
     /**
@@ -121,7 +119,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public SysPostVo selectPostById(Long postId) {
-        return baseMapper.selectVoById(postId);
+        return postMapper.selectVoById(postId);
     }
 
     /**
@@ -132,7 +130,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<Long> selectPostListByUserId(Long userId) {
-        List<SysPostVo> list = baseMapper.selectPostsByUserId(userId);
+        List<SysPostVo> list = postMapper.selectPostsByUserId(userId);
         return StreamUtils.toList(list, SysPostVo::getPostId);
     }
 
@@ -144,10 +142,11 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public List<SysPostVo> selectPostByIds(List<Long> postIds) {
-        return baseMapper.selectVoList(new LambdaQueryWrapper<SysPost>()
+        return postMapper.lambda()
             .select(SysPost::getPostId, SysPost::getPostName, SysPost::getPostCode)
             .eq(SysPost::getStatus, SystemConstants.NORMAL)
-            .in(CollUtil.isNotEmpty(postIds), SysPost::getPostId, postIds));
+            .inIfNotEmpty(SysPost::getPostId, postIds)
+            .voList();
     }
 
     /**
@@ -158,10 +157,11 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public boolean checkPostNameUnique(SysPostBo post) {
-        boolean exist = baseMapper.exists(new LambdaQueryWrapper<SysPost>()
+        boolean exist = postMapper.lambda()
             .eq(SysPost::getPostName, post.getPostName())
             .eq(SysPost::getDeptId, post.getDeptId())
-            .ne(ObjectUtil.isNotNull(post.getPostId()), SysPost::getPostId, post.getPostId()));
+            .neIfPresent(SysPost::getPostId, post.getPostId())
+            .exists();
         return !exist;
     }
 
@@ -173,9 +173,10 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public boolean checkPostCodeUnique(SysPostBo post) {
-        boolean exist = baseMapper.exists(new LambdaQueryWrapper<SysPost>()
+        boolean exist = postMapper.lambda()
             .eq(SysPost::getPostCode, post.getPostCode())
-            .ne(ObjectUtil.isNotNull(post.getPostId()), SysPost::getPostId, post.getPostId()));
+            .neIfPresent(SysPost::getPostId, post.getPostId())
+            .exists();
         return !exist;
     }
 
@@ -187,7 +188,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public long countUserPostById(Long postId) {
-        return userPostMapper.selectCount(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getPostId, postId));
+        return userPostMapper.lambda().eq(SysUserPost::getPostId, postId).count();
     }
 
     /**
@@ -198,7 +199,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public long countPostByDeptId(Long deptId) {
-        return baseMapper.selectCount(new LambdaQueryWrapper<SysPost>().eq(SysPost::getDeptId, deptId));
+        return postMapper.lambda().eq(SysPost::getDeptId, deptId).count();
     }
 
     /**
@@ -209,7 +210,7 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public int deletePostById(Long postId) {
-        return baseMapper.deleteById(postId);
+        return postMapper.deleteById(postId);
     }
 
     /**
@@ -220,13 +221,13 @@ public class SysPostServiceImpl implements ISysPostService {
      */
     @Override
     public int deletePostByIds(List<Long> postIds) {
-        List<SysPost> list = baseMapper.selectByIds(postIds);
+        List<SysPost> list = postMapper.selectByIds(postIds);
         for (SysPost post : list) {
             if (this.countUserPostById(post.getPostId()) > 0) {
                 throw new ServiceException("{}已分配，不能删除!", post.getPostName());
             }
         }
-        return baseMapper.deleteByIds(postIds);
+        return postMapper.deleteByIds(postIds);
     }
 
     /**
@@ -238,7 +239,7 @@ public class SysPostServiceImpl implements ISysPostService {
     @Override
     public int insertPost(SysPostBo bo) {
         SysPost post = MapstructUtils.convert(bo, SysPost.class);
-        return baseMapper.insert(post);
+        return postMapper.insert(post);
     }
 
     /**
@@ -250,6 +251,6 @@ public class SysPostServiceImpl implements ISysPostService {
     @Override
     public int updatePost(SysPostBo bo) {
         SysPost post = MapstructUtils.convert(bo, SysPost.class);
-        return baseMapper.updateById(post);
+        return postMapper.updateById(post);
     }
 }

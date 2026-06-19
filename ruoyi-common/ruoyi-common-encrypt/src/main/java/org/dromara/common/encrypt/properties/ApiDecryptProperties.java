@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * api解密属性配置类
+ *
  * @author wdhcr
  */
 @Data
@@ -19,7 +20,7 @@ public class ApiDecryptProperties {
     /**
      * 头部标识
      */
-    private String headerFlag;
+    private String headerFlag = "encrypt-key";
 
     /**
      * 响应加密公钥

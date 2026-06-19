@@ -9,7 +9,7 @@ import org.dromara.workflow.common.constant.FlowConstant;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -28,17 +28,12 @@ public class FlowHisTaskVo implements Serializable {
     /**
      * 创建时间
      */
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    private Date updateTime;
-
-    /**
-     * 租户ID
-     */
-    private String tenantId;
+    private LocalDateTime updateTime;
 
     /**
      * 删除标记
@@ -114,7 +109,7 @@ public class FlowHisTaskVo implements Serializable {
      * 审批者
      */
     @Translation(type = TransConstant.USER_ID_TO_NICKNAME, mapper = "approver")
-    private String approveName;
+    private String approverName;
 
     /**
      * 协作人(只有转办、会签、票签、委派)
@@ -220,7 +215,7 @@ public class FlowHisTaskVo implements Serializable {
      *
      * @param createTime 创建时间
      */
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
         updateRunDuration();
     }
@@ -230,7 +225,7 @@ public class FlowHisTaskVo implements Serializable {
      *
      * @param updateTime 更新时间
      */
-    public void setUpdateTime(Date updateTime) {
+    public void setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
         updateRunDuration();
     }
@@ -251,10 +246,6 @@ public class FlowHisTaskVo implements Serializable {
     public void setCooperateType(Integer cooperateType) {
         this.cooperateType = cooperateType;
         this.cooperateTypeName = CooperateType.getValueByKey(cooperateType);
-    }
-
-    public String getCreateTime() {
-        return DateUtils.formatFriendlyTime(createTime);
     }
 
 }

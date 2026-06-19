@@ -1,14 +1,20 @@
 package org.dromara.system.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.yulichang.base.MPJBaseMapper;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.apache.ibatis.annotations.Param;
 import org.dromara.common.mybatis.annotation.DataColumn;
 import org.dromara.common.mybatis.annotation.DataPermission;
 import org.dromara.common.mybatis.core.mapper.BaseMapperPlus;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
+import org.dromara.system.domain.SysDept;
+import org.dromara.system.domain.SysRole;
 import org.dromara.system.domain.SysUser;
+import org.dromara.system.domain.SysUserRole;
+import org.dromara.system.domain.bo.SysUserBo;
 import org.dromara.system.domain.vo.SysUserExportVo;
 import org.dromara.system.domain.vo.SysUserVo;
 
@@ -19,7 +25,7 @@ import java.util.List;
  *
  * @author Lion Li
  */
-public interface SysUserMapper extends BaseMapperPlus<SysUser, SysUserVo> {
+public interface SysUserMapper extends BaseMapperPlus<SysUser, SysUserVo>, MPJBaseMapper<SysUser> {
 
     /**
      * 分页查询用户列表，并进行数据权限控制
@@ -53,39 +59,67 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser, SysUserVo> {
     /**
      * 根据条件分页查询用户列表
      *
-     * @param queryWrapper 查询条件
+     * @param user    查询条件
+     * @param deptIds 部门ID集合
      * @return 用户信息集合信息
      */
     @DataPermission({
         @DataColumn(key = "deptName", value = "d.dept_id"),
         @DataColumn(key = "userName", value = "u.create_by")
     })
-    List<SysUserExportVo> selectUserExportList(@Param(Constants.WRAPPER) Wrapper<SysUser> queryWrapper);
+    default List<SysUserExportVo> selectUserExportList(SysUserBo user, List<Long> deptIds) {
+        MPJLambdaWrapper<SysUser> wrapper = QueryBuilder.lambdaJoin("u", SysUser.class)
+            .selectAll(SysUser.class)
+            .selectAs("u1", SysUser::getUserName, SysUserExportVo::getLeaderName)
+            .leftJoin(SysDept.class, "d", SysDept::getDeptId, SysUser::getDeptId)
+            .leftJoin(SysUser.class, "u1", SysUser::getUserId, SysDept::getLeader)
+            .likeIfText("u", SysUser::getUserName, user.getUserName())
+            .likeIfText("u", SysUser::getNickName, user.getNickName())
+            .eqIfText("u", SysUser::getStatus, user.getStatus())
+            .likeIfText("u", SysUser::getPhoneNumber, user.getPhoneNumber())
+            .betweenParams("u", SysUser::getCreateTime, user.getParams(), "beginTime", "endTime")
+            .inIfNotEmpty("u", SysUser::getDeptId, deptIds)
+            .orderByAsc("u", SysUser::getUserId)
+            .build();
+        return this.selectJoinList(SysUserExportVo.class, wrapper);
+    }
 
     /**
      * 根据条件分页查询已配用户角色列表
      *
-     * @param page         分页信息
-     * @param queryWrapper 查询条件
+     * @param page 分页信息
+     * @param user 查询条件
      * @return 用户信息集合信息
      */
     @DataPermission({
         @DataColumn(key = "deptName", value = "d.dept_id"),
         @DataColumn(key = "userName", value = "u.create_by")
     })
-    Page<SysUserVo> selectAllocatedList(@Param("page") Page<SysUser> page, @Param(Constants.WRAPPER) Wrapper<SysUser> queryWrapper);
+    default Page<SysUserVo> selectAllocatedList(Page<SysUserVo> page, SysUserBo user) {
+        MPJLambdaWrapper<SysUser> wrapper = this.buildUserRoleJoinWrapper(user)
+            .eq(user.getRoleId() != null, "r", SysRole::getRoleId, user.getRoleId())
+            .orderByAsc("u", SysUser::getUserId);
+        return this.selectJoinPage(page, SysUserVo.class, wrapper);
+    }
 
     /**
      * 根据条件分页查询未分配用户角色列表
      *
-     * @param queryWrapper 查询条件
+     * @param page    分页信息
+     * @param user    查询条件
+     * @param userIds 未分配用户角色的用户ID列表
      * @return 用户信息集合信息
      */
     @DataPermission({
         @DataColumn(key = "deptName", value = "d.dept_id"),
         @DataColumn(key = "userName", value = "u.create_by")
     })
-    Page<SysUserVo> selectUnallocatedList(@Param("page") Page<SysUser> page, @Param(Constants.WRAPPER) Wrapper<SysUser> queryWrapper);
+    default Page<SysUserVo> selectUnallocatedList(Page<SysUserVo> page, SysUserBo user, List<Long> userIds) {
+        MPJLambdaWrapper<SysUser> wrapper = this.buildUserRoleJoinWrapper(user)
+            .notIn(userIds != null && !userIds.isEmpty(), "u", SysUser::getUserId, userIds)
+            .orderByAsc("u", SysUser::getUserId);
+        return this.selectJoinPage(page, SysUserVo.class, wrapper);
+    }
 
     /**
      * 根据用户ID统计用户数量
@@ -98,7 +132,7 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser, SysUserVo> {
         @DataColumn(key = "userName", value = "create_by")
     })
     default long countUserById(Long userId) {
-        return this.selectCount(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserId, userId));
+        return lambda().eq(SysUser::getUserId, userId).count();
     }
 
     /**
@@ -127,5 +161,24 @@ public interface SysUserMapper extends BaseMapperPlus<SysUser, SysUserVo> {
         @DataColumn(key = "userName", value = "create_by")
     })
     int updateById(@Param(Constants.ENTITY) SysUser user);
+
+    /**
+     * 构建用户与角色关联查询条件
+     *
+     * @param user 查询条件
+     * @return 用户角色关联查询包装器
+     */
+    default MPJLambdaWrapper<SysUser> buildUserRoleJoinWrapper(SysUserBo user) {
+        return QueryBuilder.lambdaJoin("u", SysUser.class)
+            .distinct()
+            .selectAll(SysUser.class)
+            .leftJoin(SysDept.class, "d", SysDept::getDeptId, SysUser::getDeptId)
+            .leftJoin(SysUserRole.class, "sur", SysUserRole::getUserId, SysUser::getUserId)
+            .leftJoin(SysRole.class, "r", SysRole::getRoleId, SysUserRole::getRoleId)
+            .likeIfText("u", SysUser::getUserName, user.getUserName())
+            .eqIfText("u", SysUser::getStatus, user.getStatus())
+            .likeIfText("u", SysUser::getPhoneNumber, user.getPhoneNumber())
+            .build();
+    }
 
 }

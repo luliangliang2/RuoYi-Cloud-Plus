@@ -4,19 +4,19 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.enums.BusinessStatusEnum;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.mybatis.core.page.PageQuery;
-import org.dromara.common.mybatis.core.page.TableDataInfo;
+import org.dromara.common.mybatis.core.query.LambdaJoinQueryBuilder;
+import org.dromara.common.mybatis.core.query.QueryBuilder;
 import org.dromara.common.satoken.utils.LoginHelper;
 import org.dromara.warm.flow.core.FlowEngine;
 import org.dromara.warm.flow.core.constant.ExceptionCons;
@@ -36,6 +36,7 @@ import org.dromara.warm.flow.orm.mapper.FlowHisTaskMapper;
 import org.dromara.warm.flow.orm.mapper.FlowInstanceMapper;
 import org.dromara.workflow.common.ConditionalOnEnable;
 import org.dromara.workflow.common.enums.TaskStatusEnum;
+import org.dromara.workflow.domain.FlowInstanceBizExt;
 import org.dromara.workflow.domain.bo.FlowCancelBo;
 import org.dromara.workflow.domain.bo.FlowInstanceBo;
 import org.dromara.workflow.domain.bo.FlowInvalidBo;
@@ -81,11 +82,11 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      * @param pageQuery      分页
      */
     @Override
-    public TableDataInfo<FlowInstanceVo> selectRunningInstanceList(FlowInstanceBo flowInstanceBo, PageQuery pageQuery) {
-        QueryWrapper<FlowInstanceBo> queryWrapper = buildQueryWrapper(flowInstanceBo);
-        queryWrapper.in("fi.flow_status", BusinessStatusEnum.runningStatus());
+    public PageResult<FlowInstanceVo> selectRunningInstanceList(FlowInstanceBo flowInstanceBo, PageQuery pageQuery) {
+        MPJLambdaWrapper<FlowInstance> queryWrapper = buildQueryWrapper(flowInstanceBo);
+        queryWrapper.in("fi", FlowInstance::getFlowStatus, BusinessStatusEnum.runningStatus());
         Page<FlowInstanceVo> page = flwInstanceMapper.selectInstanceList(pageQuery.build(), queryWrapper);
-        return TableDataInfo.build(page);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -95,11 +96,11 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      * @param pageQuery      分页
      */
     @Override
-    public TableDataInfo<FlowInstanceVo> selectFinishInstanceList(FlowInstanceBo flowInstanceBo, PageQuery pageQuery) {
-        QueryWrapper<FlowInstanceBo> queryWrapper = buildQueryWrapper(flowInstanceBo);
-        queryWrapper.in("fi.flow_status", BusinessStatusEnum.finishStatus());
+    public PageResult<FlowInstanceVo> selectFinishInstanceList(FlowInstanceBo flowInstanceBo, PageQuery pageQuery) {
+        MPJLambdaWrapper<FlowInstance> queryWrapper = buildQueryWrapper(flowInstanceBo);
+        queryWrapper.in("fi", FlowInstance::getFlowStatus, BusinessStatusEnum.finishStatus());
         Page<FlowInstanceVo> page = flwInstanceMapper.selectInstanceList(pageQuery.build(), queryWrapper);
-        return TableDataInfo.build(page);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -134,20 +135,33 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      * @param flowInstanceBo 查询条件
      * @return 查询条件构造方法
      */
-    private QueryWrapper<FlowInstanceBo> buildQueryWrapper(FlowInstanceBo flowInstanceBo) {
-        QueryWrapper<FlowInstanceBo> queryWrapper = Wrappers.query();
-        queryWrapper.like(StringUtils.isNotBlank(flowInstanceBo.getNodeName()), "fi.node_name", flowInstanceBo.getNodeName());
-        queryWrapper.like(StringUtils.isNotBlank(flowInstanceBo.getFlowName()), "fd.flow_name", flowInstanceBo.getFlowName());
-        queryWrapper.like(StringUtils.isNotBlank(flowInstanceBo.getFlowCode()), "fd.flow_code", flowInstanceBo.getFlowCode());
+    private MPJLambdaWrapper<FlowInstance> buildQueryWrapper(FlowInstanceBo flowInstanceBo) {
+        LambdaJoinQueryBuilder<FlowInstance> queryBuilder = QueryBuilder.lambdaJoin("fi", FlowInstance.class)
+            .select(FlowInstance::getId, FlowInstance::getCreateTime, FlowInstance::getUpdateTime,
+                FlowInstance::getDelFlag, FlowInstance::getDefinitionId, FlowInstance::getBusinessId,
+                FlowInstance::getNodeType, FlowInstance::getNodeCode, FlowInstance::getNodeName,
+                FlowInstance::getVariable, FlowInstance::getFlowStatus, FlowInstance::getActivityStatus,
+                FlowInstance::getCreateBy, FlowInstance::getExt)
+            .select("fd", org.dromara.warm.flow.orm.entity.FlowDefinition::getFlowName,
+                org.dromara.warm.flow.orm.entity.FlowDefinition::getFlowCode,
+                org.dromara.warm.flow.orm.entity.FlowDefinition::getVersion,
+                org.dromara.warm.flow.orm.entity.FlowDefinition::getFormCustom,
+                org.dromara.warm.flow.orm.entity.FlowDefinition::getFormPath,
+                org.dromara.warm.flow.orm.entity.FlowDefinition::getCategory)
+            .select("biz", FlowInstanceBizExt::getBusinessCode, FlowInstanceBizExt::getBusinessTitle)
+            .leftJoin(org.dromara.warm.flow.orm.entity.FlowDefinition.class, "fd", org.dromara.warm.flow.orm.entity.FlowDefinition::getId, FlowInstance::getDefinitionId)
+            .leftJoin(FlowInstanceBizExt.class, "biz", FlowInstanceBizExt::getInstanceId, FlowInstance::getId);
+        queryBuilder.likeIfText("fi", FlowInstance::getNodeName, flowInstanceBo.getNodeName());
+        queryBuilder.likeIfText("fd", org.dromara.warm.flow.orm.entity.FlowDefinition::getFlowName, flowInstanceBo.getFlowName());
+        queryBuilder.likeIfText("fd", org.dromara.warm.flow.orm.entity.FlowDefinition::getFlowCode, flowInstanceBo.getFlowCode());
         if (StringUtils.isNotBlank(flowInstanceBo.getCategory())) {
             List<Long> categoryIds = flwCategoryMapper.selectCategoryIdsByParentId(Convert.toLong(flowInstanceBo.getCategory()));
-            queryWrapper.in("fd.category", StreamUtils.toList(categoryIds, Convert::toStr));
+            queryBuilder.inIfNotEmpty("fd", org.dromara.warm.flow.orm.entity.FlowDefinition::getCategory, StreamUtils.toList(categoryIds, Convert::toStr));
         }
-        queryWrapper.eq(StringUtils.isNotBlank(flowInstanceBo.getBusinessId()), "fi.business_id", flowInstanceBo.getBusinessId());
-        queryWrapper.in(CollUtil.isNotEmpty(flowInstanceBo.getCreateByIds()), "fi.create_by", flowInstanceBo.getCreateByIds());
-        queryWrapper.eq("fi.del_flag", "0");
-        queryWrapper.orderByDesc("fi.create_time");
-        return queryWrapper;
+        queryBuilder.eqIfText("fi", FlowInstance::getBusinessId, flowInstanceBo.getBusinessId());
+        queryBuilder.inIfNotEmpty("fi", FlowInstance::getCreateBy, flowInstanceBo.getCreateByIds());
+        queryBuilder.orderByDesc("fi", FlowInstance::getCreateTime);
+        return queryBuilder.build();
     }
 
     /**
@@ -157,7 +171,10 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      */
     @Override
     public FlowInstance selectInstByBusinessId(String businessId) {
-        return flowInstanceMapper.selectOne(new LambdaQueryWrapper<FlowInstance>().eq(FlowInstance::getBusinessId, businessId));
+        return flowInstanceMapper.selectOne(
+            QueryBuilder.lambda(FlowInstance.class)
+                .eq(FlowInstance::getBusinessId, businessId)
+                .build());
     }
 
     /**
@@ -188,7 +205,10 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteByBusinessIds(List<String> businessIds) {
-        List<FlowInstance> flowInstances = flowInstanceMapper.selectList(new LambdaQueryWrapper<FlowInstance>().in(FlowInstance::getBusinessId, businessIds));
+        List<FlowInstance> flowInstances = flowInstanceMapper.selectList(
+            QueryBuilder.lambda(FlowInstance.class)
+                .in(FlowInstance::getBusinessId, businessIds)
+                .build());
         if (CollUtil.isEmpty(flowInstances)) {
             log.warn("未找到对应的流程实例信息，无法执行删除操作。");
             return false;
@@ -312,11 +332,11 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      * @param pageQuery  分页
      */
     @Override
-    public TableDataInfo<FlowInstanceVo> selectCurrentInstanceList(FlowInstanceBo instanceBo, PageQuery pageQuery) {
-        QueryWrapper<FlowInstanceBo> queryWrapper = buildQueryWrapper(instanceBo);
-        queryWrapper.eq("fi.create_by", LoginHelper.getUserIdStr());
+    public PageResult<FlowInstanceVo> selectCurrentInstanceList(FlowInstanceBo instanceBo, PageQuery pageQuery) {
+        MPJLambdaWrapper<FlowInstance> queryWrapper = buildQueryWrapper(instanceBo);
+        queryWrapper.eq("fi", FlowInstance::getCreateBy, LoginHelper.getUserIdStr());
         Page<FlowInstanceVo> page = flwInstanceMapper.selectInstanceList(pageQuery.build(), queryWrapper);
-        return TableDataInfo.build(page);
+        return PageResult.build(page.getRecords(), page.getTotal());
     }
 
     /**
@@ -357,10 +377,11 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
         // 再组装历史任务（已处理任务）
         List<FlowHisTaskVo> hisTaskVos = new ArrayList<>();
         List<FlowHisTask> hisTasks = flowHisTaskMapper.selectList(
-            new LambdaQueryWrapper<FlowHisTask>()
+            QueryBuilder.lambda(FlowHisTask.class)
                 .eq(FlowHisTask::getInstanceId, instanceId)
                 .eq(FlowHisTask::getNodeType, NodeType.BETWEEN.getKey())
                 .orderByDesc(FlowHisTask::getUpdateTime)
+                .build()
         );
         if (CollUtil.isNotEmpty(hisTasks)) {
             hisTaskVos = BeanUtil.copyToList(hisTasks, FlowHisTaskVo.class);
@@ -382,10 +403,9 @@ public class FlwInstanceServiceImpl implements IFlwInstanceService {
      */
     @Override
     public void updateStatus(Long instanceId, String status) {
-        LambdaUpdateWrapper<FlowInstance> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.set(FlowInstance::getFlowStatus, status);
-        wrapper.eq(FlowInstance::getId, instanceId);
-        flowInstanceMapper.update(wrapper);
+        flowInstanceMapper.update(Wrappers.lambdaUpdate(FlowInstance.class)
+            .set(FlowInstance::getFlowStatus, status)
+            .eq(FlowInstance::getId, instanceId));
     }
 
     /**

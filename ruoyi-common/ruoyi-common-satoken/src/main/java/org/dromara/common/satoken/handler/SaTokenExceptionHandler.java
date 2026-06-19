@@ -20,33 +20,39 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class SaTokenExceptionHandler {
 
     /**
-     * 权限码异常
+     * 处理权限码校验失败异常。
+     *
+     * @param e       异常信息
+     * @param request 当前请求
+     * @return 统一失败响应
      */
-    @ExceptionHandler(NotPermissionException.class)
-    public R<Void> handleNotPermissionException(NotPermissionException e, HttpServletRequest request) {
+    @ExceptionHandler({NotPermissionException.class, NotRoleException.class})
+    public R<Void> handleNotAccessException(RuntimeException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        log.error("请求地址'{}',权限码校验失败'{}'", requestURI, e.getMessage());
+        String reason = e instanceof NotRoleException ? "角色权限校验失败" : "权限码校验失败";
+        log.error("请求地址'{}',{}'{}'", requestURI, reason, e.getMessage());
         return R.fail(HttpStatus.HTTP_FORBIDDEN, "没有访问权限，请联系管理员授权");
     }
 
     /**
-     * 角色权限异常
-     */
-    @ExceptionHandler(NotRoleException.class)
-    public R<Void> handleNotRoleException(NotRoleException e, HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        log.error("请求地址'{}',角色权限校验失败'{}'", requestURI, e.getMessage());
-        return R.fail(HttpStatus.HTTP_FORBIDDEN, "没有访问权限，请联系管理员授权");
-    }
-
-    /**
-     * 认证失败
+     * 处理未登录或登录态失效异常。
+     *
+     * @param e       异常信息
+     * @param request 当前请求
+     * @return 统一失败响应
      */
     @ExceptionHandler(NotLoginException.class)
     public R<Void> handleNotLoginException(NotLoginException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',认证失败'{}',无法访问系统资源", requestURI, e.getMessage());
-        return R.fail(HttpStatus.HTTP_UNAUTHORIZED, "认证失败，无法访问系统资源");
+        String msg = switch (e.getType()) {
+            case NotLoginException.TOKEN_TIMEOUT -> "登录已过期，请重新登录";
+            case NotLoginException.BE_REPLACED -> "当前账号已在其他设备登录，您已被强制下线";
+            case NotLoginException.KICK_OUT -> "账号已被管理员强制下线";
+            case NotLoginException.TOKEN_FREEZE -> "账号已被冻结，请联系管理员处理";
+            default -> "登录状态异常，请重新登录";
+        };
+        return R.fail(HttpStatus.HTTP_UNAUTHORIZED, msg);
     }
 
 }
