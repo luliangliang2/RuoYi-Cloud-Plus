@@ -34,7 +34,7 @@ public class BizVehicleMonitorServiceImpl implements IBizVehicleMonitorService {
 
     private static final String MODULE_CODE = "vehicle";
     private static final String CATEGORY_ICON = "heroicons:folder";
-    private static final String VEHICLE_ICON = "heroicons:truck-solid";
+    private static final String DEFAULT_VEHICLE_ICON = "truck";
 
     private final BizTreeDefMapper treeDefMapper;
     private final BizTreeNodeMapper treeNodeMapper;
@@ -151,7 +151,7 @@ public class BizVehicleMonitorServiceImpl implements IBizVehicleMonitorService {
         vo.setKey("vehicle-" + vehicle.getId());
         vo.setTitle(StringUtils.blankToDefault(vehicle.getPlateNo(), vehicle.getVin()));
         vo.setType("vehicle");
-        vo.setIcon(VEHICLE_ICON);
+        vo.setIcon(StringUtils.blankToDefault(vehicle.getVehicleIcon(), DEFAULT_VEHICLE_ICON));
         vo.setTreeId(vehicle.getTreeId());
         vo.setNodeId(vehicle.getCategoryNodeId());
         vo.setVehicleId(vehicle.getId());

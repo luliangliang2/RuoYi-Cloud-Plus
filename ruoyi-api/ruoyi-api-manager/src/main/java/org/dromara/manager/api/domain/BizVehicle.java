@@ -66,6 +66,11 @@ public class BizVehicle extends TenantEntity {
     private String brand;
 
     /**
+     * 车辆图标
+     */
+    private String vehicleIcon;
+
+    /**
      * 删除标志
      */
     @TableLogic

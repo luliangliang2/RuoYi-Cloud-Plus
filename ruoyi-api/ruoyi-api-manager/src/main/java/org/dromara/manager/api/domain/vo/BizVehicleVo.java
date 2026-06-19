@@ -75,6 +75,12 @@ public class BizVehicleVo implements Serializable {
     private String brand;
 
     /**
+     * 车辆图标
+     */
+    @ExcelProperty(value = "车辆图标")
+    private String vehicleIcon;
+
+    /**
      * 是否在线
      */
     private Boolean online;

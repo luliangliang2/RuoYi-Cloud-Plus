@@ -58,5 +58,10 @@ public class BizVehicleBo extends BaseEntity {
      */
     private String brand;
 
+    /**
+     * 车辆图标
+     */
+    private String vehicleIcon;
+
 
 }

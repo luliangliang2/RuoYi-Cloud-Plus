@@ -11,7 +11,8 @@
                n.node_name as category_node_name,
                v.vin,
                v.plate_no,
-               v.brand
+               v.brand,
+               v.vehicle_icon
         from biz_vehicle v
             left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
         where v.del_flag = 0
@@ -26,6 +27,7 @@
                v.vin,
                v.plate_no,
                v.brand,
+               v.vehicle_icon,
                v.create_time
         from biz_vehicle v
             left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
@@ -70,7 +72,7 @@
                 )
             </if>
         </where>
-        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.create_time
+        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.vehicle_icon, v.create_time
         order by v.id asc
     </select>
 
@@ -82,6 +84,7 @@
                v.vin,
                v.plate_no,
                v.brand,
+               v.vehicle_icon,
                v.create_time
         from biz_vehicle v
             left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
@@ -126,7 +129,7 @@
                 )
             </if>
         </where>
-        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.create_time
+        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.vehicle_icon, v.create_time
         order by v.id asc
     </select>
 
