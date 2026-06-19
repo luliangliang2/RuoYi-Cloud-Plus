@@ -10,21 +10,20 @@ security:
       - /auth/register
       - /auth/tenant/list
       - /resource/sms/code
-      - /resource/message/close
+      - /resource/sse/close
       - /*/v3/api-docs
       - /*/error
       - /csrf
       - /warm-flow-ui/**
-      - /snail-chat/**
-      - /api/snail/chat/**
 
 spring:
   cloud:
+    # 网关配置
     gateway:
       # 打印请求日志(自定义)
       requestLog: true
       server:
-        webmvc:
+        webflux:
           discovery:
             locator:
               lowerCaseServiceId: true
@@ -63,13 +62,6 @@ spring:
               uri: lb://ruoyi-resource
               predicates:
                 - Path=/resource/**
-              filters:
-                - StripPrefix=1
-            # AI服务
-            - id: ruoyi-ai
-              uri: lb://ruoyi-ai
-              predicates:
-                - Path=/snail-ai/**
               filters:
                 - StripPrefix=1
             # workflow服务

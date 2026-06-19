@@ -2,12 +2,10 @@ package org.dromara.system.api.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dromara.common.core.utils.StringUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -21,6 +19,11 @@ public class LoginUser implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 租户ID
+     */
+    private String tenantId;
 
     /**
      * 用户ID
@@ -113,11 +116,6 @@ public class LoginUser implements Serializable {
     private List<RoleDTO> roles;
 
     /**
-     * 数据权限角色映射 key 为权限码 value 为可参与数据权限计算的角色ID列表
-     */
-    private Map<String, List<Long>> dataScopeRoleMap;
-
-    /**
      * 岗位对象
      */
     private List<PostDTO> posts;
@@ -147,7 +145,7 @@ public class LoginUser implements Serializable {
         if (userId == null) {
             throw new IllegalArgumentException("用户ID不能为空");
         }
-        return userType + StringUtils.COLON + userId;
+        return userType + ":" + userId;
     }
 
 }

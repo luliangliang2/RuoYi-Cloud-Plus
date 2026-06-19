@@ -91,6 +91,7 @@ public class AuthTopIamRequest extends AuthDefaultRequest {
             .add("Authorization", "Bearer " + authToken.getAccessToken()), false).getBody();
     }
 
+
     @Override
     public String authorize(String state) {
         return UrlBuilder.fromBaseUrl(super.authorize(state))

@@ -2,17 +2,17 @@ package org.dromara.system.domain.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.github.linpeilie.annotations.AutoMapper;
-import lombok.Data;
 import org.dromara.common.sensitive.annotation.Sensitive;
 import org.dromara.common.sensitive.core.SensitiveStrategy;
 import org.dromara.common.translation.annotation.Translation;
 import org.dromara.common.translation.constant.TransConstant;
 import org.dromara.system.domain.SysUser;
+import io.github.linpeilie.annotations.AutoMapper;
+import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
@@ -32,6 +32,11 @@ public class SysUserVo implements Serializable {
      * 用户ID
      */
     private Long userId;
+
+    /**
+     * 租户ID
+     */
+    private String tenantId;
 
     /**
      * 部门ID
@@ -63,12 +68,12 @@ public class SysUserVo implements Serializable {
      * 手机号码
      */
     @Sensitive(strategy = SensitiveStrategy.PHONE, perms = "system:user:edit")
-    private String phoneNumber;
+    private String phonenumber;
 
     /**
      * 用户性别（0男 1女 2未知）
      */
-    private String gender;
+    private String sex;
 
     /**
      * 头像地址
@@ -96,7 +101,7 @@ public class SysUserVo implements Serializable {
     /**
      * 最后登录时间
      */
-    private LocalDateTime loginDate;
+    private Date loginDate;
 
     /**
      * 备注
@@ -106,12 +111,7 @@ public class SysUserVo implements Serializable {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updateTime;
+    private Date createTime;
 
     /**
      * 部门名

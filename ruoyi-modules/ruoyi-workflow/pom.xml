@@ -41,7 +41,7 @@
         </dependency>
         <dependency>
             <groupId>org.dromara</groupId>
-            <artifactId>ruoyi-common-redis</artifactId>
+            <artifactId>ruoyi-common-idempotent</artifactId>
         </dependency>
         <dependency>
             <groupId>org.dromara</groupId>
@@ -50,6 +50,10 @@
         <dependency>
             <groupId>org.dromara</groupId>
             <artifactId>ruoyi-common-translation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.dromara</groupId>
+            <artifactId>ruoyi-common-tenant</artifactId>
         </dependency>
         <dependency>
             <groupId>org.dromara</groupId>
