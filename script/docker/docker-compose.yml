@@ -134,7 +134,7 @@ services:
     network_mode: "host"
 
   ruoyi-monitor:
-    image: ruoyi/ruoyi-monitor:2.5.3
+    image: ruoyi/ruoyi-monitor:6.0.0
     container_name: ruoyi-monitor
     environment:
       # 时区上海
@@ -150,7 +150,7 @@ services:
     network_mode: "host"
 
   ruoyi-snailjob-server:
-    image: ruoyi/ruoyi-snailjob-server:2.5.3
+    image: ruoyi/ruoyi-snailjob-server:6.0.0
     container_name: ruoyi-snailjob-server
     environment:
       # 时区上海
@@ -164,7 +164,7 @@ services:
     network_mode: "host"
 
   ruoyi-snailai-server:
-    image: ruoyi/ruoyi-snailai-server:2.5.3
+    image: ruoyi/ruoyi-snailai-server:6.0.0
     container_name: ruoyi-snailai-server
     environment:
       # 时区上海
@@ -179,7 +179,7 @@ services:
     network_mode: "host"
 
   ruoyi-gateway:
-    image: ruoyi/ruoyi-gateway:2.5.3
+    image: ruoyi/ruoyi-gateway:6.0.0
     container_name: ruoyi-gateway
     environment:
       # 时区上海
@@ -195,7 +195,7 @@ services:
     network_mode: "host"
 
   ruoyi-auth:
-    image: ruoyi/ruoyi-auth:2.5.3
+    image: ruoyi/ruoyi-auth:6.0.0
     container_name: ruoyi-auth
     environment:
       # 时区上海
@@ -211,7 +211,7 @@ services:
     network_mode: "host"
 
   ruoyi-system:
-    image: ruoyi/ruoyi-system:2.5.3
+    image: ruoyi/ruoyi-system:6.0.0
     container_name: ruoyi-system
     environment:
       # 时区上海
@@ -227,7 +227,7 @@ services:
     network_mode: "host"
 
   ruoyi-gen:
-    image: ruoyi/ruoyi-gen:2.5.3
+    image: ruoyi/ruoyi-gen:6.0.0
     container_name: ruoyi-gen
     environment:
       # 时区上海
@@ -243,7 +243,7 @@ services:
     network_mode: "host"
 
   ruoyi-job:
-    image: ruoyi/ruoyi-job:2.5.3
+    image: ruoyi/ruoyi-job:6.0.0
     container_name: ruoyi-job
     environment:
       # 时区上海
@@ -261,7 +261,7 @@ services:
     network_mode: "host"
 
   ruoyi-resource:
-    image: ruoyi/ruoyi-resource:2.5.3
+    image: ruoyi/ruoyi-resource:6.0.0
     container_name: ruoyi-resource
     environment:
       # 时区上海
@@ -277,7 +277,7 @@ services:
     network_mode: "host"
 
   ruoyi-workflow:
-    image: ruoyi/ruoyi-workflow:2.5.3
+    image: ruoyi/ruoyi-workflow:6.0.0
     container_name: ruoyi-workflow
     environment:
       # 时区上海
@@ -293,7 +293,7 @@ services:
     network_mode: "host"
 
   ruoyi-ai:
-    image: ruoyi/ruoyi-ai:2.5.3
+    image: ruoyi/ruoyi-ai:6.0.0
     container_name: ruoyi-ai
     environment:
       # 时区上海
