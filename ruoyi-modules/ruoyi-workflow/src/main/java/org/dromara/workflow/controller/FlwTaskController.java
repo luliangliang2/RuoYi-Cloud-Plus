@@ -1,5 +1,6 @@
 package org.dromara.workflow.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.domain.PageResult;
 import org.dromara.common.core.domain.R;
@@ -91,6 +92,7 @@ public class FlwTaskController extends BaseController {
      * @param flowTaskBo 参数
      * @param pageQuery  分页
      */
+    @SaCheckPermission("workflow:task:list")
     @GetMapping("/pageByAllTaskWait")
     public R<PageResult<FlowTaskVo>> pageByAllTaskWait(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
         return R.ok(flwTaskService.pageByAllTaskWait(flowTaskBo, pageQuery));
@@ -102,6 +104,7 @@ public class FlwTaskController extends BaseController {
      * @param flowTaskBo 参数
      * @param pageQuery  分页
      */
+    @SaCheckPermission("workflow:task:list")
     @GetMapping("/pageByAllTaskFinish")
     public R<PageResult<FlowHisTaskVo>> pageByAllTaskFinish(FlowTaskBo flowTaskBo, PageQuery pageQuery) {
         return R.ok(flwTaskService.pageByAllTaskFinish(flowTaskBo, pageQuery));
@@ -171,6 +174,7 @@ public class FlwTaskController extends BaseController {
      */
     @Log(title = "任务管理", businessType = BusinessType.UPDATE)
     @RepeatSubmit()
+    @SaCheckPermission("workflow:task:edit")
     @PutMapping("/updateAssignee/{userId}")
     public R<Void> updateAssignee(@RequestBody List<Long> taskIdList, @PathVariable String userId) {
         return toAjax(flwTaskService.updateAssignee(taskIdList, userId));
@@ -217,6 +221,7 @@ public class FlwTaskController extends BaseController {
      */
     @PostMapping("/urgeTask")
     @Log(title = "任务管理", businessType = BusinessType.INSERT)
+    @SaCheckPermission("workflow:task:edit")
     public R<Void> urgeTask(@RequestBody FlowUrgeTaskBo bo) {
         return toAjax(flwTaskService.urgeTask(bo));
     }
