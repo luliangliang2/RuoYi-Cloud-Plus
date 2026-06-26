@@ -47,7 +47,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                     SaSameUtil.checkCurrentRequestToken();
                 }
                 String requestUri = ServletUtils.getRequest().getRequestURI();
-                if (!requestUri.contains("/sse")) {
+                if (!requestUri.contains("/message")) {
                     // 对响应体设置默认头 后续代码可以覆盖
                     HttpServletResponse response = ServletUtils.getResponse();
                     response.setContentType(SaTokenConsts.CONTENT_TYPE_APPLICATION_JSON);
