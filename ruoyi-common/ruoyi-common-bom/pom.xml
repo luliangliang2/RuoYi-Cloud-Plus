@@ -202,6 +202,13 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- liteflow模块 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-common-liteflow</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- 授权认证 -->
             <dependency>
                 <groupId>org.dromara</groupId>
