@@ -172,6 +172,7 @@ public class TemplateEngineUtils {
         boolean needDigit = false;
         boolean needDateField = false;
         boolean needSwitchField = false;
+        boolean needParseTime = false;
         String firstTreeListField = StringUtils.EMPTY;
         for (GenTableColumn column : genTable.getColumns()) {
             boolean writable = column.isInsert() || column.isEdit();
@@ -187,6 +188,7 @@ public class TemplateEngineUtils {
             needDigit = needDigit || writable && StringUtils.equals(column.getHtmlType(), GenConstants.HTML_INPUT_NUMBER);
             needDateField = needDateField || writable && StringUtils.equals(column.getHtmlType(), GenConstants.HTML_DATETIME);
             needSwitchField = needSwitchField || (writable || column.isList()) && StringUtils.equals(column.getHtmlType(), GenConstants.HTML_SWITCH);
+            needParseTime = needParseTime || column.isList() && StringUtils.equals(column.getHtmlType(), GenConstants.HTML_DATETIME);
             if (StringUtils.isBlank(firstTreeListField) && column.isList()) {
                 firstTreeListField = column.getJavaField();
             }
@@ -206,6 +208,7 @@ public class TemplateEngineUtils {
         context.put("needDigit", needDigit);
         context.put("needDateField", needDateField);
         context.put("needSwitchField", needSwitchField);
+        context.put("needParseTime", needParseTime);
         context.put("firstTreeListField", firstTreeListField);
     }
 
@@ -715,7 +718,16 @@ public class TemplateEngineUtils {
         if (StringUtils.equals(column.getJavaType(), GenConstants.TYPE_LONG)) {
             return value + "L";
         }
-        if (StringUtils.equalsAny(column.getJavaType(), GenConstants.TYPE_INTEGER, GenConstants.TYPE_DOUBLE, GenConstants.TYPE_BIGDECIMAL)) {
+        if (StringUtils.equals(column.getJavaType(), GenConstants.TYPE_FLOAT)) {
+            return value + "F";
+        }
+        if (StringUtils.equals(column.getJavaType(), GenConstants.TYPE_DOUBLE)) {
+            return value + "D";
+        }
+        if (StringUtils.equals(column.getJavaType(), GenConstants.TYPE_BIGDECIMAL)) {
+            return "new java.math.BigDecimal(\"" + value + "\")";
+        }
+        if (StringUtils.equals(column.getJavaType(), GenConstants.TYPE_INTEGER)) {
             return value;
         }
         return "\"" + value + "\"";
@@ -732,7 +744,8 @@ public class TemplateEngineUtils {
         if (ObjectUtil.isNull(column) || StringUtils.isBlank(value)) {
             return "undefined";
         }
-        if (StringUtils.equalsAny(column.getJavaType(), GenConstants.TYPE_LONG, GenConstants.TYPE_INTEGER, GenConstants.TYPE_DOUBLE, GenConstants.TYPE_BIGDECIMAL)) {
+        if (StringUtils.equalsAny(column.getJavaType(), GenConstants.TYPE_LONG, GenConstants.TYPE_INTEGER,
+            GenConstants.TYPE_DOUBLE, GenConstants.TYPE_FLOAT, GenConstants.TYPE_BIGDECIMAL)) {
             return value;
         }
         return "'" + value + "'";
