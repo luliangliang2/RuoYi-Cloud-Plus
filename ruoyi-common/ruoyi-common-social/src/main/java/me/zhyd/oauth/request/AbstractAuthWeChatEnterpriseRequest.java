@@ -25,15 +25,34 @@ import me.zhyd.oauth.utils.UrlBuilder;
  */
 public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultRequest {
 
+    /**
+     * 创建企业微信认证请求。
+     *
+     * @param config 授权配置
+     * @param source 授权来源
+     */
     public AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source) {
         super(config, source);
     }
 
 
+    /**
+     * 创建企业微信认证请求。
+     *
+     * @param config         授权配置
+     * @param source         授权来源
+     * @param authStateCache 授权状态缓存
+     */
     public AbstractAuthWeChatEnterpriseRequest(AuthConfig config, AuthSource source, AuthStateCache authStateCache) {
         super(config, source, authStateCache);
     }
 
+    /**
+     * 获取企业微信访问令牌。
+     *
+     * @param authCallback 授权回调参数
+     * @return 访问令牌
+     */
     @Override
     public AuthToken getAccessToken(AuthCallback authCallback) {
         String response = doGetAuthorizationCode(accessTokenUrl(null));
@@ -47,6 +66,12 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
             .build();
     }
 
+    /**
+     * 获取企业微信用户信息。
+     *
+     * @param authToken 访问令牌
+     * @return 授权用户信息
+     */
     @Override
     public AuthUser getUserInfo(AuthToken authToken) {
         String response = doGetUserInfo(authToken);
@@ -54,10 +79,15 @@ public abstract class AbstractAuthWeChatEnterpriseRequest extends AuthDefaultReq
 
         // 返回 OpenId 或其他，均代表非当前企业用户，不支持
         // https://github.com/justauth/JustAuth/issues/227 修复bug
-        if (!object.containsKey("userid")) {
+        String userId = null;
+        if (object.containsKey("userid")) {
+            userId = object.getString("userid");
+        } else if (object.containsKey("UserId")) {
+            userId = object.getString("UserId");
+        }
+        if (userId == null) {
             throw new AuthException(AuthResponseStatus.UNIDENTIFIED_PLATFORM, source);
         }
-        String userId = object.getString("userid");
         String userTicket = object.getString("user_ticket");
         JSONObject userDetail = getUserDetail(authToken.getAccessToken(), userId, userTicket);
 
