@@ -38,7 +38,7 @@
 
         <!-- 安全认证与加密相关依赖版本 -->
         <satoken.version>1.45.0</satoken.version>
-        <justauth.version>1.16.7</justauth.version>
+        <justauth.version>2.0.0</justauth.version>
         <bouncycastle.version>1.85</bouncycastle.version>
 
         <!-- 缓存、锁与任务调度相关依赖版本 -->
@@ -378,7 +378,7 @@
 
             <!-- JustAuth 的依赖配置-->
             <dependency>
-                <groupId>me.zhyd.oauth</groupId>
+                <groupId>cn.herodotus.opensteward</groupId>
                 <artifactId>JustAuth</artifactId>
                 <version>${justauth.version}</version>
             </dependency>
