@@ -367,8 +367,7 @@ export default function ${BusinessName}Page() {
         <ProFormText name="${pkColumn.javaField}" hidden />
 <#list columns as column>
 <#if (column.insert || column.edit) && !column.pk>
-<#assign field = column.javaField>
-<#if field == treeParentCode>
+<#if column.javaField == treeParentCode>
         <ProFormTreeSelect
           name="${column.javaField}"
           label="${column.columnLabel}"
@@ -423,7 +422,3 @@ export default function ${BusinessName}Page() {
     </PageContainer>
   );
 }
-
-
-
-
