@@ -10,8 +10,6 @@
 	<artifactId>ruoyi-base-mansger</artifactId>
 
 	<dependencies>
-
-
 		<dependency>
 			<groupId>org.dromara</groupId>
 			<artifactId>ruoyi-common-nacos</artifactId>
