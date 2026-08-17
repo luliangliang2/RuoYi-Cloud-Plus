@@ -30,6 +30,11 @@
         <module>magic-api-plugin-ota</module>
         <module>magic-api-plugin-timeseries</module>
         <module>magic-api-plugin-protocol-sample</module>
+        <module>magic-api-plugin-security</module>
+        <module>magic-api-plugin-storage-router</module>
+        <module>magic-api-plugin-northbound</module>
+        <module>magic-api-plugin-ops-console</module>
+        <module>magic-api-plugin-protocol-adapters</module>
     </modules>
 
     <dependencyManagement>
