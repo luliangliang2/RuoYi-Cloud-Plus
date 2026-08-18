@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+ <parent><groupId>org.dromara</groupId><artifactId>ruoyi-cloud-plus</artifactId><version>2.6.1</version><relativePath>../../pom.xml</relativePath></parent>
+ <artifactId>ruoyi-iot-plugin-test</artifactId>
+ <description>IoT plugin gateway smoke test application</description>
+ <properties><magic-api.version>2.2.2</magic-api.version><iot-plugins.version>0.1.0-SNAPSHOT</iot-plugins.version></properties>
+ <dependencies>
+  <dependency><groupId>org.dromara</groupId><artifactId>ruoyi-common-nacos</artifactId></dependency>
+  <dependency><groupId>org.dromara</groupId><artifactId>ruoyi-common-log</artifactId></dependency>
+  <dependency><groupId>org.dromara</groupId><artifactId>ruoyi-common-web</artifactId></dependency>
+  <dependency><groupId>org.ssssssss</groupId><artifactId>magic-api-spring-boot-starter</artifactId><version>${magic-api.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-iot-core</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-device-registry</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-device-session</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-protocol</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-command</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-message-bus</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-observability</artifactId><version>${iot-plugins.version}</version></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+ </dependencies>
+ <build><finalName>${project.artifactId}</finalName><plugins>
+  <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><version>${spring-boot.version}</version><configuration><mainClass>org.dromara.iot.IotPluginTestApplication</mainClass></configuration><executions><execution><goals><goal>repackage</goal></goals></execution></executions></plugin>
+ </plugins></build>
+</project>

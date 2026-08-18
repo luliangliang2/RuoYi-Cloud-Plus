@@ -1,0 +1,49 @@
+server:
+  port: ${IOT_GATEWAY_PORT:9218}
+
+spring:
+  application:
+    name: ${IOT_GATEWAY_APP_NAME:ruoyi-iot-plugin-test}
+  autoconfigure:
+    exclude:
+      - com.baomidou.lock.spring.boot.autoconfigure.LockAutoConfiguration
+      - com.baomidou.lock.spring.boot.autoconfigure.RedissonLockAutoConfiguration
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    nacos:
+      server-addr: ${NACOS_SERVER_ADDR:10.211.55.3:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:true}
+        group: ${NACOS_DISCOVERY_GROUP:DEFAULT_GROUP}
+        namespace: ${NACOS_NAMESPACE:public}
+      config:
+        enabled: ${NACOS_CONFIG_ENABLED:true}
+        group: ${NACOS_CONFIG_GROUP:DEFAULT_GROUP}
+        namespace: ${NACOS_NAMESPACE:public}
+  config:
+    import:
+      - optional:nacos:application-common.yml
+      - optional:nacos:${spring.application.name}.yml
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+magic-api:
+  web: /magic-editor
+  resource:
+    type: file
+    location: ${MAGIC_API_RESOURCE_LOCATION:./data/magic-api}
+  prefix: /magic-api
+  security:
+    username: ${MAGIC_API_USERNAME:admin}
+    password: ${MAGIC_API_PASSWORD:admin123}
