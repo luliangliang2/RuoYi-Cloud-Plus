@@ -2,16 +2,15 @@ package org.ssssssss.magicapi.iot.core.model;
 
 import java.util.Objects;
 
-public record DeviceIdentity(String tenantId, String productId, String deviceId) {
+public record DeviceIdentity(String productId, String deviceId) {
 
     public DeviceIdentity {
-        tenantId = requireText(tenantId, "tenantId");
         productId = requireText(productId, "productId");
         deviceId = requireText(deviceId, "deviceId");
     }
 
     public String routingKey() {
-        return tenantId + "/" + productId + "/" + deviceId;
+        return productId + "/" + deviceId;
     }
 
     private static String requireText(String value, String name) {
@@ -22,4 +21,3 @@ public record DeviceIdentity(String tenantId, String productId, String deviceId)
         return value;
     }
 }
-

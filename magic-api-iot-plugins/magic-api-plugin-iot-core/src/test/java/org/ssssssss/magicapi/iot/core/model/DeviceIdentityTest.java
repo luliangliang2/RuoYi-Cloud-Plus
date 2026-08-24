@@ -8,12 +8,11 @@ class DeviceIdentityTest {
 
     @Test
     void buildsStableRoutingKey() {
-        assertEquals("tenant/product/device", new DeviceIdentity("tenant", "product", "device").routingKey());
+        assertEquals("product/device", new DeviceIdentity("product", "device").routingKey());
     }
 
     @Test
     void rejectsBlankParts() {
-        assertThrows(IllegalArgumentException.class, () -> new DeviceIdentity("tenant", "", "device"));
+        assertThrows(IllegalArgumentException.class, () -> new DeviceIdentity("", "device"));
     }
 }
-
