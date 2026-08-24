@@ -9,19 +9,14 @@ import lombok.RequiredArgsConstructor;
 import org.dromara.common.core.utils.ServletUtils;
 import org.dromara.common.core.utils.StringUtils;
 import org.dromara.common.doc.config.properties.SpringDocProperties;
+import org.dromara.common.doc.core.customizer.ClassTagOperationCustomizer;
+import org.dromara.common.doc.core.customizer.JavadocOperationCustomizer;
 import org.dromara.common.doc.core.resolver.JavadocResolver;
 import org.dromara.common.doc.core.resolver.SaTokenAnnotationMetadataJavadocResolver;
-import org.dromara.common.doc.handler.OpenApiHandler;
 import org.springdoc.core.configuration.SpringDocConfiguration;
-import org.springdoc.core.customizers.OpenApiBuilderCustomizer;
-import org.springdoc.core.customizers.OpenApiCustomizer;
-import org.springdoc.core.customizers.ServerBaseUrlCustomizer;
-import org.springdoc.core.properties.SpringDocConfigProperties;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.providers.JavadocProvider;
-import org.springdoc.core.service.OpenAPIService;
-import org.springdoc.core.service.SecurityService;
 import org.springdoc.core.utils.PropertyResolverUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -47,9 +42,12 @@ public class SpringDocAutoConfiguration {
 
     private final ServerProperties serverProperties;
 
-    @Value("${spring.application.name}")
-    private String appName;
-
+    /**
+     * 构建基础 OpenAPI 文档对象。
+     *
+     * @param properties SpringDoc 配置
+     * @return OpenAPI 对象
+     */
     @Bean
     @ConditionalOnMissingBean(OpenAPI.class)
     public OpenAPI openApi(SpringDocProperties properties) {
@@ -74,6 +72,12 @@ public class SpringDocAutoConfiguration {
         return openApi;
     }
 
+    /**
+     * 将自定义文档信息配置转换为 OpenAPI Info。
+     *
+     * @param infoProperties 文档信息配置
+     * @return Info 对象
+     */
     private Info convertInfo(SpringDocProperties.InfoProperties infoProperties) {
         Info info = new Info();
         info.setTitle(infoProperties.getTitle());
@@ -85,23 +89,28 @@ public class SpringDocAutoConfiguration {
     }
 
     /**
-     * 自定义 openapi 处理器
+     * Controller 类级标签增强
      */
     @Bean
-    public OpenAPIService openApiBuilder(Optional<OpenAPI> openAPI,
-                                         SecurityService securityParser,
-                                         SpringDocConfigProperties springDocConfigProperties, PropertyResolverUtils propertyResolverUtils,
-                                         Optional<List<OpenApiBuilderCustomizer>> openApiBuilderCustomisers,
-                                         Optional<List<ServerBaseUrlCustomizer>> serverBaseUrlCustomisers, Optional<JavadocProvider> javadocProvider,
-                                         List<JavadocResolver> javadocResolvers) {
-        return new OpenApiHandler(openAPI, securityParser, springDocConfigProperties, propertyResolverUtils, openApiBuilderCustomisers, serverBaseUrlCustomisers, javadocProvider, javadocResolvers);
+    public ClassTagOperationCustomizer classTagOperationCustomizer(Optional<JavadocProvider> javadocProvider,
+                                                                   PropertyResolverUtils propertyResolverUtils) {
+        return new ClassTagOperationCustomizer(javadocProvider, propertyResolverUtils);
+    }
+
+    /**
+     * 方法 JavaDoc 与权限描述增强
+     */
+    @Bean
+    public JavadocOperationCustomizer javadocOperationCustomizer(Optional<JavadocProvider> javadocProvider,
+                                                                 List<JavadocResolver> javadocResolvers) {
+        return new JavadocOperationCustomizer(javadocProvider, javadocResolvers);
     }
 
     /**
      * 对已经生成好的 OpenApi 进行自定义操作
      */
     @Bean
-    public OpenApiCustomizer openApiCustomizer() {
+    public GlobalOpenApiCustomizer openApiCustomizer() {
         String contextPath = serverProperties.getServlet().getContextPath();
         String finalContextPath = StringUtils.isBlank(contextPath) || "/".equals(contextPath) ? "" : contextPath;
         // 对所有路径增加前置上下文路径

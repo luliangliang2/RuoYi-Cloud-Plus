@@ -178,9 +178,9 @@ public class SysClientServiceImpl implements ISysClientService {
      * 统一处理白名单与路径规则的入库格式。
      */
     private String resolveRuleValue(String rawValue, List<String> listValue, UnaryOperator<String> normalizer) {
-        List<String> rules = CollUtil.isNotEmpty(listValue)
-            ? listValue
-            : StringUtils.str2List(rawValue, CLIENT_RULE_SEPARATOR_REGEX, true, true);
+        List<String> rules = rawValue != null
+            ? StringUtils.str2List(rawValue, CLIENT_RULE_SEPARATOR_REGEX, true, true)
+            : listValue;
         if (CollUtil.isEmpty(rules)) {
             return listValue != null || rawValue != null ? "" : null;
         }

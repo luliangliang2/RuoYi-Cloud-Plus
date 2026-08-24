@@ -25,7 +25,7 @@ services:
     network_mode: "host"
 
   nacos:
-    image: nacos/nacos-server:v3.2.2
+    image: nacos/nacos-server:v3.2.3
     container_name: nacos
     ports:
       - "8848:8848"
@@ -38,6 +38,10 @@ services:
       PREFER_HOST_MODE: hostname
       JVM_XMS: 256m
       JVM_XMX: 512m
+      # 认证相关密钥 自行替换
+      NACOS_AUTH_TOKEN: rE7bYayhpvduYwCxuhckybEPDXyna6xwm5m7MZjtjrdXjVxAbXAMccXHyaJvB346
+      NACOS_AUTH_IDENTITY_KEY: ruoyi-vue-plus-key
+      NACOS_AUTH_IDENTITY_VALUE: ruoyi-vue-plus-value
     volumes:
       - /docker/nacos/logs/:/home/nacos/logs
       # 默认单机模式 使用 mysql 等按 nacos 文档在配置文件内修改 所有配置均可在配置文件修改
@@ -134,7 +138,7 @@ services:
     network_mode: "host"
 
   ruoyi-monitor:
-    image: ruoyi/ruoyi-monitor:2.5.3
+    image: ruoyi/ruoyi-monitor:6.0.0
     container_name: ruoyi-monitor
     environment:
       # 时区上海
@@ -150,7 +154,7 @@ services:
     network_mode: "host"
 
   ruoyi-snailjob-server:
-    image: ruoyi/ruoyi-snailjob-server:2.5.3
+    image: ruoyi/ruoyi-snailjob-server:6.0.0
     container_name: ruoyi-snailjob-server
     environment:
       # 时区上海
@@ -164,11 +168,16 @@ services:
     network_mode: "host"
 
   ruoyi-snailai-server:
-    image: ruoyi/ruoyi-snailai-server:2.5.3
+    image: ruoyi/ruoyi-snailai-server:6.0.0
     container_name: ruoyi-snailai-server
     environment:
       # 时区上海
       TZ: Asia/Shanghai
+      # Docling 与 PaddleOCR 服务需单独部署；host 网络模式下默认通过宿主机端口访问
+      SNAIL_AI_RAG_DOCLING_ENABLED: ${SNAIL_AI_RAG_DOCLING_ENABLED:-true}
+      SNAIL_AI_RAG_DOCLING_URL: ${SNAIL_AI_RAG_DOCLING_URL:-http://127.0.0.1:5100}
+      SNAIL_AI_RAG_DOCLING_PADDLE_OCR_ENABLED: ${SNAIL_AI_RAG_DOCLING_PADDLE_OCR_ENABLED:-true}
+      SNAIL_AI_RAG_DOCLING_PADDLE_OCR_URL: ${SNAIL_AI_RAG_DOCLING_PADDLE_OCR_URL:-http://127.0.0.1:8866/ocr}
     ports:
       - "8900:8900"
       - "18888:18888"
@@ -179,7 +188,7 @@ services:
     network_mode: "host"
 
   ruoyi-gateway:
-    image: ruoyi/ruoyi-gateway:2.5.3
+    image: ruoyi/ruoyi-gateway:6.0.0
     container_name: ruoyi-gateway
     environment:
       # 时区上海
@@ -195,7 +204,7 @@ services:
     network_mode: "host"
 
   ruoyi-auth:
-    image: ruoyi/ruoyi-auth:2.5.3
+    image: ruoyi/ruoyi-auth:6.0.0
     container_name: ruoyi-auth
     environment:
       # 时区上海
@@ -211,7 +220,7 @@ services:
     network_mode: "host"
 
   ruoyi-system:
-    image: ruoyi/ruoyi-system:2.5.3
+    image: ruoyi/ruoyi-system:6.0.0
     container_name: ruoyi-system
     environment:
       # 时区上海
@@ -227,7 +236,7 @@ services:
     network_mode: "host"
 
   ruoyi-gen:
-    image: ruoyi/ruoyi-gen:2.5.3
+    image: ruoyi/ruoyi-gen:6.0.0
     container_name: ruoyi-gen
     environment:
       # 时区上海
@@ -243,7 +252,7 @@ services:
     network_mode: "host"
 
   ruoyi-job:
-    image: ruoyi/ruoyi-job:2.5.3
+    image: ruoyi/ruoyi-job:6.0.0
     container_name: ruoyi-job
     environment:
       # 时区上海
@@ -261,7 +270,7 @@ services:
     network_mode: "host"
 
   ruoyi-resource:
-    image: ruoyi/ruoyi-resource:2.5.3
+    image: ruoyi/ruoyi-resource:6.0.0
     container_name: ruoyi-resource
     environment:
       # 时区上海
@@ -277,7 +286,7 @@ services:
     network_mode: "host"
 
   ruoyi-workflow:
-    image: ruoyi/ruoyi-workflow:2.5.3
+    image: ruoyi/ruoyi-workflow:6.0.0
     container_name: ruoyi-workflow
     environment:
       # 时区上海
@@ -293,7 +302,7 @@ services:
     network_mode: "host"
 
   ruoyi-ai:
-    image: ruoyi/ruoyi-ai:2.5.3
+    image: ruoyi/ruoyi-ai:6.0.0
     container_name: ruoyi-ai
     environment:
       # 时区上海

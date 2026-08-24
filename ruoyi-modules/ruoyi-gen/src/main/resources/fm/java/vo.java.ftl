@@ -17,8 +17,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-
-
 /**
  * ${functionName}视图对象 ${tableName}
  *
@@ -44,7 +42,7 @@ public class ${ClassName}Vo implements Serializable {
     @ExcelDictFormat(dictType = "${column.dictType}")
 <#elseif parentheseIndex != -1>
     @ExcelProperty(value = "${column.columnLabel}", converter = ExcelDictConvert.class)
-    @ExcelDictFormat(readConverterExp = "${column.readConverterExp}()")
+    @ExcelDictFormat(readConverterExp = "${column.readConverterExp()}")
 <#else>
     @ExcelProperty(value = "${column.columnLabel}")
 </#if>
@@ -61,5 +59,3 @@ public class ${ClassName}Vo implements Serializable {
 </#list>
 
 }
-
-
