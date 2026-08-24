@@ -44,5 +44,6 @@ nbdist/
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml
-
+**/node_modules/
+**/node_moudles/
 .flattened-pom.xml
