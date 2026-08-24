@@ -6,12 +6,24 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+<<<<<<< HEAD
 import com.baomidou.mybatisplus.core.toolkit.ReflectionKit;
+=======
+import com.baomidou.mybatisplus.core.metadata.MapperProxyMetadata;
+import com.baomidou.mybatisplus.core.toolkit.MybatisUtils;
+import com.baomidou.mybatisplus.core.toolkit.reflect.GenericTypeUtils;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
+>>>>>>> future/3.X
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.toolkit.Db;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 import org.dromara.common.core.utils.MapstructUtils;
+<<<<<<< HEAD
+=======
+import org.dromara.common.core.utils.SpringUtils;
+import org.dromara.common.core.utils.StreamUtils;
+>>>>>>> future/3.X
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -66,6 +78,46 @@ public interface BaseMapperPlus<T, V> extends BaseMapper<T> {
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * 创建当前 Mapper 绑定的 Lambda CRUD 链式操作。
+     *
+     * @return Lambda CRUD 链式包装器
+     */
+    default LambdaCrudChainWrapper<T, V> lambda() {
+        return new LambdaCrudChainWrapper<>(mapperProxy());
+    }
+
+    /**
+     * 获取当前 Mapper 对应的 Spring 代理对象，确保 Mapper 上的切面注解能够继续生效。
+     *
+     * @return Mapper 代理对象
+     */
+    private BaseMapperPlus<T, V> mapperProxy() {
+        BaseMapperPlus<T, V> mapper = this;
+        try {
+            MapperProxyMetadata metadata = MybatisUtils.getMapperProxy(this);
+            Object proxy = SpringUtils.getBean(metadata.getMapperInterface());
+            if (proxy instanceof BaseMapperPlus<?, ?>) {
+                mapper = (BaseMapperPlus<T, V>) proxy;
+            }
+        } catch (RuntimeException ignored) {
+            // Mapper 可能未托管于 Spring 容器，保留当前对象作为回退。
+        }
+        return mapper;
+    }
+
+    /**
+     * 创建当前 Mapper 绑定的 Lambda 链式更新。
+     *
+     * @return Lambda 链式更新包装器
+     */
+    default LambdaUpdateChainWrapper<T> lambdaUpdate() {
+        return ChainWrappers.lambdaUpdateChain(mapperProxy());
+    }
+
+    /**
+>>>>>>> future/3.X
      * 批量插入实体对象集合
      *
      * @param entityList 实体对象集合

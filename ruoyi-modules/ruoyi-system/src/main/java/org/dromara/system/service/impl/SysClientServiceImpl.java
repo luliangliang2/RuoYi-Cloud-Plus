@@ -151,4 +151,62 @@ public class SysClientServiceImpl implements ISysClientService {
         return !exist;
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * 回填客户端扩展规则字段，便于前端直接展示和编辑。
+     */
+    private void fillClientRuleFields(SysClientVo vo) {
+        if (ObjectUtil.isNull(vo)) {
+            return;
+        }
+        vo.setGrantTypeList(StringUtils.splitList(vo.getGrantType()));
+        vo.setAccessPathList(parseRuleList(vo.getAccessPath(), this::normalizeAccessPath));
+        vo.setIpWhitelistList(parseRuleList(vo.getIpWhitelist(), UnaryOperator.identity()));
+    }
+
+    /**
+     * 统一处理白名单与路径规则的入库格式。
+     */
+    private String resolveRuleValue(String rawValue, List<String> listValue, UnaryOperator<String> normalizer) {
+        List<String> rules = rawValue != null
+            ? StringUtils.str2List(rawValue, CLIENT_RULE_SEPARATOR_REGEX, true, true)
+            : listValue;
+        if (CollUtil.isEmpty(rules)) {
+            return listValue != null || rawValue != null ? "" : null;
+        }
+        return CollUtil.join(rules.stream()
+            .map(normalizer)
+            .filter(StringUtils::isNotBlank)
+            .toList(), StringUtils.SEPARATOR);
+    }
+
+    /**
+     * 将规则串转换为列表。
+     */
+    private List<String> parseRuleList(String value, UnaryOperator<String> normalizer) {
+        return StringUtils.str2List(value, CLIENT_RULE_SEPARATOR_REGEX, true, true).stream()
+            .map(normalizer)
+            .filter(StringUtils::isNotBlank)
+            .toList();
+    }
+
+    /**
+     * 统一补齐路径前导斜杠，避免配置成 app/** 时无法命中。
+     */
+    private String normalizeAccessPath(String path) {
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+        String accessPath = StringUtils.trim(path);
+        if (StringUtils.isBlank(accessPath)) {
+            return null;
+        }
+        if (StringUtils.equals(accessPath, "*") || StringUtils.equals(accessPath, "/**")) {
+            return "/**";
+        }
+        return accessPath.startsWith(StringUtils.SLASH) ? accessPath : StringUtils.SLASH + accessPath;
+    }
+
+>>>>>>> future/3.X
 }

@@ -1,3 +1,11 @@
+<<<<<<< HEAD:ruoyi-modules/ruoyi-gen/src/main/resources/vm/ts/api.ts.vm
+=======
+import type { ${BusinessName}Form, ${BusinessName}Query, ${BusinessName}VO } from '@/api/${moduleName}/${businessName}/types';
+<#if !table.tree>
+import type { PageResult } from '@/api/types';
+</#if>
+import type { AxiosPromise } from '@/utils/api-types';
+>>>>>>> future/3.X:ruoyi-modules/ruoyi-gen/src/main/resources/fm/vue/api.ts.ftl
 import request from '@/utils/request';
 import { AxiosPromise } from 'axios';
 import { ${BusinessName}VO, ${BusinessName}Form, ${BusinessName}Query } from '@/api/${moduleName}/${businessName}/types';
@@ -7,8 +15,12 @@ import { ${BusinessName}VO, ${BusinessName}Form, ${BusinessName}Query } from '@/
  * @param query
  * @returns {*}
  */
+<<<<<<< HEAD:ruoyi-modules/ruoyi-gen/src/main/resources/vm/ts/api.ts.vm
 
 export const list${BusinessName} = (query?: ${BusinessName}Query): AxiosPromise<${BusinessName}VO[]> => {
+=======
+export const list${BusinessName} = (query?: ${BusinessName}Query): AxiosPromise<<#if table.tree>${BusinessName}VO[]<#else>PageResult<${BusinessName}VO></#if>> => {
+>>>>>>> future/3.X:ruoyi-modules/ruoyi-gen/src/main/resources/fm/vue/api.ts.ftl
   return request({
     url: '/${moduleName}/${businessName}/list',
     method: 'get',

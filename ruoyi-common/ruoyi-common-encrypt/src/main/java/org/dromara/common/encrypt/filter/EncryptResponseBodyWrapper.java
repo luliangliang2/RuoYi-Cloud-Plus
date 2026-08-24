@@ -20,19 +20,37 @@ import java.nio.charset.StandardCharsets;
  */
 public class EncryptResponseBodyWrapper extends HttpServletResponseWrapper {
 
+<<<<<<< HEAD
     private final ByteArrayOutputStream byteArrayOutputStream;
     private final ServletOutputStream servletOutputStream;
     private final PrintWriter printWriter;
+=======
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final Charset RESPONSE_CHARSET = StandardCharsets.UTF_8;
+
+    private final ByteArrayOutputStream byteArrayOutputStream;
+    private final ServletOutputStream servletOutputStream;
+    private PrintWriter printWriter;
+>>>>>>> future/3.X
 
     public EncryptResponseBodyWrapper(HttpServletResponse response) throws IOException {
         super(response);
         this.byteArrayOutputStream = new ByteArrayOutputStream();
         this.servletOutputStream = this.getOutputStream();
+<<<<<<< HEAD
         this.printWriter = new PrintWriter(new OutputStreamWriter(byteArrayOutputStream));
+=======
+>>>>>>> future/3.X
     }
 
     @Override
     public PrintWriter getWriter() {
+<<<<<<< HEAD
+=======
+        if (printWriter == null) {
+            printWriter = new PrintWriter(new OutputStreamWriter(byteArrayOutputStream, RESPONSE_CHARSET));
+        }
+>>>>>>> future/3.X
         return printWriter;
     }
 
@@ -58,7 +76,11 @@ public class EncryptResponseBodyWrapper extends HttpServletResponseWrapper {
 
     public String getContent() throws IOException {
         flushBuffer();
+<<<<<<< HEAD
         return byteArrayOutputStream.toString();
+=======
+        return byteArrayOutputStream.toString(RESPONSE_CHARSET);
+>>>>>>> future/3.X
     }
 
     /**
@@ -80,12 +102,22 @@ public class EncryptResponseBodyWrapper extends HttpServletResponseWrapper {
 
         // 设置响应头
         servletResponse.setHeader(headerFlag, encryptPassword);
+<<<<<<< HEAD
         servletResponse.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+=======
+        servletResponse.setCharacterEncoding(RESPONSE_CHARSET.name());
+>>>>>>> future/3.X
 
         // 获取原始内容
         String originalBody = this.getContent();
         // 对内容进行加密
+<<<<<<< HEAD
         return EncryptUtils.encryptByAes(originalBody, aesPassword);
+=======
+        String encryptContent = EncryptUtils.encryptByAes(originalBody, aesPassword);
+        servletResponse.setContentLengthLong(encryptContent.getBytes(RESPONSE_CHARSET).length);
+        return encryptContent;
+>>>>>>> future/3.X
     }
 
     @Override
@@ -118,4 +150,13 @@ public class EncryptResponseBodyWrapper extends HttpServletResponseWrapper {
         };
     }
 
+<<<<<<< HEAD
+=======
+    private String generateAesPassword() {
+        byte[] bytes = new byte[24];
+        SECURE_RANDOM.nextBytes(bytes);
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
+>>>>>>> future/3.X
 }

@@ -21,15 +21,23 @@ public class DataPermissionAdvice implements MethodInterceptor {
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Object target = invocation.getThis();
         Method method = invocation.getMethod();
+<<<<<<< HEAD
         Object[] args = invocation.getArguments();
+=======
+        DataPermission previousPermission = DataPermissionHelper.getPermission();
+>>>>>>> future/3.X
         // 设置权限注解
         DataPermissionHelper.setPermission(getDataPermissionAnnotation(target, method, args));
         try {
             // 执行代理方法
             return invocation.proceed();
         } finally {
-            // 清除权限注解
-            DataPermissionHelper.removePermission();
+            // 恢复上一层权限上下文，兼容嵌套 Mapper 调用
+            if (previousPermission == null) {
+                DataPermissionHelper.removePermission();
+            } else {
+                DataPermissionHelper.setPermission(previousPermission);
+            }
         }
     }
 

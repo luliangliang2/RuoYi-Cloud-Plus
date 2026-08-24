@@ -27,7 +27,11 @@ services:
     network_mode: "host"
 
   nacos:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-nacos:2.6.1
+=======
+    image: nacos/nacos-server:v3.2.3
+>>>>>>> future/3.X
     container_name: nacos
     ports:
       - "8848:8848"
@@ -35,7 +39,18 @@ services:
       - "9849:9849"
     environment:
       TZ: Asia/Shanghai
+<<<<<<< HEAD
       JAVA_OPTS: "-Xms256m -Xmx512m"
+=======
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      JVM_XMS: 256m
+      JVM_XMX: 512m
+      # 认证相关密钥 自行替换
+      NACOS_AUTH_TOKEN: rE7bYayhpvduYwCxuhckybEPDXyna6xwm5m7MZjtjrdXjVxAbXAMccXHyaJvB346
+      NACOS_AUTH_IDENTITY_KEY: ruoyi-vue-plus-key
+      NACOS_AUTH_IDENTITY_VALUE: ruoyi-vue-plus-value
+>>>>>>> future/3.X
     volumes:
       # 日志目录 注意集群模式下 日志目录不能一致 需要区分例如 nacos1 nacos2
       - /docker/nacos/logs/:/root/nacos/logs
@@ -134,7 +149,11 @@ services:
     network_mode: "host"
 
   ruoyi-monitor:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-monitor:2.6.1
+=======
+    image: ruoyi/ruoyi-monitor:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-monitor
     environment:
       # 时区上海
@@ -150,7 +169,11 @@ services:
     network_mode: "host"
 
   ruoyi-snailjob-server:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-snailjob-server:2.6.1
+=======
+    image: ruoyi/ruoyi-snailjob-server:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-snailjob-server
     environment:
       # 时区上海
@@ -163,8 +186,33 @@ services:
     privileged: true
     network_mode: "host"
 
+<<<<<<< HEAD
   ruoyi-gateway:
     image: ruoyi/ruoyi-gateway:2.6.1
+=======
+  ruoyi-snailai-server:
+    image: ruoyi/ruoyi-snailai-server:6.0.0
+    container_name: ruoyi-snailai-server
+    environment:
+      # 时区上海
+      TZ: Asia/Shanghai
+      # Docling 与 PaddleOCR 服务需单独部署；host 网络模式下默认通过宿主机端口访问
+      SNAIL_AI_RAG_DOCLING_ENABLED: ${SNAIL_AI_RAG_DOCLING_ENABLED:-true}
+      SNAIL_AI_RAG_DOCLING_URL: ${SNAIL_AI_RAG_DOCLING_URL:-http://127.0.0.1:5100}
+      SNAIL_AI_RAG_DOCLING_PADDLE_OCR_ENABLED: ${SNAIL_AI_RAG_DOCLING_PADDLE_OCR_ENABLED:-true}
+      SNAIL_AI_RAG_DOCLING_PADDLE_OCR_URL: ${SNAIL_AI_RAG_DOCLING_PADDLE_OCR_URL:-http://127.0.0.1:8866/ocr}
+    ports:
+      - "8900:8900"
+      - "18888:18888"
+    volumes:
+      - /docker/snailai/logs/:/ruoyi/snailai/logs
+      - /docker/snailai/upload/:/ruoyi/snailai/upload
+    privileged: true
+    network_mode: "host"
+
+  ruoyi-gateway:
+    image: ruoyi/ruoyi-gateway:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-gateway
     environment:
       # 时区上海
@@ -180,7 +228,11 @@ services:
     network_mode: "host"
 
   ruoyi-auth:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-auth:2.6.1
+=======
+    image: ruoyi/ruoyi-auth:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-auth
     environment:
       # 时区上海
@@ -196,7 +248,11 @@ services:
     network_mode: "host"
 
   ruoyi-system:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-system:2.6.1
+=======
+    image: ruoyi/ruoyi-system:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-system
     environment:
       # 时区上海
@@ -212,7 +268,11 @@ services:
     network_mode: "host"
 
   ruoyi-gen:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-gen:2.6.1
+=======
+    image: ruoyi/ruoyi-gen:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-gen
     environment:
       # 时区上海
@@ -228,7 +288,11 @@ services:
     network_mode: "host"
 
   ruoyi-job:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-job:2.6.1
+=======
+    image: ruoyi/ruoyi-job:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-job
     environment:
       # 时区上海
@@ -246,7 +310,11 @@ services:
     network_mode: "host"
 
   ruoyi-resource:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-resource:2.6.1
+=======
+    image: ruoyi/ruoyi-resource:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-resource
     environment:
       # 时区上海
@@ -262,7 +330,11 @@ services:
     network_mode: "host"
 
   ruoyi-workflow:
+<<<<<<< HEAD
     image: ruoyi/ruoyi-workflow:2.6.1
+=======
+    image: ruoyi/ruoyi-workflow:6.0.0
+>>>>>>> future/3.X
     container_name: ruoyi-workflow
     environment:
       # 时区上海
@@ -277,6 +349,28 @@ services:
     privileged: true
     network_mode: "host"
 
+<<<<<<< HEAD
+=======
+  ruoyi-ai:
+    image: ruoyi/ruoyi-ai:6.0.0
+    container_name: ruoyi-ai
+    environment:
+      # 时区上海
+      TZ: Asia/Shanghai
+    ports:
+      - "9206:9206"
+      - "29206:29206"
+    volumes:
+      # 配置文件
+      - /docker/ruoyi-ai/logs/:/ruoyi/ai/logs
+      # skywalking 探针
+      - /docker/skywalking/agent/:/ruoyi/skywalking/agent
+      # Snail AI Skill 临时目录
+      - /docker/snailai/agent/skills/:/tmp/snail-ai-agent/skills
+    privileged: true
+    network_mode: "host"
+
+>>>>>>> future/3.X
 
 #################################################################################################
 #################################### 以下为扩展根据需求搭建 #########################################

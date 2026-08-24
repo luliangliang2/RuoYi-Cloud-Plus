@@ -14,7 +14,11 @@
     </description>
 
     <properties>
+<<<<<<< HEAD
         <revision>2.6.1</revision>
+=======
+        <revision>6.0.0</revision>
+>>>>>>> future/3.X
     </properties>
 
     <dependencyManagement>
@@ -226,6 +230,13 @@
             <dependency>
                 <groupId>org.dromara</groupId>
                 <artifactId>ruoyi-common-netty-websocket</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- liteflow模块 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-common-liteflow</artifactId>
                 <version>${revision}</version>
             </dependency>
 

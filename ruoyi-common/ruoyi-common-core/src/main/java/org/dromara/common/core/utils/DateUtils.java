@@ -1,7 +1,10 @@
 package org.dromara.common.core.utils;
 
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.BetweenFormatter;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+<<<<<<< HEAD
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.dromara.common.core.enums.FormatsType;
 import org.dromara.common.core.exception.ServiceException;
@@ -10,14 +13,22 @@ import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+=======
+import cn.hutool.core.lang.Assert;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.dromara.common.core.exception.ServiceException;
+
+>>>>>>> future/3.X
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 时间工具类
  *
- * @author ruoyi
+ * @author AprilWind
  */
+<<<<<<< HEAD
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     private static final String[] PARSE_PATTERNS = {
         "yyyy-MM-dd", "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy-MM",
@@ -27,26 +38,48 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     @Deprecated
     private DateUtils() {
     }
+=======
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class DateUtils extends DateUtil {
+>>>>>>> future/3.X
 
     /**
-     * 获取当前日期和时间
+     * 计算时间差并格式化（精确到秒）
      *
-     * @return 当前日期和时间的 Date 对象表示
+     * @param start 开始时间(支持 Date/LocalDateTime)
+     * @param end   结束时间(支持 Date/LocalDateTime)
+     * @return 时分秒格式时间差
      */
-    public static Date getNowDate() {
-        return new Date();
+    public static String formatBetweenBySecond(Object start, Object end) {
+        return formatTimeBetween(start, end, BetweenFormatter.Level.SECOND);
     }
 
     /**
-     * 获取当前日期的字符串表示，格式为YYYY-MM-DD
+     * 通用时间差格式化
      *
-     * @return 当前日期的字符串表示
+     * @param startDate 开始时间
+     * @param endDate   结束时间
+     * @param level     精度级别
+     * @return 格式化时长
      */
-    public static String getDate() {
-        return dateTimeNow(FormatsType.YYYY_MM_DD);
+    public static String formatTimeBetween(Object startDate, Object endDate, BetweenFormatter.Level level) {
+        // 非空校验
+        Assert.notNull(startDate, "开始时间不能为空");
+        Assert.notNull(endDate, "结束时间不能为空");
+        Assert.notNull(level, "时间精度级别不能为空");
+
+        // 统一转为Date并校验格式合法性
+        Date start = Convert.toDate(startDate);
+        Date end = Convert.toDate(endDate);
+        Assert.notNull(start, "开始时间格式错误，无法解析为时间");
+        Assert.notNull(end, "结束时间格式错误，无法解析为时间");
+
+        long diffMillis = Math.abs(end.getTime() - start.getTime());
+        return formatBetween(diffMillis, level);
     }
 
     /**
+<<<<<<< HEAD
      * 获取当前日期的字符串表示，格式为yyyyMMdd
      *
      * @return 当前日期的字符串表示
@@ -270,32 +303,43 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
     /**
      * 校验日期范围
+=======
+     * 校验日期范围及最大时间跨度
+>>>>>>> future/3.X
      *
      * @param startDate 开始日期
      * @param endDate   结束日期
-     * @param maxValue  最大时间跨度的限制值
-     * @param unit      时间跨度的单位，可选择 "DAYS"、"HOURS" 或 "MINUTES"
+     * @param maxValue  最大时间跨度限制值
+     * @param unit      时间单位
      */
-    public static void validateDateRange(Date startDate, Date endDate, int maxValue, TimeUnit unit) {
-        // 校验结束日期不能早于开始日期
-        if (endDate.before(startDate)) {
+    public static void validateDateRange(Object startDate, Object endDate, int maxValue, TimeUnit unit) {
+        // 基础非空校验
+        Assert.notNull(startDate, "开始日期不能为空");
+        Assert.notNull(endDate, "结束日期不能为空");
+        Assert.notNull(unit, "时间单位不能为空");
+
+        // 统一转换并校验时间合法性
+        Date start = Convert.toDate(startDate);
+        Date end = Convert.toDate(endDate);
+        Assert.notNull(start, "开始日期格式错误，无法解析为时间");
+        Assert.notNull(end, "结束日期格式错误，无法解析为时间");
+
+        // 校验结束时间不能早于开始时间
+        if (end.before(start)) {
             throw new ServiceException("结束日期不能早于开始日期");
         }
 
-        // 计算时间跨度
-        long diffInMillis = endDate.getTime() - startDate.getTime();
-
-        // 根据单位转换时间跨度
+        long diffMillis = end.getTime() - start.getTime();
         long diff = switch (unit) {
-            case DAYS -> TimeUnit.MILLISECONDS.toDays(diffInMillis);
-            case HOURS -> TimeUnit.MILLISECONDS.toHours(diffInMillis);
-            case MINUTES -> TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
-            default -> throw new IllegalArgumentException("不支持的时间单位");
+            case DAYS -> TimeUnit.MILLISECONDS.toDays(diffMillis);
+            case HOURS -> TimeUnit.MILLISECONDS.toHours(diffMillis);
+            case MINUTES -> TimeUnit.MILLISECONDS.toMinutes(diffMillis);
+            default -> throw new IllegalArgumentException("不支持的时间单位：" + unit.name());
         };
 
-        // 校验时间跨度不超过最大限制
         if (diff > maxValue) {
-            throw new ServiceException("最大时间跨度为 {} {}", maxValue, unit.toString().toLowerCase());
+            String msg = String.format("最大时间跨度为 %d %s", maxValue, unit.name().toLowerCase());
+            throw new ServiceException(msg);
         }
     }
 
@@ -306,7 +350,7 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @return 时间段描述
      */
     public static String getTodayHour(Date date) {
-        int hour = DateUtil.hour(date, true);
+        int hour = hour(date, true);
         if (hour <= 6) {
             return "凌晨";
         } else if (hour < 12) {
@@ -341,38 +385,37 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         if (date == null) {
             return "";
         }
-        Date now = DateUtil.date();
+        Date now = new Date();
 
         // 未来时间或非今年
-        if (date.after(now) || DateUtil.year(date) != DateUtil.year(now)) {
-            return parseDateToStr(FormatsType.YYYY_MM_DD_HH_MM, date);
+        if (date.after(now) || year(date) != year(now)) {
+            return formatDateTime(now);
         }
 
         // 今天
-        if (DateUtil.isSameDay(date, now)) {
-            long minutes = DateUtil.between(date, now, DateUnit.MINUTE);
+        if (isSameDay(date, now)) {
+            long minutes = between(date, now, DateUnit.MINUTE);
             if (minutes < 1) {
                 return "刚刚";
             }
             if (minutes < 60) {
                 return minutes + "分钟前";
             }
-            return getTodayHour(date) + " " + DateUtil.format(date, "HH:mm");
+            return getTodayHour(date) + " " + format(date, "HH:mm");
         }
 
         // 昨天
-        if (DateUtil.isSameDay(date, DateUtil.yesterday())) {
-            return "昨天 " + DateUtil.format(date, "HH:mm");
+        if (isSameDay(date, yesterday())) {
+            return "昨天 " + format(date, "HH:mm");
         }
 
         // 本周
-        if (DateUtil.isSameWeek(date, now, true)) {
-            return DateUtil.dayOfWeekEnum(date).toChinese("周")
-                + " " + DateUtil.format(date, "HH:mm");
+        if (isSameWeek(date, now, true)) {
+            return dayOfWeekEnum(date).toChinese("周") + " " + format(date, "HH:mm");
         }
 
         // 今年内其它时间
-        return DateUtil.format(date, "MM-dd HH:mm");
+        return format(date, "MM-dd HH:mm");
     }
 
 }

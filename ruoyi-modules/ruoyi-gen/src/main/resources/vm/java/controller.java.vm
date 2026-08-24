@@ -56,6 +56,7 @@ public class ${ClassName}Controller extends BaseController {
     }
 #end
 
+<#if enableExport>
     /**
      * 导出${functionName}列表
      */

@@ -61,7 +61,11 @@ public class GenTableServiceImpl implements IGenTableService {
     private final GenTableMapper baseMapper;
     private final GenTableColumnMapper genTableColumnMapper;
 
+<<<<<<< HEAD
     private static final String[] TABLE_IGNORE = new String[]{"sj_", "act_", "flw_", "gen_"};
+=======
+    private static final String[] TABLE_IGNORE = new String[]{"sai_", "sj_", "flow_", "gen_"};
+>>>>>>> future/3.X
 
     /**
      * 查询业务字段列表

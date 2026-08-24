@@ -37,7 +37,11 @@ public class GenUtils {
      * 初始化列属性字段
      */
     public static void initColumnField(GenTableColumn column, GenTable table) {
+<<<<<<< HEAD
         String dataType = getDbType(column.getColumnType());
+=======
+        String dataType = normalizeDbType(getDbType(column.getColumnType()));
+>>>>>>> future/3.X
         // 统一转小写 避免有些数据库默认大写问题 如果需要特别书写方式 请在实体类增加注解标注别名
         String columnName = column.getColumnName().toLowerCase();
         column.setTableId(table.getTableId());
@@ -47,6 +51,8 @@ public class GenUtils {
         column.setJavaField(StringUtils.toCamelCase(columnName));
         // 设置默认类型
         column.setJavaType(GenConstants.TYPE_STRING);
+        // 设置默认HTML类型
+        column.setHtmlType(GenConstants.HTML_INPUT);
         column.setQueryType(GenConstants.QUERY_EQ);
 
         if (arraysContains(GenConstants.COLUMNTYPE_STR, dataType) || arraysContains(GenConstants.COLUMNTYPE_TEXT, dataType)) {
@@ -109,6 +115,120 @@ public class GenUtils {
     }
 
     /**
+<<<<<<< HEAD
+=======
+     * 解析数值类型对应的 Java 类型。
+     *
+     * @param dataType     数据库字段类型
+     * @param columnLength 字段长度
+     * @param columnScale  小数位数
+     * @param columnName   字段名称
+     * @return Java 类型
+     */
+    private static String resolveNumberJavaType(String dataType, Integer columnLength, Integer columnScale, String columnName) {
+        if (isBooleanColumn(dataType, columnLength, columnScale, columnName)) {
+            return GenConstants.TYPE_BOOLEAN;
+        }
+        if (arraysContains(new String[]{"decimal", "dec", "fixed", "numeric", "money", "smallmoney"}, dataType)) {
+            return GenConstants.TYPE_BIGDECIMAL;
+        }
+        if (arraysContains(new String[]{"float4", "real", "binary_float"}, dataType)) {
+            return GenConstants.TYPE_FLOAT;
+        }
+        if (arraysContains(new String[]{"float", "float8", "double", "double precision", "binary_double"}, dataType)) {
+            return GenConstants.TYPE_DOUBLE;
+        }
+        if (arraysContains(new String[]{"bigint", "int8", "bigserial", "serial8"}, dataType)) {
+            return GenConstants.TYPE_LONG;
+        }
+        if (arraysContains(new String[]{"tinyint", "smallint", "mediumint", "int", "int2", "int4", "integer",
+            "smallserial", "serial", "serial2", "serial4"}, dataType)) {
+            return GenConstants.TYPE_INTEGER;
+        }
+        if (StringUtils.equals(dataType, "number")) {
+            if (columnScale > 0) {
+                return GenConstants.TYPE_BIGDECIMAL;
+            }
+            return resolveIntegerJavaType(columnLength);
+        }
+        return GenConstants.TYPE_LONG;
+    }
+
+    /**
+     * 规范化数据库字段类型，去除 MySQL 等数据库的类型修饰。
+     *
+     * @param dataType 数据库字段类型
+     * @return 规范化后的数据库字段类型
+     */
+    private static String normalizeDbType(String dataType) {
+        return StringUtils.trim(dataType)
+            .toLowerCase()
+            .replace(" unsigned", "")
+            .replace(" zerofill", "");
+    }
+
+    /**
+     * 根据整数字段长度解析 Java 类型。
+     *
+     * @param columnLength 字段长度
+     * @return Java 类型
+     */
+    private static String resolveIntegerJavaType(Integer columnLength) {
+        if (columnLength > 0 && columnLength <= 9) {
+            return GenConstants.TYPE_INTEGER;
+        }
+        return GenConstants.TYPE_LONG;
+    }
+
+    /**
+     * 判断字段是否适合按布尔类型生成。
+     *
+     * @param dataType     数据库字段类型
+     * @param columnLength 字段长度
+     * @param columnScale  小数位数
+     * @param columnName   字段名称
+     * @return 是否布尔字段
+     */
+    private static boolean isBooleanColumn(String dataType, Integer columnLength, Integer columnScale, String columnName) {
+        if (columnScale > 0) {
+            return false;
+        }
+        if (StringUtils.equalsAny(dataType, "bit", "boolean", "bool")) {
+            return true;
+        }
+        if (StringUtils.equalsAny(dataType, "tinyint", "number", "numeric", "decimal", "char", "nchar")
+            && columnLength == 1 && isSwitchColumn(columnName)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 判断字段名称是否为开关类字段。
+     *
+     * @param columnName 字段名称
+     * @return 是否开关类字段
+     */
+    private static boolean isSwitchColumn(String columnName) {
+        return StringUtils.endsWithAny(columnName, "status", "flag", "enabled", "disabled", "available", "visible")
+            || columnName.startsWith("is_")
+            || columnName.startsWith("has_")
+            || columnName.startsWith("enable_")
+            || columnName.startsWith("disable_");
+    }
+
+    /**
+     * 判断字段名称是否为排序字段。
+     *
+     * @param columnName 字段名称
+     * @return 是否排序字段
+     */
+    private static boolean isSortColumn(String columnName) {
+        return StringUtils.endsWithAny(columnName, "sort", "order_num", "order", "rank", "seq", "sequence");
+    }
+
+    /**
+>>>>>>> future/3.X
      * 校验数组是否包含指定值
      *
      * @param arr         数组

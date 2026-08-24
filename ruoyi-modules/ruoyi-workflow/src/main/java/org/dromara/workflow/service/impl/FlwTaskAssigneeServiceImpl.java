@@ -185,7 +185,11 @@ public class FlwTaskAssigneeServiceImpl implements IFlwTaskAssigneeService, Hand
             .setHandlerCode(assignee -> StringUtils.blankToDefault(assignee.getHandlerCode(), "无"))
             .setHandlerName(assignee -> StringUtils.blankToDefault(assignee.getHandlerName(), "无"))
             .setGroupName(assignee -> this.getGroupName(type, assignee.getGroupName()))
+<<<<<<< HEAD
             .setCreateTime(assignee -> DateUtils.parseDateToStr(FormatsType.YYYY_MM_DD_HH_MM_SS, assignee.getCreateTime()));
+=======
+            .setCreateTime(assignee -> DateUtils.formatLocalDateTime(assignee.getCreateTime()));
+>>>>>>> future/3.X
     }
 
     /**

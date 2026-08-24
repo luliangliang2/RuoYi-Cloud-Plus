@@ -7,11 +7,21 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+<<<<<<< HEAD
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
  * 转发认证过滤器(内部服务外网隔离)
+=======
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+/**
+ * 转发请求头过滤器:
+ * 1. 转发内部 same-token
+>>>>>>> future/3.X
  *
  * @author Lion Li
  */
@@ -34,8 +44,26 @@ public class ForwardAuthFilter implements GlobalFilter, Ordered {
     }
 
     @Override
+<<<<<<< HEAD
     public int getOrder() {
         return -100;
+=======
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
+        MutableHttpServletRequest newRequest = null;
+
+        if (SaManager.getConfig().getCheckSameToken()) {
+            newRequest = getOrCreateMutableRequest(request, newRequest);
+            newRequest.putHeader(SaSameUtil.SAME_TOKEN, SaSameUtil.getToken());
+        }
+
+        filterChain.doFilter(newRequest == null ? request : newRequest, response);
+    }
+
+    private MutableHttpServletRequest getOrCreateMutableRequest(HttpServletRequest request,
+                                                                MutableHttpServletRequest currentRequest) {
+        return currentRequest != null ? currentRequest : new MutableHttpServletRequest(request);
+>>>>>>> future/3.X
     }
 }
 
