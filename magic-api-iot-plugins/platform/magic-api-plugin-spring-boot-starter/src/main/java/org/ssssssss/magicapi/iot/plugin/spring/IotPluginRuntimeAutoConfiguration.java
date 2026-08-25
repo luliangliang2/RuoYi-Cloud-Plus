@@ -23,7 +23,7 @@ public class IotPluginRuntimeAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     PluginRegistry iotPluginRegistry(CapabilityRegistry capabilityRegistry, Environment environment) {
-        new org.ssssssss.magicapi.iot.plugin.runtime.ProviderConfigurationValidator().validate(environment);
+        new ProviderConfigurationValidator().validate(environment);
         PluginRegistry registry = new DefaultPluginRegistry();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         var descriptors = new ClasspathPluginDescriptorLoader().load(classLoader);
