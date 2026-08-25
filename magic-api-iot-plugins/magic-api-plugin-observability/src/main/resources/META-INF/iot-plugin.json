@@ -1,0 +1,13 @@
+{
+  "id": "observability-memory",
+  "name": "In-Memory Observability",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "dcyh",
+  "capabilities": ["observability:telemetry"],
+  "requires": [],
+  "optionalRequires": [],
+  "loadOrder": 50,
+  "configPrefix": "iot.plugins.observability-memory",
+  "failurePolicy": "DEGRADED_ALLOWED"
+}

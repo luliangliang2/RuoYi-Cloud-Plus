@@ -1,0 +1,13 @@
+{
+  "id": "command-memory",
+  "name": "In-Memory Command Service",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "dcyh",
+  "capabilities": ["command:dispatch", "command:result"],
+  "requires": ["protocol-runtime"],
+  "optionalRequires": ["message-bus-memory"],
+  "loadOrder": 200,
+  "configPrefix": "iot.plugins.command-memory",
+  "failurePolicy": "OPTIONAL"
+}

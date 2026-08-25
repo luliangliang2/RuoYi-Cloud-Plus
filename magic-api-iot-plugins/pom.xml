@@ -17,6 +17,9 @@
     </properties>
 
     <modules>
+        <module>magic-api-plugin-api</module>
+        <module>magic-api-plugin-runtime</module>
+        <module>magic-api-plugin-spring-boot-starter</module>
         <module>magic-api-plugin-iot-core</module>
         <module>magic-api-plugin-device-registry</module>
         <module>magic-api-plugin-device-session</module>

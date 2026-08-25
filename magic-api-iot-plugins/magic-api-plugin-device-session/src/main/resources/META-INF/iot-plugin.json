@@ -1,0 +1,13 @@
+{
+  "id": "device-session-memory",
+  "name": "In-Memory Device Session",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "dcyh",
+  "capabilities": ["device-session:memory"],
+  "requires": [],
+  "optionalRequires": ["observability"],
+  "loadOrder": 110,
+  "configPrefix": "iot.plugins.device-session-memory",
+  "failurePolicy": "OPTIONAL"
+}

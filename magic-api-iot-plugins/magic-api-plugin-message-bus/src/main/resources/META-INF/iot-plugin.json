@@ -1,0 +1,13 @@
+{
+  "id": "message-bus-memory",
+  "name": "In-Memory Message Bus",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "dcyh",
+  "capabilities": ["message-bus:memory"],
+  "requires": [],
+  "optionalRequires": ["observability"],
+  "loadOrder": 130,
+  "configPrefix": "iot.plugins.message-bus-memory",
+  "failurePolicy": "OPTIONAL"
+}

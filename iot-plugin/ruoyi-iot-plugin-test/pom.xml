@@ -40,6 +40,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-spring-boot-starter</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
 			<artifactId>magic-api-plugin-device-registry</artifactId>
 			<version>${iot-plugins.version}</version>
 		</dependency>

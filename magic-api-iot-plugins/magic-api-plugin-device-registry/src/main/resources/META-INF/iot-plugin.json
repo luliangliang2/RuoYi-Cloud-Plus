@@ -1,0 +1,13 @@
+{
+  "id": "device-registry-memory",
+  "name": "In-Memory Device Registry",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "dcyh",
+  "capabilities": ["device-registry:memory"],
+  "requires": [],
+  "optionalRequires": ["observability"],
+  "loadOrder": 100,
+  "configPrefix": "iot.plugins.device-registry-memory",
+  "failurePolicy": "OPTIONAL"
+}
