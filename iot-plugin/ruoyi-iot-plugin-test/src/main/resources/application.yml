@@ -1,6 +1,15 @@
 server:
   port: ${IOT_GATEWAY_PORT:9218}
 
+iot:
+  providers:
+    device-registry:
+      type: ${IOT_DEVICE_REGISTRY_PROVIDER:memory}
+    device-session:
+      type: ${IOT_DEVICE_SESSION_PROVIDER:memory}
+    message-bus:
+      type: ${IOT_MESSAGE_BUS_PROVIDER:memory}
+
 spring:
   application:
     name: ${IOT_GATEWAY_APP_NAME:ruoyi-iot-plugin-test}

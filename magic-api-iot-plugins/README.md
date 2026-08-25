@@ -8,9 +8,26 @@ Independent IoT plugin suite for the adjacent `magic-api` project. This reactor 
 - `core/`: core, registry, session, protocol, command, message bus, observability, security
 - `features/`: device shadow, product model, rule engine, OTA, time-series, storage, northbound and ops console
 - `adapters/`: protocol adapter modules, beginning with `protocol-sample`
+- `providers/`: replaceable infrastructure providers, currently development-only memory providers
 
-All new modules must be placed under one of these four directories. The directory is the
+All new modules must be placed under one of these five directories. The directory is the
 delivery classification; the Maven artifactId remains stable and is used for dependencies.
+
+Provider selection is explicit. Core modules do not create in-memory implementations by default:
+
+```yaml
+iot:
+  providers:
+    device-registry:
+      type: redis
+    device-session:
+      type: redis
+    message-bus:
+      type: kafka
+```
+
+The memory providers are separate modules and must be enabled explicitly with `type: memory`.
+They are rejected when the active Spring profile is `prod` or `production`.
 
 ## Build
 

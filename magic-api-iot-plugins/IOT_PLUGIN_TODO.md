@@ -27,7 +27,10 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Split API and implementations: `registry-api`, `registry-memory`, `registry-jdbc`.
 - [ ] Split session implementations: `session-memory`, `session-redis`.
 - [ ] Split message bus implementations: Kafka, Pulsar and RocketMQ.
-- [ ] Restrict all in-memory providers to development and test profiles.
+- [x] Move registry, session and message-bus memory implementations into `providers/` modules.
+- [x] Require explicit provider configuration for in-memory implementations.
+- [x] Reject memory providers when the active profile is `prod` or `production`.
+- [ ] Add distributed Redis/JDBC/Kafka provider modules.
 - [ ] Fail production startup when a required distributed provider is missing.
 
 ## P0 - Testing and Operations

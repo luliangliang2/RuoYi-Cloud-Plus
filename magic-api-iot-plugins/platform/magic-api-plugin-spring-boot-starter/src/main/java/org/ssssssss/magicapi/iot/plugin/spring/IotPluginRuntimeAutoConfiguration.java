@@ -3,6 +3,7 @@ package org.ssssssss.magicapi.iot.plugin.spring;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.ssssssss.magicapi.iot.plugin.runtime.CapabilityRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.ClasspathPluginDescriptorLoader;
 import org.ssssssss.magicapi.iot.plugin.runtime.DefaultCapabilityRegistry;
@@ -21,7 +22,8 @@ public class IotPluginRuntimeAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    PluginRegistry iotPluginRegistry(CapabilityRegistry capabilityRegistry) {
+    PluginRegistry iotPluginRegistry(CapabilityRegistry capabilityRegistry, Environment environment) {
+        new org.ssssssss.magicapi.iot.plugin.runtime.ProviderConfigurationValidator().validate(environment);
         PluginRegistry registry = new DefaultPluginRegistry();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         var descriptors = new ClasspathPluginDescriptorLoader().load(classLoader);
