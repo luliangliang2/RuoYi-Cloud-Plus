@@ -78,7 +78,7 @@ magic-api-iot-plugins/
 - [x] Provider 类型按 Registry、Session、MessageBus 分类限制
 - [x] Provider 配置规则单元测试
 - [ ] 增加 Kafka broker 集成测试
-- [ ] 使用可用 Pulsar broker 执行真实集成测试
+- [x] Pulsar 在 `10.211.55.4:6650` 通过发布、Shared 消费、negative ACK 和重投测试
 - [ ] 使用可用 RocketMQ broker 执行真实集成测试
 - [x] 增加 Pulsar/RocketMQ 可选外部服务集成测试入口
 - [x] 增加可选 Redis/Kafka 外部服务集成测试
@@ -177,7 +177,9 @@ magic-api-iot-plugins/
 - Pulsar Provider 增加 Producer、Shared Consumer、ACK、negative ACK、重投延迟和 DeadLetterPolicy。
 - Pulsar/RocketMQ 客户端代码已通过 clean test，但当前没有对应 broker，尚未做真实服务验证。
 - RocketMQ NameServer `10.211.55.4:9876` 可达，但 Broker 广播 `127.0.0.1:10911`，远程客户端无法回连。
-- Pulsar 容器未发布宿主机 `6650/8080`，从开发机连接被拒绝。
+- Pulsar `10.211.55.4:6650` 已开放并通过真实 Provider 集成测试。
+- Pulsar 测试验证第一次消费失败后 negative ACK，随后重投并成功 ACK。
+- Pulsar 宿主机 `8880` 当前无服务监听；消息协议测试不依赖管理 HTTP 端口。
 - 当前机器 Docker 不可用，Redis/Kafka Testcontainers 尚未实际运行。
 - Redis 集成测试已连接 `10.211.55.4:6379` 并通过，测试结束后清理精确测试键。
 - Kafka 集成测试已连接 `10.211.55.4:9092` 并通过，使用随机 topic 和 consumer group。

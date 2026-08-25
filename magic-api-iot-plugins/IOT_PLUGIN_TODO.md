@@ -46,6 +46,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Add integration tests using Redis, Kafka and database Testcontainers.
 - [x] Add opt-in integration tests for external Redis and Kafka services.
 - [x] Verify Redis Registry/Session and Kafka publish/consume/retry/DLT against live services.
+- [x] Verify Pulsar publish/shared-consume/negative-ACK/redelivery against a live broker.
 - [ ] Test duplicate IDs, missing dependencies and capability conflicts.
 - [x] Validate missing and conflicting core Provider beans after singleton initialization.
 - [x] Reject provider types assigned to the wrong core contract.
