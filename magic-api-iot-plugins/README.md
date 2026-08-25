@@ -60,3 +60,4 @@ capabilities. The Spring Boot starter is only an integration boundary for auto-c
 Existing feature plugins still depend on `magic-api-plugin-iot-core` during the compatibility
 phase. Generic device models and SPIs will move into the API module in a later compatible release.
 See [IOT_PLUGIN_TODO.md](IOT_PLUGIN_TODO.md) for migration status and architecture rules.
+See [IOT_PLUGIN_PROGRESS.md](IOT_PLUGIN_PROGRESS.md) for the long-term implementation baseline and update history.

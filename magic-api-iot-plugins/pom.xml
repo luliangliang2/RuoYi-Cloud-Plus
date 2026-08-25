@@ -38,6 +38,12 @@
         <module>providers/magic-api-plugin-device-registry-memory</module>
         <module>providers/magic-api-plugin-device-session-memory</module>
         <module>providers/magic-api-plugin-message-bus-memory</module>
+        <module>providers/magic-api-plugin-device-registry-redis</module>
+        <module>providers/magic-api-plugin-device-session-redis</module>
+        <module>providers/magic-api-plugin-message-bus-kafka</module>
+        <module>providers/magic-api-plugin-message-bus-pulsar</module>
+        <module>providers/magic-api-plugin-message-bus-rocketmq</module>
+        <module>platform/magic-api-plugin-testkit</module>
     </modules>
 
     <dependencyManagement>

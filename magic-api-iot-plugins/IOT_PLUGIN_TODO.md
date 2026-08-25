@@ -31,12 +31,14 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Remove empty registry, session and message-bus modules from `core/`.
 - [x] Require explicit provider configuration for in-memory implementations.
 - [x] Reject memory providers when the active profile is `prod` or `production`.
-- [ ] Add distributed Redis/JDBC/Kafka provider modules.
-- [ ] Fail production startup when a required distributed provider is missing.
+- [x] Add Redis device registry and distributed session provider modules.
+- [x] Add Kafka message bus provider publishing module.
+- [x] Add Pulsar and RocketMQ provider module boundaries.
+- [x] Fail production startup when a required distributed provider is missing.
 
 ## P0 - Testing and Operations
 
-- [ ] Add `magic-api-plugin-testkit` with lifecycle and descriptor contract tests.
+- [x] Add initial `magic-api-plugin-testkit` descriptor contract assertions.
 - [ ] Add integration tests using Redis, Kafka and database Testcontainers.
 - [ ] Test duplicate IDs, missing dependencies and capability conflicts.
 - [ ] Test lifecycle resource cleanup for threads, channels and subscriptions.

@@ -13,12 +13,20 @@ public class ProviderConfigurationValidator {
         boolean production = List.of(environment.getActiveProfiles()).stream()
             .map(String::toLowerCase)
             .anyMatch(profile -> profile.equals("prod") || profile.equals("production"));
-        if (!production) return;
         for (String provider : PROVIDERS) {
             String type = environment.getProperty("iot.providers." + provider + ".type");
-            if ("memory".equalsIgnoreCase(type)) {
+            if (type == null || type.isBlank()) {
+                if (production) {
+                    throw new PluginRuntimeException("Missing required provider type: iot.providers." + provider + ".type");
+                }
+                continue;
+            }
+            if (production && "memory".equalsIgnoreCase(type)) {
                 throw new PluginRuntimeException(
                     "In-memory provider is forbidden in production: iot.providers." + provider + ".type");
+            }
+            if (!List.of("memory", "redis", "jdbc", "kafka", "pulsar", "rocketmq").contains(type.toLowerCase())) {
+                throw new PluginRuntimeException("Unsupported provider type: " + type + " for " + provider);
             }
         }
     }
