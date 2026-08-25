@@ -17,27 +17,27 @@
     </properties>
 
     <modules>
-        <module>magic-api-plugin-api</module>
-        <module>magic-api-plugin-runtime</module>
-        <module>magic-api-plugin-spring-boot-starter</module>
-        <module>magic-api-plugin-iot-core</module>
-        <module>magic-api-plugin-device-registry</module>
-        <module>magic-api-plugin-device-session</module>
-        <module>magic-api-plugin-protocol</module>
-        <module>magic-api-plugin-command</module>
-        <module>magic-api-plugin-message-bus</module>
-        <module>magic-api-plugin-observability</module>
-        <module>magic-api-plugin-device-shadow</module>
-        <module>magic-api-plugin-product-model</module>
-        <module>magic-api-plugin-rule-engine</module>
-        <module>magic-api-plugin-ota</module>
-        <module>magic-api-plugin-timeseries</module>
-        <module>magic-api-plugin-protocol-sample</module>
-        <module>magic-api-plugin-security</module>
-        <module>magic-api-plugin-storage-router</module>
-        <module>magic-api-plugin-northbound</module>
-        <module>magic-api-plugin-ops-console</module>
-        <module>magic-api-plugin-protocol-adapters</module>
+        <module>platform/magic-api-plugin-api</module>
+        <module>platform/magic-api-plugin-runtime</module>
+        <module>platform/magic-api-plugin-spring-boot-starter</module>
+        <module>core/magic-api-plugin-iot-core</module>
+        <module>core/magic-api-plugin-device-registry</module>
+        <module>core/magic-api-plugin-device-session</module>
+        <module>core/magic-api-plugin-protocol</module>
+        <module>core/magic-api-plugin-command</module>
+        <module>core/magic-api-plugin-message-bus</module>
+        <module>core/magic-api-plugin-observability</module>
+        <module>core/magic-api-plugin-security</module>
+        <module>features/magic-api-plugin-device-shadow</module>
+        <module>features/magic-api-plugin-product-model</module>
+        <module>features/magic-api-plugin-rule-engine</module>
+        <module>features/magic-api-plugin-ota</module>
+        <module>features/magic-api-plugin-timeseries</module>
+        <module>features/magic-api-plugin-storage-router</module>
+        <module>features/magic-api-plugin-northbound</module>
+        <module>features/magic-api-plugin-ops-console</module>
+        <module>adapters/magic-api-plugin-protocol-adapters</module>
+        <module>adapters/magic-api-plugin-protocol-sample</module>
     </modules>
 
     <dependencyManagement>

@@ -58,6 +58,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 
 ## Architecture Rules
 
+- New modules belong under `platform/`, `core/`, `features/` or `adapters/` according to the classification above.
 - `plugin-api` must not depend on Spring, Netty, Kafka, Redis, Nacos or Magic API.
 - Plugins receive controlled services through `PluginContext`; they do not access the full Spring context.
 - Plugins communicate through API contracts and events, not implementation classes.
