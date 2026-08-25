@@ -41,6 +41,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add initial `magic-api-plugin-testkit` descriptor contract assertions.
 - [ ] Add integration tests using Redis, Kafka and database Testcontainers.
 - [ ] Test duplicate IDs, missing dependencies and capability conflicts.
+- [x] Validate missing and conflicting core Provider beans after singleton initialization.
+- [x] Run shared behavior contracts against all Memory Providers.
 - [ ] Test lifecycle resource cleanup for threads, channels and subscriptions.
 - [ ] Add Actuator health contributors and Micrometer lifecycle metrics.
 - [ ] Show plugin dependencies, capabilities, version and last error in the console.

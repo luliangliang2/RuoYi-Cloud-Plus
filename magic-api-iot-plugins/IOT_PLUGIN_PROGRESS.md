@@ -65,7 +65,10 @@ magic-api-iot-plugins/
 - [x] Pulsar/RocketMQ Provider 模块占位，等待客户端实现
 - [x] Provider type 空值、非法值和生产 Memory 校验
 - [x] 缺失核心 Provider 配置时生产环境启动失败
-- [x] `magic-api-plugin-testkit` 初版契约断言
+- [x] 已配置 Provider 缺少真实实现 Bean 时启动失败
+- [x] 同一核心 SPI 存在多个 Provider Bean 时启动失败
+- [x] `magic-api-plugin-testkit` Registry、Session、MessageBus 统一行为契约
+- [x] 三个 Memory Provider 通过统一契约测试
 - [ ] 完成 Kafka 消费订阅和 ACK/重试/死信
 - [ ] 完成 Pulsar/RocketMQ 客户端适配
 - [ ] 增加 Redis/Kafka Testcontainers 集成测试
@@ -159,3 +162,7 @@ magic-api-iot-plugins/
 - 增加 Provider 类型合法性、生产环境缺失配置和 Memory 禁用校验。
 - 新增 `magic-api-plugin-testkit` 初版 Provider/插件契约断言工具。
 - 再次验证插件 reactor 和测试工程构建通过。
+- 增加容器完成初始化后的 Provider Bean 数量校验，禁止缺失和冲突实现。
+- 增加 Registry、Session、MessageBus 三类统一 Provider 行为契约。
+- Memory Registry、Session、MessageBus Provider 契约测试全部通过。
+- 完整 reactor `mvn test` 通过，共 28 个模块构建成功。
