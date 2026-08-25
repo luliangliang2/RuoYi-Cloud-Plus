@@ -21,11 +21,8 @@
         <module>platform/magic-api-plugin-runtime</module>
         <module>platform/magic-api-plugin-spring-boot-starter</module>
         <module>core/magic-api-plugin-iot-core</module>
-        <module>core/magic-api-plugin-device-registry</module>
-        <module>core/magic-api-plugin-device-session</module>
         <module>core/magic-api-plugin-protocol</module>
         <module>core/magic-api-plugin-command</module>
-        <module>core/magic-api-plugin-message-bus</module>
         <module>core/magic-api-plugin-observability</module>
         <module>core/magic-api-plugin-security</module>
         <module>features/magic-api-plugin-device-shadow</module>

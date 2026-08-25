@@ -5,10 +5,13 @@ Independent IoT plugin suite for the adjacent `magic-api` project. This reactor 
 ## Modules
 
 - `platform/`: plugin API, runtime and Spring Boot starter
-- `core/`: core, registry, session, protocol, command, message bus, observability, security
+- `core/`: gateway model/SPI, protocol, command, observability and security
 - `features/`: device shadow, product model, rule engine, OTA, time-series, storage, northbound and ops console
 - `adapters/`: protocol adapter modules, beginning with `protocol-sample`
 - `providers/`: replaceable infrastructure providers, currently development-only memory providers
+
+Device registry, device session and message bus are provider extension points. Their contracts
+remain in `magic-api-plugin-iot-core`; concrete implementations do not live in `core/`.
 
 All new modules must be placed under one of these five directories. The directory is the
 delivery classification; the Maven artifactId remains stable and is used for dependencies.
