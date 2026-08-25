@@ -4,10 +4,15 @@ import org.springframework.core.env.Environment;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRuntimeException;
 
 import java.util.List;
+import java.util.Map;
 
 public class ProviderConfigurationValidator {
 
     private static final List<String> PROVIDERS = List.of("device-registry", "device-session", "message-bus");
+    private static final Map<String, List<String>> ALLOWED_TYPES = Map.of(
+        "device-registry", List.of("memory", "redis", "jdbc"),
+        "device-session", List.of("memory", "redis"),
+        "message-bus", List.of("memory", "kafka", "pulsar", "rocketmq"));
 
     public void validate(Environment environment) {
         boolean production = List.of(environment.getActiveProfiles()).stream()
@@ -25,7 +30,7 @@ public class ProviderConfigurationValidator {
                 throw new PluginRuntimeException(
                     "In-memory provider is forbidden in production: iot.providers." + provider + ".type");
             }
-            if (!List.of("memory", "redis", "jdbc", "kafka", "pulsar", "rocketmq").contains(type.toLowerCase())) {
+            if (!ALLOWED_TYPES.get(provider).contains(type.toLowerCase())) {
                 throw new PluginRuntimeException("Unsupported provider type: " + type + " for " + provider);
             }
         }

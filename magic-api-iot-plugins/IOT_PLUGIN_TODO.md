@@ -22,26 +22,33 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Detect dependency cycles and conflicting singleton capabilities.
 - [ ] Add required, optional and degraded plugin failure policies.
 
-## P0 - Provider Separation
+## P0 - Provider Separation (Completed)
 
-- [ ] Split API and implementations: `registry-api`, `registry-memory`, `registry-jdbc`.
-- [ ] Split session implementations: `session-memory`, `session-redis`.
-- [ ] Split message bus implementations: Kafka, Pulsar and RocketMQ.
+- [x] Keep provider contracts in `iot-core` and split concrete registry implementations.
+- [x] Split session implementations into Memory and Redis providers.
+- [x] Split message bus implementations into Memory, Kafka, Pulsar and RocketMQ providers.
 - [x] Move registry, session and message-bus memory implementations into `providers/` modules.
 - [x] Remove empty registry, session and message-bus modules from `core/`.
 - [x] Require explicit provider configuration for in-memory implementations.
 - [x] Reject memory providers when the active profile is `prod` or `production`.
 - [x] Add Redis device registry and distributed session provider modules.
 - [x] Add Kafka message bus provider publishing module.
+- [x] Add Kafka dynamic subscription, manual ACK, retry, DLT and backpressure handling.
 - [x] Add Pulsar and RocketMQ provider module boundaries.
+- [x] Add RocketMQ publishing implementation.
+- [x] Add RocketMQ dynamic consumer with native retry and DLQ behavior.
+- [x] Add Pulsar producer, shared consumer, ACK, redelivery and dead-letter behavior.
 - [x] Fail production startup when a required distributed provider is missing.
 
 ## P0 - Testing and Operations
 
 - [x] Add initial `magic-api-plugin-testkit` descriptor contract assertions.
 - [ ] Add integration tests using Redis, Kafka and database Testcontainers.
+- [x] Add opt-in integration tests for external Redis and Kafka services.
+- [x] Verify Redis Registry/Session and Kafka publish/consume/retry/DLT against live services.
 - [ ] Test duplicate IDs, missing dependencies and capability conflicts.
 - [x] Validate missing and conflicting core Provider beans after singleton initialization.
+- [x] Reject provider types assigned to the wrong core contract.
 - [x] Run shared behavior contracts against all Memory Providers.
 - [ ] Test lifecycle resource cleanup for threads, channels and subscriptions.
 - [ ] Add Actuator health contributors and Micrometer lifecycle metrics.

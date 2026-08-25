@@ -32,6 +32,14 @@ iot:
 The memory providers are separate modules and must be enabled explicitly with `type: memory`.
 They are rejected when the active Spring profile is `prod` or `production`.
 
+External Redis and Kafka integration tests are opt-in:
+
+```bash
+mvn test -Diot.integration.enabled=true \
+  -Diot.redis.host=10.211.55.4 -Diot.redis.port=6379 \
+  -Diot.kafka.bootstrap=10.211.55.4:9092
+```
+
 ## Build
 
 ```bash

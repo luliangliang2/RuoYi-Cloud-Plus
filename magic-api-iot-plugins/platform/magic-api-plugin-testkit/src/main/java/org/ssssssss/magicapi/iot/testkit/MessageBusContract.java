@@ -1,3 +1,24 @@
 package org.ssssssss.magicapi.iot.testkit;
-import org.junit.jupiter.api.Test; import org.ssssssss.magicapi.iot.core.model.*; import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus; import java.util.Map; import java.util.concurrent.atomic.AtomicInteger; import static org.junit.jupiter.api.Assertions.assertEquals;
-public abstract class MessageBusContract { protected abstract DeviceMessageBus messageBus(); @Test void publishesAndUnsubscribes(){AtomicInteger count=new AtomicInteger();DeviceMessageBus.Subscription subscription=messageBus().subscribe("test",ignored->count.incrementAndGet());DeviceMessage message=new DeviceMessage(null,new DeviceIdentity("product","device-1"),DeviceMessageType.PROPERTY_REPORT,"test",null,null,Map.of("value",1),Map.of());messageBus().publish(message);subscription.close();messageBus().publish(message);assertEquals(1,count.get());} }
+
+import org.junit.jupiter.api.Test;
+import org.ssssssss.magicapi.iot.core.model.*;
+import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public abstract class MessageBusContract {
+	protected abstract DeviceMessageBus messageBus();
+
+	@Test
+	void publishesAndUnsubscribes() {
+		AtomicInteger count = new AtomicInteger();
+		DeviceMessageBus.Subscription subscription = messageBus().subscribe("test", ignored -> count.incrementAndGet());
+		DeviceMessage message = new DeviceMessage(null, new DeviceIdentity("product", "device-1"),
+				DeviceMessageType.PROPERTY_REPORT, "test", null, null, Map.of("value", 1), Map.of());
+		messageBus().publish(message);
+		subscription.close();
+		messageBus().publish(message);
+		assertEquals(1, count.get());
+	}
+}
