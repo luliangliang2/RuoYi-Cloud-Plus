@@ -12,6 +12,10 @@ import org.ssssssss.magicapi.iot.plugin.runtime.DefaultPluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginDescriptorValidator;
 import org.ssssssss.magicapi.iot.plugin.api.ProviderHealthIndicator;
+import org.ssssssss.magicapi.iot.config.ConfigurationCenter;
+import org.ssssssss.magicapi.iot.config.ConfigurationRuntime;
+import org.ssssssss.magicapi.iot.config.InMemoryConfigurationRuntime;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -48,6 +52,23 @@ public class IotPluginRuntimeAutoConfiguration {
     @ConditionalOnMissingBean
     ProviderHealthCatalog providerHealthCatalog(List<ProviderHealthIndicator> indicators) {
         return new ProviderHealthCatalog(indicators);
+    }
+
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean
+    ConfigurationRuntime configurationRuntime(ConfigurationCenter configurationCenter) {
+        return new InMemoryConfigurationRuntime(configurationCenter);
+    }
+
+    @Bean
+    List<JsonNamespaceConfigurationParser> configurationNamespaceParsers(ConfigurationRuntime runtime,
+                                                                           ObjectMapper mapper) {
+        List<JsonNamespaceConfigurationParser> parsers = List.of(
+            new JsonNamespaceConfigurationParser("providers", "providers/", mapper),
+            new JsonNamespaceConfigurationParser("transports", "transports/", mapper),
+            new JsonNamespaceConfigurationParser("protocols", "protocols/", mapper));
+        parsers.forEach(runtime::registerParser);
+        return parsers;
     }
 
     @Bean(name = "iotProvidersHealthIndicator")

@@ -11,6 +11,7 @@ import org.ssssssss.magicapi.iot.plugin.runtime.PluginSnapshot;
 import org.ssssssss.magicapi.iot.plugin.spring.ProviderHealthCatalog;
 import org.ssssssss.magicapi.iot.cluster.GatewayNodeCoordinator;
 import org.ssssssss.magicapi.iot.config.ConfigurationCenter;
+import org.ssssssss.magicapi.iot.config.ConfigurationRuntime;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,14 +34,14 @@ public class IotGatewayController {
     private final ProtocolIngressRuntime protocolRuntime;
     private final List<ObservableTransportProvider> transports;
     private final GatewayNodeCoordinator clusterCoordinator;
-    private final ConfigurationCenter configurationCenter;
+    private final ConfigurationRuntime configurationRuntime;
 
     public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
                                 CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog,
                                 ProtocolIngressRuntime protocolRuntime, List<ObservableTransportProvider> transports,
                                 ObjectProvider<GatewayNodeCoordinator> clusterCoordinator,
-                                ConfigurationCenter configurationCenter) {
+                                ConfigurationRuntime configurationRuntime) {
         this.deviceRegistry = deviceRegistry;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
@@ -50,7 +51,7 @@ public class IotGatewayController {
         this.protocolRuntime = protocolRuntime;
         this.transports = List.copyOf(transports);
         this.clusterCoordinator = clusterCoordinator.getIfAvailable();
-        this.configurationCenter = configurationCenter;
+        this.configurationRuntime = configurationRuntime;
     }
 
     @GetMapping("/status")
@@ -62,7 +63,7 @@ public class IotGatewayController {
             "deviceRegistry", deviceRegistry.getClass().getSimpleName(),
             "sessionRepository", sessionRepository.getClass().getSimpleName(),
             "messageBus", messageBus.getClass().getSimpleName(),
-            "configurationCenter", configurationCenter.providerId(),
+            "configurationCenter", configurationRuntime.providerId(),
             "pluginCount", pluginRegistry.snapshots().size(),
             "capabilityCount", capabilityRegistry.capabilities().size(),
             "providerCount", providerHealth.size(),
@@ -92,29 +93,38 @@ public class IotGatewayController {
 
     @GetMapping("/configuration")
     public Map<String, Object> configuration(@RequestParam(defaultValue = "") String prefix) {
-        var values = configurationCenter.list(prefix);
-        return Map.of("provider", configurationCenter.providerId(), "count", values.size(), "values", values);
+        var values = configurationRuntime.list(prefix);
+        return Map.of("provider", configurationRuntime.providerId(), "count", values.size(), "values", values);
     }
 
     @GetMapping("/configuration/value")
     public Map<String, Object> configurationValue(@RequestParam String key) {
-        return Map.of("provider", configurationCenter.providerId(), "value", configurationCenter.get(key));
+        return Map.of("provider", configurationRuntime.providerId(), "value", configurationRuntime.get(key));
     }
 
     @PutMapping("/configuration")
     public ConfigurationCenter.ConfigurationValue putConfiguration(@RequestBody ConfigurationWrite request) {
-        return configurationCenter.put(request.key(), request.value());
+        return configurationRuntime.put(request.key(), request.value());
     }
 
     @PutMapping("/configuration/cas")
     public ConfigurationCenter.CasResult compareAndSetConfiguration(@RequestBody ConfigurationCasWrite request) {
-        return configurationCenter.compareAndSet(request.key(), request.expectedRevision(), request.value());
+        return configurationRuntime.compareAndSet(request.key(), request.expectedRevision(), request.value());
     }
 
     @DeleteMapping("/configuration")
     public ConfigurationCenter.CasResult deleteConfiguration(@RequestParam String key,
                                                               @RequestParam String expectedRevision) {
-        return configurationCenter.delete(key, expectedRevision);
+        return configurationRuntime.delete(key, expectedRevision);
+    }
+
+    @GetMapping("/configuration/memory")
+    public Map<String, Object> configurationMemory() {
+        return Map.of("provider", configurationRuntime.providerId(),
+            "count", configurationRuntime.list("").size(),
+            "values", configurationRuntime.list(""),
+            "parsed", configurationRuntime.parsedSnapshots(),
+            "parserErrors", configurationRuntime.parserErrors());
     }
 
     @GetMapping("/components")

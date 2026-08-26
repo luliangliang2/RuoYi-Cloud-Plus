@@ -96,6 +96,9 @@ magic-api-iot-plugins/
 - [x] ZooKeeper 嵌入式集成测试验证 put/list/watch/CAS/delete
 - [x] Nacos `10.211.55.3:8848` 真实配置读写、过期 CAS 拒绝、有效 CAS 和带 revision 删除验证
 - [x] etcd 三节点真实集群完成 put/get/list/watch、过期 CAS、有效 CAS 和带 revision 删除验证
+- [x] 新增 `ConfigurationRuntime`：启动全量装载、远端 watch 增量同步、本地内存快照和解析器通知
+- [x] 新增 `ConfigurationParser` 命名空间解析 SPI，规则引擎支持 `rules/` JSON 配置热替换
+- [x] 测试应用新增 `/api/iot/gateway/configuration/memory`，可查看本节点镜像和解析结果
 
 - [x] Redis Device Registry Provider 模块和自动配置
 - [x] Redis Device Session Provider 模块和节点索引
@@ -146,13 +149,15 @@ magic-api-iot-plugins/
 
 - [ ] 将设备模型和 SPI 从 `iot-core` 逐步迁移到 `plugin-api`
 - [ ] 为 Provider 健康和插件生命周期接入 Micrometer 指标
+- [ ] 为设备注册、会话、Transport、Protocol Provider 增加配置解析器并接入运行时替换
 
 ## 下一阶段顺序
 
 1. 增加 Micrometer Provider 延迟、状态和插件生命周期指标。
-2. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
-3. 增加 Docker 可用时的 Testcontainers 回归环境。
-4. 再进入外部 JAR 加载和插件生命周期管理。
+2. 为 Provider、Transport、Protocol 增加配置解析器并定义热更新边界。
+3. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
+4. 增加 Docker 可用时的 Testcontainers 回归环境。
+5. 再进入外部 JAR 加载和插件生命周期管理。
 
 ## 长期路线
 
@@ -198,6 +203,11 @@ magic-api-iot-plugins/
 ## 更新记录
 
 ### 2026-08-26
+
+- 新增节点本地 `ConfigurationRuntime`，三种配置中心均通过现有 Provider 的 watch 同步到内存，不做无事务的 Nacos/ZooKeeper/etcd 三写。
+- 配置管理 API 改为读写运行时镜像；新增 `/api/iot/gateway/configuration/memory` 查看本地同步数据和解析快照。
+- 新增 `ConfigurationParser` SPI 与规则引擎 JSON 解析器，规则配置变更后自动替换内存规则集合。
+- 测试覆盖两个运行时订阅者对共享配置中心外部变更的同步收敛。
 
 - etcd 三节点集群 `10.211.55.4:2379/22379/32379` 健康检查、成员一致性和 Leader 状态验证通过。
 - 新增 etcd 节点注册中心外部集成测试，验证 Lease 注册、跨客户端发现、心跳更新、显式摘除和关闭时 Lease 撤销。

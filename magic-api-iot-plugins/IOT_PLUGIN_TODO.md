@@ -75,6 +75,9 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Require an explicit configuration-center Provider and reject missing/conflicting Provider beans.
 - [x] Expose configuration-center health and management APIs in the test gateway.
 - [x] Verify the etcd configuration-center Provider against a live etcd cluster.
+- [x] Add node-local configuration mirror with remote watch synchronization.
+- [x] Add namespaced configuration parser SPI and rule-engine JSON parser.
+- [ ] Add provider-specific parsers for device registry, session, transports and protocol runtime settings.
 
 ## P0 - Extension Points (Step 6)
 

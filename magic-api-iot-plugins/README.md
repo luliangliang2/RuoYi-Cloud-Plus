@@ -120,7 +120,28 @@ iot:
 Nacos stores logical keys in one CAS-protected JSON document so prefix listing remains available.
 ZooKeeper and etcd store one backend key per logical key. Revisions are opaque tokens prefixed by
 `nacos:`, `zookeeper:` or `etcd:`; clients must return them unchanged to CAS or delete operations.
-The test gateway exposes list/get/put/CAS/delete under `/api/iot/gateway/configuration`.
+The selected center is wrapped by a node-local `ConfigurationRuntime`: it loads an initial snapshot,
+watches remote changes, updates the in-memory snapshot and notifies registered parsers. CRUD calls
+through any gateway node write the selected shared center, so other nodes converge through watch;
+the runtime does not silently dual-write Nacos, ZooKeeper and etcd because that would create
+cross-system conflict resolution without a transaction boundary. The test gateway exposes
+list/get/put/CAS/delete under `/api/iot/gateway/configuration` and the synchronized local view under
+`/api/iot/gateway/configuration/memory`.
+
+Configuration parsers are namespaced extensions. The rule engine consumes `rules/` JSON entries:
+
+```json
+{
+  "priority": 10,
+  "enabled": true,
+  "condition": {"field": "type", "equals": "PROPERTY_REPORT"},
+  "actionId": "alarm",
+  "actionConfiguration": {"level": "warning"}
+}
+```
+
+Provider-specific parsers can register prefixes such as `providers/`, `transports/` or
+`protocols/` and atomically replace their local runtime configuration after each watch event.
 
 ## Raw TCP transport
 

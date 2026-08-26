@@ -99,6 +99,11 @@
 			<version>${iot-plugins.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-rule-engine</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-api</artifactId>
 			<version>${iot-jetcd-grpc.version}</version>
