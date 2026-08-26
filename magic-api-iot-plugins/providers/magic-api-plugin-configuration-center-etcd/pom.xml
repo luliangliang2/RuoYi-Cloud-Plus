@@ -9,6 +9,8 @@
   <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-api</artifactId><version>${project.version}</version></dependency>
   <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-autoconfigure</artifactId></dependency>
   <dependency><groupId>io.etcd</groupId><artifactId>jetcd-core</artifactId><version>${jetcd.version}</version></dependency>
+  <dependency><groupId>io.grpc</groupId><artifactId>grpc-api</artifactId><version>${iot.jetcd.grpc.version}</version></dependency>
+  <dependency><groupId>io.grpc</groupId><artifactId>grpc-core</artifactId><version>${iot.jetcd.grpc.version}</version></dependency>
   <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
  </dependencies>
 </project>

@@ -69,12 +69,12 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Expose cluster membership and node-registry health in the test application and monitoring APIs.
 - [x] Verify Nacos registration and heartbeat against `10.211.55.3:8848`.
 - [x] Verify ZooKeeper ephemeral-node behavior with an embedded integration test.
-- [ ] Add an opt-in integration test against a live etcd cluster.
+- [x] Add an opt-in integration test against a live etcd cluster.
 - [x] Define a separate configuration-center SPI with get, list, watch, revision and CAS operations.
 - [x] Add Nacos, ZooKeeper and etcd configuration-center Providers after the SPI is stable.
 - [x] Require an explicit configuration-center Provider and reject missing/conflicting Provider beans.
 - [x] Expose configuration-center health and management APIs in the test gateway.
-- [ ] Verify the etcd configuration-center Provider against a live etcd cluster.
+- [x] Verify the etcd configuration-center Provider against a live etcd cluster.
 
 ## P0 - Extension Points (Step 6)
 

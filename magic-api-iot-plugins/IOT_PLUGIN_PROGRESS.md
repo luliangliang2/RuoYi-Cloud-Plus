@@ -6,10 +6,10 @@
 ## 当前基线
 
 - 更新时间：2026-08-26
-- 当前阶段：独立配置中心 SPI 及 Nacos、ZooKeeper、etcd Provider 已落地，待完成 etcd 真实环境验证
-- 总体进度：约 78%
-- 构建状态：插件 reactor `mvn clean test` 已通过，40 个模块全部成功（本次更新）
-- 测试工程：已接入可独立选型的节点注册中心和配置中心 Provider，`mvn package -DskipTests` 已通过
+- 当前阶段：etcd 三节点真实业务验证完成，进入 Provider Micrometer 指标建设
+- 总体进度：约 80%
+- 构建状态：etcd 定向集成测试 6 个 reactor 模块全部成功，测试工程 `clean package` 已通过
+- 测试工程：已通过 `9226` 临时实例验证 etcd 配置中心管理 API 和 Actuator 健康链路
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
 ## 当前目录规范
@@ -76,7 +76,7 @@ magic-api-iot-plugins/
 - [x] `magic-api-plugin-transport-mqtt`：内嵌 mica-mqtt broker、Topic 映射、QoS 元数据、注册中心鉴权和上下行
 - [x] `magic-api-plugin-protocol-modbus-tcp`：DigitalPetri PDU 编解码、8 类功能码、异常响应和事务关联
 
-### 分布式 Provider（进行中）
+### 分布式 Provider
 
 - [x] `NodeRegistry` 统一网关节点注册、心跳、发现、摘除和健康契约
 - [x] `magic-api-plugin-iot-cluster` 统一节点生命周期，集群启用但 Provider 缺失时启动失败
@@ -86,7 +86,7 @@ magic-api-iot-plugins/
 - [x] Nacos、ZooKeeper、etcd Provider 启动参数校验和组件描述
 - [x] Nacos `10.211.55.3:8848` 真实注册、发现、心跳和健康探测通过
 - [x] ZooKeeper 嵌入式临时节点集成测试通过
-- [ ] etcd 真实集群集成测试
+- [x] etcd 三节点真实集群完成 Lease 注册、跨客户端发现、心跳、摘除和关闭撤销验证
 - [x] `ConfigurationCenter` 独立 SPI，支持 get、前缀 list、put、watch、revision、CAS 和带 revision 删除
 - [x] Nacos 配置 Provider：单 JSON 文档、原生 MD5-CAS、前缀过滤和文档差异 watch
 - [x] ZooKeeper 配置 Provider：持久 ZNode、version CAS、CuratorCache watch
@@ -95,7 +95,7 @@ magic-api-iot-plugins/
 - [x] Nacos Provider 内存测试桩验证原生 MD5-CAS 和 watch 差异事件
 - [x] ZooKeeper 嵌入式集成测试验证 put/list/watch/CAS/delete
 - [x] Nacos `10.211.55.3:8848` 真实配置读写、过期 CAS 拒绝、有效 CAS 和带 revision 删除验证
-- [ ] etcd 真实集群配置中心集成测试
+- [x] etcd 三节点真实集群完成 put/get/list/watch、过期 CAS、有效 CAS 和带 revision 删除验证
 
 - [x] Redis Device Registry Provider 模块和自动配置
 - [x] Redis Device Session Provider 模块和节点索引
@@ -144,17 +144,15 @@ magic-api-iot-plugins/
 
 ## 进行中
 
-- [ ] 完成 etcd 配置中心真实环境验证
 - [ ] 将设备模型和 SPI 从 `iot-core` 逐步迁移到 `plugin-api`
 - [ ] 为 Provider 健康和插件生命周期接入 Micrometer 指标
 
 ## 下一阶段顺序
 
-1. 完成 etcd 配置中心真实环境验证。
-2. 增加 Micrometer Provider 延迟、状态和插件生命周期指标。
-3. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
-4. 增加 Docker 可用时的 Testcontainers 回归环境。
-5. 再进入外部 JAR 加载和插件生命周期管理。
+1. 增加 Micrometer Provider 延迟、状态和插件生命周期指标。
+2. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
+3. 增加 Docker 可用时的 Testcontainers 回归环境。
+4. 再进入外部 JAR 加载和插件生命周期管理。
 
 ## 长期路线
 
@@ -200,6 +198,13 @@ magic-api-iot-plugins/
 ## 更新记录
 
 ### 2026-08-26
+
+- etcd 三节点集群 `10.211.55.4:2379/22379/32379` 健康检查、成员一致性和 Leader 状态验证通过。
+- 新增 etcd 节点注册中心外部集成测试，验证 Lease 注册、跨客户端发现、心跳更新、显式摘除和关闭时 Lease 撤销。
+- 新增 etcd 配置中心外部集成测试，验证三端点复制、前缀 watch、过期 CAS 拒绝、有效 CAS 和 revision 保护删除。
+- 测试应用修正 jetcd 与 RuoYi/RocketMQ 依赖管理造成的 gRPC 版本冲突，统一 jetcd gRPC 组件为 `1.70.0`。
+- `9226` 真实应用实例中 `configuration-center:etcd`、Provider API 和 Actuator 均为 `UP`；HTTP 管理接口完整业务链路通过，临时键已删除。
+- etcd 定向集成命令通过：节点注册 2 项、配置中心 1 项测试成功，相关 6 个 reactor 模块全部成功。
 
 - 为避免与 Magic API 自带集群插件冲突，将模块由 `magic-api-plugin-cluster` 重命名为 `magic-api-plugin-iot-cluster`，运行时插件 ID 同步改为 `iot-gateway-cluster`；`iot.cluster.*` 配置键和 Java 包保持兼容。
 - 新增独立 `magic-api-plugin-configuration-center` SPI，统一 get、前缀 list、put、watch、opaque revision、CAS 和带 revision 删除。

@@ -245,6 +245,16 @@ mvn test -Diot.integration.enabled=true \
   -Diot.kafka.bootstrap=10.211.55.4:9092
 ```
 
+External etcd node-registry and configuration-center integration tests are also opt-in. The test
+uses isolated random prefixes and removes its keys and leases when complete:
+
+```bash
+mvn -pl providers/magic-api-plugin-node-registry-etcd,providers/magic-api-plugin-configuration-center-etcd \
+  -am test \
+  -Diot.integration.enabled=true \
+  -Diot.etcd.endpoints=http://10.211.55.4:2379,http://10.211.55.4:22379,http://10.211.55.4:32379
+```
+
 ## Build
 
 ```bash

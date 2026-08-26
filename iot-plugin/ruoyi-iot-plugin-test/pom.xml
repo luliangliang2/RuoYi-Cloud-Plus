@@ -14,7 +14,22 @@
 	<properties>
 		<magic-api.version>2.2.2</magic-api.version>
 		<iot-plugins.version>0.1.0-SNAPSHOT</iot-plugins.version>
+		<iot-jetcd-grpc.version>1.70.0</iot-jetcd-grpc.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-api</artifactId>
+				<version>${iot-jetcd-grpc.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.grpc</groupId>
+				<artifactId>grpc-core</artifactId>
+				<version>${iot-jetcd-grpc.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.dromara</groupId>
@@ -82,6 +97,16 @@
 			<groupId>org.ssssssss.magicapi.iot</groupId>
 			<artifactId>magic-api-plugin-configuration-center-etcd</artifactId>
 			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-api</artifactId>
+			<version>${iot-jetcd-grpc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-core</artifactId>
+			<version>${iot-jetcd-grpc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>

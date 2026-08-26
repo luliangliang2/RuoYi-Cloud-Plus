@@ -19,6 +19,7 @@
         <nacos-client.version>2.5.1</nacos-client.version>
         <curator.version>5.7.1</curator.version>
         <jetcd.version>0.8.5</jetcd.version>
+        <iot.jetcd.grpc.version>1.70.0</iot.jetcd.grpc.version>
     </properties>
 
     <modules>
@@ -78,6 +79,16 @@
                 <version>${junit.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-api</artifactId>
+                <version>${iot.jetcd.grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-core</artifactId>
+                <version>${iot.jetcd.grpc.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
