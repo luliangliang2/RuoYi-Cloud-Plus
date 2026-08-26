@@ -16,4 +16,11 @@ public class ProtocolAutoConfiguration {
         List<CommandEncoder> commandEncoders) {
         return new ProtocolPipelineRegistry(detectors, frameDecoders, messageDecoders, commandEncoders);
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    ProtocolIngressRuntime protocolIngressRuntime(ProtocolPipelineRegistry registry,
+        DeviceMessageBus messageBus, List<TransportProvider> transports) {
+        return new ProtocolIngressRuntime(registry, messageBus, transports);
+    }
 }

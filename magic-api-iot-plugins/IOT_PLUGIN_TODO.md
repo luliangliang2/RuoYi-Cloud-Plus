@@ -70,6 +70,11 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add the framework-neutral `ProviderHealthIndicator` contract and Spring health catalog.
 - [x] Implement real health indicators in Redis and message-bus providers.
 - [x] Export provider health through Actuator and the operations console.
+- [x] Add the first Netty TCP transport with line framing, lifecycle cleanup and runtime counters.
+- [x] Register the Raw protocol adapter and connect transport frames to the protocol pipeline and message bus.
+- [ ] Add device authentication handshake before promoting temporary TCP connection identities to registered devices.
+- [ ] Add MQTT, UDP and WebSocket transport providers.
+- [ ] Add Modbus TCP as the first production protocol adapter.
 
 ## P1 - Runtime Loading
 

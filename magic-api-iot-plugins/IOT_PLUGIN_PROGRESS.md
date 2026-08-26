@@ -8,7 +8,7 @@
 - 更新时间：2026-08-26
 - 当前阶段：第 6 步 Provider 健康探测和 Actuator/监控页面接入完成，准备接入 Micrometer 指标
 - 总体进度：约 65%
-- 构建状态：插件 reactor `mvn test` 已通过，28 个模块全部成功（本次更新）
+- 构建状态：插件 reactor `mvn test` 已通过，29 个模块全部成功（本次更新）
 - 测试工程：`ruoyi-iot-plugin-test` `mvn package` 已通过（本次更新）
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
@@ -51,6 +51,8 @@ magic-api-iot-plugins/
 - [x] `TransportProvider` 统一连接生命周期、收发和断连边界
 - [x] 协议流水线按 `protocolId` 组装，缺失阶段和重复阶段启动失败
 - [x] 删除旧 `ProtocolAdapter`、兼容桥和 `ProtocolRegistry`
+- [x] `ProtocolIngressRuntime` 将 Transport 帧经协议流水线转换后发布到统一 Message Bus
+- [x] Raw 协议适配器已自动装配，当前使用连接级临时设备身份
 
 ### 扩展 Provider 契约
 
@@ -69,6 +71,7 @@ magic-api-iot-plugins/
 - [x] Memory Provider 必须通过 `iot.providers.*.type=memory` 显式启用
 - [x] `prod` 和 `production` profile 禁止使用 Memory Provider
 - [x] 从 core 移除空的 registry、session、message-bus 模块
+- [x] `magic-api-plugin-transport-tcp`：Netty TCP 监听、换行分帧、连接管理、收发和资源关闭
 
 ### 分布式 Provider（进行中）
 
@@ -111,6 +114,8 @@ magic-api-iot-plugins/
 - [x] Actuator 暴露 `iotProviders` 聚合健康项，并采用最差状态作为聚合结果
 - [x] 5177 页面展示 Provider 健康率和健康明细表格
 - [x] 健康探针支持异步超时、10 秒缓存和并发探测去重
+- [x] `/api/iot/gateway/runtime` 返回协议、Transport、连接、流量和错误快照
+- [x] 5177 页面展示 TCP 监听、活跃连接、协议 ID、收发流量和发布计数
 
 ## 进行中
 
@@ -169,6 +174,11 @@ magic-api-iot-plugins/
 
 ### 2026-08-26
 
+- 多协议接入进入可运行阶段：新增 Netty Raw-over-TCP 链路，默认监听 `19000`，使用换行符分帧。
+- 新增 `ProtocolIngressRuntime`，完成 TCP -> 协议检测 -> 拆包/解码 -> Kafka Message Bus 的入口链路。
+- `nc` 向临时端口 `19001` 发送 `temperature=23.5` 验证成功：1 帧、16 字节、1 条统一消息发布、0 错误。
+- 新增 TCP Socket 测试和协议入口发布测试，监控 API/5177 增加协议与 Transport 运行快照。
+- 当前 TCP 身份为 `tcp-raw/<channelId>` 临时身份，不代表设备已鉴权；下一步必须实现鉴权握手。
 - `ruoyi-iot-plugin-test` 补齐 Redis、Kafka、Pulsar、RocketMQ 已验证环境地址，默认启用 Redis Registry、Redis Session 和 Kafka Message Bus。
 - 消息总线仍遵守单 Provider 约束，可通过 `IOT_MESSAGE_BUS_PROVIDER=kafka|pulsar|rocketmq|memory` 切换；其他地址配置只作为候选环境，不会同时装配多个 MessageBus Bean。
 - 补齐 Redis Registry、Redis Session、Kafka Message Bus 的插件描述；组件接口和监控页可区分启用 Provider 的健康状态与未启用 Provider 的 `INACTIVE` 状态。

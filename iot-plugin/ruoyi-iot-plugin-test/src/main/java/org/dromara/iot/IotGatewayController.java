@@ -3,6 +3,8 @@ package org.dromara.iot;
 import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
 import org.ssssssss.magicapi.iot.core.spi.DeviceRegistry;
 import org.ssssssss.magicapi.iot.core.spi.SessionRepository;
+import org.ssssssss.magicapi.iot.core.spi.ObservableTransportProvider;
+import org.ssssssss.magicapi.iot.protocol.ProtocolIngressRuntime;
 import org.ssssssss.magicapi.iot.plugin.runtime.CapabilityRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginSnapshot;
@@ -16,7 +18,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/iot/gateway")
 public class IotGatewayController {
-    private static final Set<String> PROVIDER_TYPES = Set.of("device-registry", "device-session", "message-bus");
+    private static final Set<String> PROVIDER_TYPES = Set.of("device-registry", "device-session", "message-bus", "transport");
 
     private final DeviceRegistry deviceRegistry;
     private final SessionRepository sessionRepository;
@@ -24,16 +26,21 @@ public class IotGatewayController {
     private final PluginRegistry pluginRegistry;
     private final CapabilityRegistry capabilityRegistry;
     private final ProviderHealthCatalog providerHealthCatalog;
+    private final ProtocolIngressRuntime protocolRuntime;
+    private final List<ObservableTransportProvider> transports;
 
     public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
-                                CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog) {
+                                CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog,
+                                ProtocolIngressRuntime protocolRuntime, List<ObservableTransportProvider> transports) {
         this.deviceRegistry = deviceRegistry;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
         this.pluginRegistry = pluginRegistry;
         this.capabilityRegistry = capabilityRegistry;
         this.providerHealthCatalog = providerHealthCatalog;
+        this.protocolRuntime = protocolRuntime;
+        this.transports = List.copyOf(transports);
     }
 
     @GetMapping("/status")
@@ -56,6 +63,13 @@ public class IotGatewayController {
     public Map<String, Object> providers() {
         var providers = providerHealthCatalog.snapshots();
         return Map.of("count", providers.size(), "providers", providers);
+    }
+
+    @GetMapping("/runtime")
+    public Map<String, Object> runtime() {
+        return Map.of(
+            "protocol", protocolRuntime.snapshot(),
+            "transports", transports.stream().map(ObservableTransportProvider::snapshot).toList());
     }
 
     @GetMapping("/components")

@@ -34,6 +34,7 @@
         <module>features/magic-api-plugin-northbound</module>
         <module>features/magic-api-plugin-ops-console</module>
         <module>adapters/magic-api-plugin-protocol-adapters</module>
+        <module>providers/magic-api-plugin-transport-tcp</module>
         <module>providers/magic-api-plugin-device-registry-memory</module>
         <module>providers/magic-api-plugin-device-session-memory</module>
         <module>providers/magic-api-plugin-message-bus-memory</module>

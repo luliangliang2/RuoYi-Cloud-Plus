@@ -48,6 +48,30 @@ gateway also exposes `/api/iot/gateway/providers`, which is consumed by the cons
 Redis connection infrastructure is created by `magic-api-plugin-redis-support` only when the
 registry or session Provider type is `redis`.
 
+## Raw TCP transport
+
+The first executable protocol path is Raw over Netty TCP. It uses newline-delimited frames and
+publishes decoded `DeviceMessage` instances to the selected message bus.
+
+```yaml
+iot:
+  transports:
+    tcp:
+      enabled: true
+      host: 0.0.0.0
+      port: 19000
+      max-frame-length: 65536
+```
+
+```bash
+printf 'temperature=23.5\n' | nc -w 1 127.0.0.1 19000
+curl http://127.0.0.1:9218/api/iot/gateway/runtime
+```
+
+Raw TCP currently assigns `tcp-raw/<channelId>` as a temporary connection identity. It is an
+integration path, not an authenticated production device protocol. A protocol-specific
+authentication handshake must replace the temporary identity before enabling untrusted clients.
+
 External Redis and Kafka integration tests are opt-in:
 
 ```bash

@@ -2,6 +2,12 @@ server:
   port: ${IOT_GATEWAY_PORT:9218}
 
 iot:
+  transports:
+    tcp:
+      enabled: ${IOT_TCP_ENABLED:true}
+      host: ${IOT_TCP_HOST:0.0.0.0}
+      port: ${IOT_TCP_PORT:19000}
+      max-frame-length: ${IOT_TCP_MAX_FRAME_LENGTH:65536}
   health:
     cache-ttl: ${IOT_HEALTH_CACHE_TTL:10s}
     timeout: ${IOT_HEALTH_TIMEOUT:3s}
