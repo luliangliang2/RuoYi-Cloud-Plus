@@ -86,6 +86,9 @@ iot:
       lease-ttl: 20s
 ```
 
+For Nacos, `public` is normalized to the default tenant by the Provider. Use a namespace ID
+other than `public` only when the namespace was explicitly created in Nacos.
+
 Nacos uses ephemeral Naming instances, ZooKeeper uses ephemeral ZNodes, and etcd binds node keys
 to leases. Enabling `iot.cluster` without a selected and instantiated `NodeRegistry` fails startup.
 The test gateway exposes the current membership at `/api/iot/gateway/cluster`.

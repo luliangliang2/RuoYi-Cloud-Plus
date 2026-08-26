@@ -139,6 +139,41 @@ body {
   margin-bottom: 16px;
 }
 
+.configuration-meta,
+.configuration-layout {
+  margin-bottom: 16px;
+}
+
+.config-notice {
+  margin-bottom: 16px;
+}
+
+.config-value {
+  display: block;
+  max-width: 430px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 20px;
+}
+
+.config-input {
+  margin-bottom: 12px;
+}
+
+.configuration-sync-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #edf2f2;
+  line-height: 20px;
+}
+
+.memory-card {
+  margin-top: 16px;
+}
+
 .metrics .ant-card {
   min-height: 132px;
   box-shadow: 0 1px 2px #0f3d4510;

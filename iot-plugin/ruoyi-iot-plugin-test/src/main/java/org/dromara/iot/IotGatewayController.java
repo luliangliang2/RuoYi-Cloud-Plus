@@ -12,6 +12,9 @@ import org.ssssssss.magicapi.iot.plugin.spring.ProviderHealthCatalog;
 import org.ssssssss.magicapi.iot.cluster.GatewayNodeCoordinator;
 import org.ssssssss.magicapi.iot.config.ConfigurationCenter;
 import org.ssssssss.magicapi.iot.config.ConfigurationRuntime;
+import org.ssssssss.magicapi.iot.config.nacos.NacosConfigurationCenterProperties;
+import org.ssssssss.magicapi.iot.config.zookeeper.ZookeeperConfigurationCenterProperties;
+import org.ssssssss.magicapi.iot.config.etcd.EtcdConfigurationCenterProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,13 +38,19 @@ public class IotGatewayController {
     private final List<ObservableTransportProvider> transports;
     private final GatewayNodeCoordinator clusterCoordinator;
     private final ConfigurationRuntime configurationRuntime;
+    private final ObjectProvider<NacosConfigurationCenterProperties> nacosProperties;
+    private final ObjectProvider<ZookeeperConfigurationCenterProperties> zookeeperProperties;
+    private final ObjectProvider<EtcdConfigurationCenterProperties> etcdProperties;
 
     public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
                                 CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog,
                                 ProtocolIngressRuntime protocolRuntime, List<ObservableTransportProvider> transports,
                                 ObjectProvider<GatewayNodeCoordinator> clusterCoordinator,
-                                ConfigurationRuntime configurationRuntime) {
+                                ConfigurationRuntime configurationRuntime,
+                                ObjectProvider<NacosConfigurationCenterProperties> nacosProperties,
+                                ObjectProvider<ZookeeperConfigurationCenterProperties> zookeeperProperties,
+                                ObjectProvider<EtcdConfigurationCenterProperties> etcdProperties) {
         this.deviceRegistry = deviceRegistry;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
@@ -52,6 +61,9 @@ public class IotGatewayController {
         this.transports = List.copyOf(transports);
         this.clusterCoordinator = clusterCoordinator.getIfAvailable();
         this.configurationRuntime = configurationRuntime;
+        this.nacosProperties = nacosProperties;
+        this.zookeeperProperties = zookeeperProperties;
+        this.etcdProperties = etcdProperties;
     }
 
     @GetMapping("/status")
@@ -125,6 +137,28 @@ public class IotGatewayController {
             "values", configurationRuntime.list(""),
             "parsed", configurationRuntime.parsedSnapshots(),
             "parserErrors", configurationRuntime.parserErrors());
+    }
+
+    @GetMapping("/configuration/meta")
+    public Map<String, Object> configurationMeta() {
+        String provider = configurationRuntime.providerId();
+        Map<String, Object> details = switch (provider) {
+            case "nacos" -> {
+                var p = nacosProperties.getIfAvailable();
+                yield p == null ? Map.of() : Map.of("serverAddr", p.getServerAddr(), "namespace", p.getNamespace(),
+                    "dataId", p.getDataId(), "group", p.getGroup());
+            }
+            case "zookeeper" -> {
+                var p = zookeeperProperties.getIfAvailable();
+                yield p == null ? Map.of() : Map.of("connectString", p.getConnectString(), "rootPath", p.getRootPath());
+            }
+            case "etcd" -> {
+                var p = etcdProperties.getIfAvailable();
+                yield p == null ? Map.of() : Map.of("endpoints", p.getEndpoints(), "rootPrefix", p.getRootPrefix());
+            }
+            default -> Map.of();
+        };
+        return Map.of("provider", provider, "details", details);
     }
 
     @GetMapping("/components")

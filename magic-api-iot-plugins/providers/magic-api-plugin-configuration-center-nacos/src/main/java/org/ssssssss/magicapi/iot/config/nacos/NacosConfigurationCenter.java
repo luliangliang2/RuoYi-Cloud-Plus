@@ -133,7 +133,8 @@ public final class NacosConfigurationCenter implements ConfigurationCenter, Auto
         try {
             if (current.raw() == null)
                 return configService.publishConfig(properties.getDataId(), properties.getGroup(), content, "json");
-            return configService.publishConfigCas(properties.getDataId(), properties.getGroup(), content, "json", md5(current.raw()));
+            return configService.publishConfigCas(properties.getDataId(), properties.getGroup(), content,
+                md5(current.raw()), "json");
         } catch (NacosException exception) {
             throw new IllegalStateException("Failed to publish Nacos configuration document", exception);
         }

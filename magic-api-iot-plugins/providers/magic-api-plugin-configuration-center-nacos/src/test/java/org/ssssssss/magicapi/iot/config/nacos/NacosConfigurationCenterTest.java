@@ -20,6 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NacosConfigurationCenterTest {
     @Test
+    void publicNamespaceIsHandledByDefaultTenant() {
+        NacosConfigurationCenterProperties properties = new NacosConfigurationCenterProperties();
+        assertEquals("public", properties.getNamespace());
+    }
+
+    @Test
     void supportsDocumentCasPrefixListAndWatchDiff() {
         InMemoryConfigService configService = new InMemoryConfigService();
         NacosConfigurationCenterProperties properties = new NacosConfigurationCenterProperties();
@@ -71,7 +77,8 @@ class NacosConfigurationCenterTest {
         @Override public boolean publishConfigCas(String dataId, String group, String value, String casMd5) {
             return publishCas(value, casMd5);
         }
-        @Override public boolean publishConfigCas(String dataId, String group, String value, String type, String casMd5) {
+        @Override public boolean publishConfigCas(String dataId, String group, String value, String casMd5, String type) {
+            if (!"json".equals(type)) return false;
             return publishCas(value, casMd5);
         }
         @Override public boolean removeConfig(String dataId, String group) {

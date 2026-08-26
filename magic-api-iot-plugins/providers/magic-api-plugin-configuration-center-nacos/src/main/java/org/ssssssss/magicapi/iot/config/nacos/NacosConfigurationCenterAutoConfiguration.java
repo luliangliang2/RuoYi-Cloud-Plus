@@ -29,7 +29,13 @@ public class NacosConfigurationCenterAutoConfiguration {
         properties.validate();
         Properties client = new Properties();
         client.setProperty(PropertyKeyConst.SERVER_ADDR, properties.getServerAddr());
-        if (properties.getNamespace() != null) client.setProperty(PropertyKeyConst.NAMESPACE, properties.getNamespace());
+        // Nacos public is the default namespace and must be represented by an empty
+        // tenant in the Java client. Passing the literal "public" targets a different
+        // namespace and can make reads look empty while first publish fails.
+        if (properties.getNamespace() != null && !properties.getNamespace().isBlank()
+            && !"public".equalsIgnoreCase(properties.getNamespace())) {
+            client.setProperty(PropertyKeyConst.NAMESPACE, properties.getNamespace());
+        }
         if (properties.getUsername() != null) client.setProperty(PropertyKeyConst.USERNAME, properties.getUsername());
         if (properties.getPassword() != null) client.setProperty(PropertyKeyConst.PASSWORD, properties.getPassword());
         ConfigService configService = NacosFactory.createConfigService(client);

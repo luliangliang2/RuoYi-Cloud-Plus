@@ -99,6 +99,7 @@ magic-api-iot-plugins/
 - [x] 新增 `ConfigurationRuntime`：启动全量装载、远端 watch 增量同步、本地内存快照和解析器通知
 - [x] 新增 `ConfigurationParser` 命名空间解析 SPI，规则引擎支持 `rules/` JSON 配置热替换
 - [x] 测试应用新增 `/api/iot/gateway/configuration/memory`，可查看本节点镜像和解析结果
+- [x] 5177 新增配置管理页面，按当前激活的 Nacos/ZooKeeper/etcd 展示不同定位信息并支持 CRUD/CAS
 
 - [x] Redis Device Registry Provider 模块和自动配置
 - [x] Redis Device Session Provider 模块和节点索引
@@ -203,6 +204,11 @@ magic-api-iot-plugins/
 ## 更新记录
 
 ### 2026-08-26
+
+- 5177 监控页新增“配置管理”视图，自动识别当前激活配置中心。
+- Nacos 展示 serverAddr、namespace、dataId、group；ZooKeeper 展示 connectString、rootPath；etcd 展示 endpoints、rootPrefix。
+- 配置编辑使用 revision CAS，新增使用 put，删除使用 revision 保护删除；页面同时展示本节点内存镜像、解析器和解析错误。
+- 前端 `npm run build` 与测试应用 `mvn package -DskipTests` 通过。
 
 - 新增节点本地 `ConfigurationRuntime`，三种配置中心均通过现有 Provider 的 watch 同步到内存，不做无事务的 Nacos/ZooKeeper/etcd 三写。
 - 配置管理 API 改为读写运行时镜像；新增 `/api/iot/gateway/configuration/memory` 查看本地同步数据和解析快照。
