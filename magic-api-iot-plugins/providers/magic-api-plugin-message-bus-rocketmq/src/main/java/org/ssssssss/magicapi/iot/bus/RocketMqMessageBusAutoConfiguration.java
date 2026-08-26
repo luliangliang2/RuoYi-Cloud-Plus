@@ -33,8 +33,16 @@ public class RocketMqMessageBusAutoConfiguration {
         String topic = environment.getProperty("iot.providers.message-bus.topic", "iot-device-messages");
         return new ProbeProviderHealthIndicator("message-bus", "rocketmq", cacheTtl(environment),
             timeout(environment), () -> {
-                var queues = template.getProducer().fetchPublishMessageQueues(topic);
-                return Map.of("topic", topic, "queues", queues.size(), "nameServer", nameServer(environment));
+                try {
+                    var queues = template.getProducer().fetchPublishMessageQueues(topic);
+                    return ProbeProviderHealthIndicator.up(Map.of(
+                        "topic", topic, "queues", queues.size(), "nameServer", nameServer(environment)));
+                } catch (Exception topicFailure) {
+                    var defaultQueues = template.getProducer().fetchPublishMessageQueues("TBW102");
+                    return ProbeProviderHealthIndicator.degraded("Broker is reachable but configured topic has no route",
+                        Map.of("topic", topic, "topicReady", false, "defaultTopicQueues", defaultQueues.size(),
+                            "nameServer", nameServer(environment)));
+                }
             });
     }
 

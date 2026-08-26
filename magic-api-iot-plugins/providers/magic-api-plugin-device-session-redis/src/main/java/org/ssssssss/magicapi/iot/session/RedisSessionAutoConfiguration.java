@@ -30,7 +30,7 @@ public class RedisSessionAutoConfiguration {
 				try (var connection = redis.getConnectionFactory().getConnection()) {
 					String pong = connection.ping();
 					if (!"PONG".equalsIgnoreCase(pong)) throw new IllegalStateException("Unexpected Redis PING response");
-					return Map.of("command", "PING", "response", pong);
+					return ProbeProviderHealthIndicator.up(Map.of("command", "PING", "response", pong));
 				}
 			});
 	}

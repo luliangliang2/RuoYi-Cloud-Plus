@@ -3,7 +3,7 @@
   "name": "In-Memory Device Registry Provider",
   "version": "0.1.0-SNAPSHOT",
   "apiVersion": "1.0",
-  "provider": "dcyh",
+  "provider": "ryan",
   "capabilities": ["device-registry:memory"],
   "requires": [],
   "optionalRequires": ["observability-memory"],

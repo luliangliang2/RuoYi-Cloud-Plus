@@ -43,7 +43,8 @@ public class PulsarMessageBusAutoConfiguration {
         return new ProbeProviderHealthIndicator("message-bus", "pulsar", cacheTtl(environment), timeout,
             () -> {
                 var partitions = client.getPartitionsForTopic(topic).get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-                return Map.of("topic", topic, "partitions", partitions.size(), "clientClosed", client.isClosed());
+                return ProbeProviderHealthIndicator.up(Map.of(
+                    "topic", topic, "partitions", partitions.size(), "clientClosed", client.isClosed()));
             });
     }
 

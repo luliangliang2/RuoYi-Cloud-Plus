@@ -39,7 +39,7 @@ public class KafkaMessageBusAutoConfiguration {
 				var producer = kafka.getProducerFactory().createProducer();
 				try {
 					var partitions = producer.partitionsFor(topic);
-					return Map.of("topic", topic, "partitions", partitions.size());
+					return ProbeProviderHealthIndicator.up(Map.of("topic", topic, "partitions", partitions.size()));
 				} finally {
 					producer.close(Duration.ZERO);
 				}

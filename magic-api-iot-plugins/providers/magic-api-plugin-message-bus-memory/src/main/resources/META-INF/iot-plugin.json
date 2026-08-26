@@ -3,7 +3,7 @@
   "name": "In-Memory Message Bus Provider",
   "version": "0.1.0-SNAPSHOT",
   "apiVersion": "1.0",
-  "provider": "dcyh",
+  "provider": "ryan",
   "capabilities": ["message-bus:memory"],
   "requires": [],
   "optionalRequires": ["observability-memory"],

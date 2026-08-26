@@ -67,12 +67,21 @@ public final class ProbeProviderHealthIndicator implements ProviderHealthIndicat
     private PluginHealth runProbe() {
         long started = System.nanoTime();
         try {
-            Map<String, Object> details = new java.util.HashMap<>(probe.check());
+            PluginHealth result = probe.check();
+            Map<String, Object> details = new java.util.HashMap<>(result.details());
             details.put("latencyMs", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started));
-            return new PluginHealth(PluginHealth.Status.UP, "Provider is reachable", details);
+            return new PluginHealth(result.status(), result.message(), details);
         } catch (Exception exception) {
             throw new CompletionException(exception);
         }
+    }
+
+    public static PluginHealth up(Map<String, Object> details) {
+        return new PluginHealth(PluginHealth.Status.UP, "Provider is reachable", details);
+    }
+
+    public static PluginHealth degraded(String message, Map<String, Object> details) {
+        return new PluginHealth(PluginHealth.Status.DEGRADED, message, details);
     }
 
     private static String safeMessage(Throwable cause) {
@@ -82,7 +91,7 @@ public final class ProbeProviderHealthIndicator implements ProviderHealthIndicat
 
     @FunctionalInterface
     public interface Probe {
-        Map<String, Object> check() throws Exception;
+        PluginHealth check() throws Exception;
     }
 
     private record CachedHealth(PluginHealth.Status status, PluginHealth health, long expiresAtNanos) {

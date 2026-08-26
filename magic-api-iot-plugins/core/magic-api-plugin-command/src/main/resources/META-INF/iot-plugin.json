@@ -3,7 +3,7 @@
   "name": "In-Memory Command Service",
   "version": "0.1.0-SNAPSHOT",
   "apiVersion": "1.0",
-  "provider": "dcyh",
+  "provider": "ryan",
   "capabilities": ["command:dispatch", "command:result"],
   "requires": ["protocol-runtime"],
   "optionalRequires": ["message-bus-memory"],

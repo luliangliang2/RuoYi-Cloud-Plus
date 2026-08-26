@@ -15,7 +15,7 @@ class ProbeProviderHealthIndicatorTest {
         var indicator = new ProbeProviderHealthIndicator("message-bus", "test",
             Duration.ofMinutes(1), Duration.ofSeconds(1), () -> {
                 calls.incrementAndGet();
-                return Map.of("target", "broker");
+                return ProbeProviderHealthIndicator.up(Map.of("target", "broker"));
             });
 
         assertEquals(PluginHealth.Status.UP, indicator.health().status());

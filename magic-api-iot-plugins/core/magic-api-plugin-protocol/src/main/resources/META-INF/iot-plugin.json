@@ -3,7 +3,7 @@
   "name": "Protocol Runtime",
   "version": "0.1.0-SNAPSHOT",
   "apiVersion": "1.0",
-  "provider": "dcyh",
+  "provider": "ryan",
   "capabilities": ["protocol:registry", "protocol:routing"],
   "requires": [],
   "optionalRequires": ["observability"],
