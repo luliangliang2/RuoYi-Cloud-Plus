@@ -1,0 +1,13 @@
+{
+  "id": "configuration-center-spi",
+  "name": "Configuration Center SPI",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["configuration:get", "configuration:list", "configuration:watch", "configuration:cas"],
+  "requires": [],
+  "optionalRequires": [],
+  "loadOrder": 175,
+  "configPrefix": "iot.configuration-center",
+  "failurePolicy": "REQUIRED"
+}

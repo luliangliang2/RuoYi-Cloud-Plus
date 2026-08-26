@@ -49,7 +49,6 @@ nbdist/
 .flattened-pom.xml
 **/node_modules/
 **/dist/
-**/console/
 **/spring.factories
 **/*.life.js
 **/.gitignore

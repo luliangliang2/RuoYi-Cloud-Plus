@@ -16,6 +16,9 @@
         <junit.version>5.12.2</junit.version>
         <mica-mqtt.version>2.6.6</mica-mqtt.version>
         <digitalpetri-modbus.version>2.1.6</digitalpetri-modbus.version>
+        <nacos-client.version>2.5.1</nacos-client.version>
+        <curator.version>5.7.1</curator.version>
+        <jetcd.version>0.8.5</jetcd.version>
     </properties>
 
     <modules>
@@ -27,6 +30,8 @@
         <module>core/magic-api-plugin-command</module>
         <module>core/magic-api-plugin-observability</module>
         <module>core/magic-api-plugin-security</module>
+        <module>core/magic-api-plugin-cluster</module>
+        <module>core/magic-api-plugin-configuration-center</module>
         <module>features/magic-api-plugin-device-shadow</module>
         <module>features/magic-api-plugin-product-model</module>
         <module>features/magic-api-plugin-rule-engine</module>
@@ -39,6 +44,13 @@
         <module>adapters/magic-api-plugin-protocol-modbus-tcp</module>
         <module>providers/magic-api-plugin-transport-tcp</module>
         <module>providers/magic-api-plugin-transport-mqtt</module>
+        <module>providers/magic-api-plugin-transport-mqtt-client</module>
+        <module>providers/magic-api-plugin-node-registry-nacos</module>
+        <module>providers/magic-api-plugin-node-registry-zookeeper</module>
+        <module>providers/magic-api-plugin-node-registry-etcd</module>
+        <module>providers/magic-api-plugin-configuration-center-nacos</module>
+        <module>providers/magic-api-plugin-configuration-center-zookeeper</module>
+        <module>providers/magic-api-plugin-configuration-center-etcd</module>
         <module>providers/magic-api-plugin-device-registry-memory</module>
         <module>providers/magic-api-plugin-device-session-memory</module>
         <module>providers/magic-api-plugin-message-bus-memory</module>

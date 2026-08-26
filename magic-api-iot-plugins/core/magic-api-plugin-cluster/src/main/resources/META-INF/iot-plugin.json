@@ -1,0 +1,13 @@
+{
+  "id": "gateway-cluster",
+  "name": "Gateway Node Cluster Lifecycle",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["cluster:node-lifecycle", "cluster:heartbeat", "cluster:discovery"],
+  "requires": [],
+  "optionalRequires": ["node-registry-nacos", "node-registry-zookeeper", "node-registry-etcd"],
+  "loadOrder": 180,
+  "configPrefix": "iot.cluster",
+  "failurePolicy": "REQUIRED"
+}

@@ -8,11 +8,14 @@ import java.util.Map;
 
 public class ProviderConfigurationValidator {
 
-    private static final List<String> PROVIDERS = List.of("device-registry", "device-session", "message-bus");
+    private static final List<String> PROVIDERS = List.of("device-registry", "device-session", "message-bus",
+        "node-registry", "configuration-center");
     private static final Map<String, List<String>> ALLOWED_TYPES = Map.of(
         "device-registry", List.of("memory", "redis", "jdbc"),
         "device-session", List.of("memory", "redis"),
-        "message-bus", List.of("memory", "kafka", "pulsar", "rocketmq"));
+        "message-bus", List.of("memory", "kafka", "pulsar", "rocketmq"),
+        "node-registry", List.of("nacos", "zookeeper", "etcd"),
+        "configuration-center", List.of("nacos", "zookeeper", "etcd"));
 
     public void validate(Environment environment) {
         boolean production = List.of(environment.getActiveProfiles()).stream()

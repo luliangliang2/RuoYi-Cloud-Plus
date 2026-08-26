@@ -13,7 +13,9 @@ class ProviderConfigurationValidatorTest {
         MockEnvironment environment = new MockEnvironment().withProperty("spring.profiles.active", "prod")
             .withProperty("iot.providers.device-registry.type", "redis")
             .withProperty("iot.providers.device-session.type", "redis")
-            .withProperty("iot.providers.message-bus.type", "kafka");
+            .withProperty("iot.providers.message-bus.type", "kafka")
+            .withProperty("iot.providers.node-registry.type", "nacos")
+            .withProperty("iot.providers.configuration-center.type", "etcd");
         environment.setActiveProfiles("prod");
         assertDoesNotThrow(() -> validator.validate(environment));
     }
@@ -39,6 +41,8 @@ class ProviderConfigurationValidatorTest {
         return new MockEnvironment()
             .withProperty("iot.providers.device-registry.type", registry)
             .withProperty("iot.providers.device-session.type", session)
-            .withProperty("iot.providers.message-bus.type", bus);
+            .withProperty("iot.providers.message-bus.type", bus)
+            .withProperty("iot.providers.node-registry.type", "nacos")
+            .withProperty("iot.providers.configuration-center.type", "nacos");
     }
 }

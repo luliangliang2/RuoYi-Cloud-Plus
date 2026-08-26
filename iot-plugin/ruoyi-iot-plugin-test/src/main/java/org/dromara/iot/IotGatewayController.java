@@ -9,6 +9,9 @@ import org.ssssssss.magicapi.iot.plugin.runtime.CapabilityRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginSnapshot;
 import org.ssssssss.magicapi.iot.plugin.spring.ProviderHealthCatalog;
+import org.ssssssss.magicapi.iot.cluster.GatewayNodeCoordinator;
+import org.ssssssss.magicapi.iot.config.ConfigurationCenter;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +21,8 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/iot/gateway")
 public class IotGatewayController {
-    private static final Set<String> PROVIDER_TYPES = Set.of("device-registry", "device-session", "message-bus", "transport");
+    private static final Set<String> PROVIDER_TYPES = Set.of("device-registry", "device-session", "message-bus",
+        "node-registry", "configuration-center", "transport");
 
     private final DeviceRegistry deviceRegistry;
     private final SessionRepository sessionRepository;
@@ -28,11 +32,15 @@ public class IotGatewayController {
     private final ProviderHealthCatalog providerHealthCatalog;
     private final ProtocolIngressRuntime protocolRuntime;
     private final List<ObservableTransportProvider> transports;
+    private final GatewayNodeCoordinator clusterCoordinator;
+    private final ConfigurationCenter configurationCenter;
 
     public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
                                 CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog,
-                                ProtocolIngressRuntime protocolRuntime, List<ObservableTransportProvider> transports) {
+                                ProtocolIngressRuntime protocolRuntime, List<ObservableTransportProvider> transports,
+                                ObjectProvider<GatewayNodeCoordinator> clusterCoordinator,
+                                ConfigurationCenter configurationCenter) {
         this.deviceRegistry = deviceRegistry;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
@@ -41,6 +49,8 @@ public class IotGatewayController {
         this.providerHealthCatalog = providerHealthCatalog;
         this.protocolRuntime = protocolRuntime;
         this.transports = List.copyOf(transports);
+        this.clusterCoordinator = clusterCoordinator.getIfAvailable();
+        this.configurationCenter = configurationCenter;
     }
 
     @GetMapping("/status")
@@ -52,6 +62,7 @@ public class IotGatewayController {
             "deviceRegistry", deviceRegistry.getClass().getSimpleName(),
             "sessionRepository", sessionRepository.getClass().getSimpleName(),
             "messageBus", messageBus.getClass().getSimpleName(),
+            "configurationCenter", configurationCenter.providerId(),
             "pluginCount", pluginRegistry.snapshots().size(),
             "capabilityCount", capabilityRegistry.capabilities().size(),
             "providerCount", providerHealth.size(),
@@ -70,6 +81,40 @@ public class IotGatewayController {
         return Map.of(
             "protocol", protocolRuntime.snapshot(),
             "transports", transports.stream().map(ObservableTransportProvider::snapshot).toList());
+    }
+
+    @GetMapping("/cluster")
+    public Map<String, Object> cluster() {
+        if (clusterCoordinator == null) return Map.of("enabled", false, "nodes", List.of());
+        return Map.of("enabled", true, "snapshot", clusterCoordinator.snapshot(),
+            "nodes", clusterCoordinator.activeNodes());
+    }
+
+    @GetMapping("/configuration")
+    public Map<String, Object> configuration(@RequestParam(defaultValue = "") String prefix) {
+        var values = configurationCenter.list(prefix);
+        return Map.of("provider", configurationCenter.providerId(), "count", values.size(), "values", values);
+    }
+
+    @GetMapping("/configuration/value")
+    public Map<String, Object> configurationValue(@RequestParam String key) {
+        return Map.of("provider", configurationCenter.providerId(), "value", configurationCenter.get(key));
+    }
+
+    @PutMapping("/configuration")
+    public ConfigurationCenter.ConfigurationValue putConfiguration(@RequestBody ConfigurationWrite request) {
+        return configurationCenter.put(request.key(), request.value());
+    }
+
+    @PutMapping("/configuration/cas")
+    public ConfigurationCenter.CasResult compareAndSetConfiguration(@RequestBody ConfigurationCasWrite request) {
+        return configurationCenter.compareAndSet(request.key(), request.expectedRevision(), request.value());
+    }
+
+    @DeleteMapping("/configuration")
+    public ConfigurationCenter.CasResult deleteConfiguration(@RequestParam String key,
+                                                              @RequestParam String expectedRevision) {
+        return configurationCenter.delete(key, expectedRevision);
     }
 
     @GetMapping("/components")
@@ -116,4 +161,7 @@ public class IotGatewayController {
             Map.entry("updatedAt", snapshot.updatedAt().toString()),
             Map.entry("lastError", snapshot.lastError()));
     }
+
+    public record ConfigurationWrite(String key, String value) { }
+    public record ConfigurationCasWrite(String key, String value, String expectedRevision) { }
 }

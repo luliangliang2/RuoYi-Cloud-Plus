@@ -27,6 +27,8 @@ iot:
       type: redis
     message-bus:
       type: kafka
+    node-registry:
+      type: nacos
 ```
 
 The memory providers are separate modules and must be enabled explicitly with `type: memory`.
@@ -47,6 +49,47 @@ The Spring integration exposes the aggregate at `/actuator/health` as `iotProvid
 gateway also exposes `/api/iot/gateway/providers`, which is consumed by the console on port 5177.
 Redis connection infrastructure is created by `magic-api-plugin-redis-support` only when the
 registry or session Provider type is `redis`.
+
+## Distributed gateway node registry
+
+Gateway node discovery is independent from device registration and device session routing.
+`magic-api-plugin-cluster` owns the common startup registration, heartbeat, discovery and
+graceful removal lifecycle. Select exactly one node registry Provider:
+
+```yaml
+iot:
+  cluster:
+    enabled: true
+    node-id: gateway-node-01
+    address: 10.0.0.11:9218
+    heartbeat-interval: 5s
+    capacity: 10000
+  providers:
+    node-registry:
+      type: nacos # nacos | zookeeper | etcd
+
+  node-registry:
+    nacos:
+      server-addr: 10.211.55.3:8848
+      namespace: public
+      service-name: iot-gateway-nodes
+      group: DEFAULT_GROUP
+    zookeeper:
+      connect-string: 127.0.0.1:2181
+      root-path: /iot/gateway/nodes
+    etcd:
+      endpoints:
+        - http://127.0.0.1:2379
+      root-prefix: /iot/gateway/nodes/
+      lease-ttl: 20s
+```
+
+Nacos uses ephemeral Naming instances, ZooKeeper uses ephemeral ZNodes, and etcd binds node keys
+to leases. Enabling `iot.cluster` without a selected and instantiated `NodeRegistry` fails startup.
+The test gateway exposes the current membership at `/api/iot/gateway/cluster`.
+
+These modules implement node registration only. Dynamic configuration is a separate concern;
+Nacos, ZooKeeper and etcd configuration-center providers will use a dedicated configuration SPI.
 
 ## Raw TCP transport
 
@@ -101,6 +144,43 @@ When authentication is enabled, the MQTT username (or client ID when username is
 `productId/deviceId` and the password is checked by the selected `DeviceRegistry`. Anonymous mode
 is intended only for local development and protocol testing; `prod` and `production` profiles
 reject startup when MQTT authentication is disabled.
+
+### External MQTT/EMQX transport
+
+`magic-api-plugin-transport-mqtt-client` connects the gateway to an external MQTT broker such as
+EMQX. It is separate from the embedded broker provider, supports shared subscriptions, reconnects
+and subscribes again after connection recovery, validates Topic identities against the selected
+Device Registry, and publishes gateway commands back through the broker.
+
+```yaml
+iot:
+  transports:
+    mqtt-client:
+      enabled: true
+      server-uri: ssl://emqx.example.com:8883
+      client-id-prefix: iot-gateway
+      node-id: gateway-node-01
+      username: ${EMQX_USERNAME}
+      password: ${EMQX_PASSWORD}
+      validate-device: true
+      subscriptions:
+        - topic: $share/iot-gateway/devices/+/+/properties
+          qos: 1
+        - topic: $share/iot-gateway/devices/+/+/events/+
+          qos: 1
+        - topic: $share/iot-gateway/devices/+/+/commands/reply
+          qos: 1
+```
+
+Each gateway node must use a unique `node-id`. Shared subscriptions let EMQX deliver one uplink
+message to one gateway node in the group. The synthetic connection ID is
+`productId/deviceId`, and downlink commands are published to
+`devices/{productId}/{deviceId}/commands`. `ssl://` uses the JVM trust store; custom trust stores
+can be supplied with the standard `javax.net.ssl.trustStore` JVM properties.
+
+The first message seen for a device creates a virtual gateway session. This is a routing session,
+not authoritative proof that the robot is currently online. Production online/offline state
+should be fed from EMQX client lifecycle events into the Redis session provider.
 
 ## Modbus TCP
 

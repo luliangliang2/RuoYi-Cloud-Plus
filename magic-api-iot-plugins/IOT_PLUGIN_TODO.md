@@ -57,6 +57,22 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Add Micrometer provider latency/status and plugin lifecycle metrics.
 - [ ] Show plugin dependencies, capabilities, version and last error in the console.
 
+## Distributed Gateway Cluster
+
+- [x] Add a framework-neutral gateway `NodeRegistry` contract distinct from device registry and session routing.
+- [x] Add common node registration, heartbeat, discovery and graceful removal lifecycle coordination.
+- [x] Add a Nacos ephemeral Naming Provider.
+- [x] Add a ZooKeeper ephemeral ZNode Provider.
+- [x] Add an etcd lease-backed key Provider.
+- [x] Fail startup when clustering is enabled without a concrete node registry Provider.
+- [x] Validate Provider endpoints, paths, durations and etcd credential pairs during startup.
+- [x] Expose cluster membership and node-registry health in the test application and monitoring APIs.
+- [x] Verify Nacos registration and heartbeat against `10.211.55.3:8848`.
+- [x] Verify ZooKeeper ephemeral-node behavior with an embedded integration test.
+- [ ] Add an opt-in integration test against a live etcd cluster.
+- [ ] Define a separate configuration-center SPI with get, list, watch, revision and CAS operations.
+- [ ] Add Nacos, ZooKeeper and etcd configuration-center Providers after the SPI is stable.
+
 ## P0 - Extension Points (Step 6)
 
 - [x] Split protocol processing into `ProtocolDetector`, `FrameDecoder`, `MessageDecoder` and `CommandEncoder`.
@@ -74,6 +90,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Register the Raw protocol adapter and connect transport frames to the protocol pipeline and message bus.
 - [ ] Add device authentication handshake before promoting temporary TCP connection identities to registered devices.
 - [x] Add an embedded-broker MQTT transport with Topic mapping, registry authentication and runtime counters.
+- [x] Add an external MQTT/EMQX client transport with shared subscriptions, reconnect, registry validation and command downlink.
+- [ ] Add an EMQX lifecycle event adapter for authoritative device online/offline session updates.
 - [ ] Add UDP and WebSocket transport providers.
 - [x] Add Modbus TCP as the first production protocol adapter.
 - [x] Add MBAP-aware TCP stream framing, exception decoding and transaction-aware command correlation.

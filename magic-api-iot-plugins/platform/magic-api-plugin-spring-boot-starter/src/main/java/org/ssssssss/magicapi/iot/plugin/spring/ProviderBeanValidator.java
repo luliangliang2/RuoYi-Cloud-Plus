@@ -6,6 +6,8 @@ import org.springframework.core.env.Environment;
 import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
 import org.ssssssss.magicapi.iot.core.spi.DeviceRegistry;
 import org.ssssssss.magicapi.iot.core.spi.SessionRepository;
+import org.ssssssss.magicapi.iot.core.spi.NodeRegistry;
+import org.ssssssss.magicapi.iot.config.ConfigurationCenter;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRuntimeException;
 
 import java.util.List;
@@ -24,6 +26,8 @@ public class ProviderBeanValidator implements SmartInitializingSingleton {
         validate("device-registry", DeviceRegistry.class);
         validate("device-session", SessionRepository.class);
         validate("message-bus", DeviceMessageBus.class);
+        validate("node-registry", NodeRegistry.class);
+        validate("configuration-center", ConfigurationCenter.class);
     }
 
     private void validate(String name, Class<?> contract) {

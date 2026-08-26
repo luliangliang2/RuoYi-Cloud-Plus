@@ -6,10 +6,10 @@
 ## 当前基线
 
 - 更新时间：2026-08-26
-- 当前阶段：第 6 步扩展点继续落地，MQTT Transport 和 Modbus TCP Adapter 已可运行
-- 总体进度：约 70%
-- 构建状态：插件 reactor `mvn test` 已通过，31 个模块全部成功（本次更新）
-- 测试工程：已接入 MQTT/Modbus 模块，`mvn package` 已通过（本次更新）
+- 当前阶段：分布式机器人网关节点注册中心已落地，下一阶段为独立配置中心 SPI
+- 总体进度：约 74%
+- 构建状态：插件 reactor `mvn clean test` 已通过，36 个模块全部成功（本次更新）
+- 测试工程：已接入 Nacos、ZooKeeper、etcd 节点注册 Provider，`mvn package` 已通过（本次更新）
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
 ## 当前目录规范
@@ -78,6 +78,17 @@ magic-api-iot-plugins/
 
 ### 分布式 Provider（进行中）
 
+- [x] `NodeRegistry` 统一网关节点注册、心跳、发现、摘除和健康契约
+- [x] `magic-api-plugin-cluster` 统一节点生命周期，集群启用但 Provider 缺失时启动失败
+- [x] Nacos Provider 使用临时 Naming 实例注册网关节点
+- [x] ZooKeeper Provider 使用临时 ZNode 注册网关节点
+- [x] etcd Provider 使用 Lease 绑定节点 Key，并在心跳时续租
+- [x] Nacos、ZooKeeper、etcd Provider 启动参数校验和组件描述
+- [x] Nacos `10.211.55.3:8848` 真实注册、发现、心跳和健康探测通过
+- [x] ZooKeeper 嵌入式临时节点集成测试通过
+- [ ] etcd 真实集群集成测试
+- [ ] 独立配置中心 SPI 及 Nacos、ZooKeeper、etcd 配置 Provider
+
 - [x] Redis Device Registry Provider 模块和自动配置
 - [x] Redis Device Session Provider 模块和节点索引
 - [x] Kafka Message Bus Provider 发布和动态消费适配器
@@ -118,6 +129,7 @@ magic-api-iot-plugins/
 - [x] 5177 页面展示 Provider 健康率和健康明细表格
 - [x] 健康探针支持异步超时、10 秒缓存和并发探测去重
 - [x] `/api/iot/gateway/runtime` 返回协议、Transport、连接、流量和错误快照
+- [x] `/api/iot/gateway/cluster` 返回本节点、注册中心类型、心跳错误和活跃节点列表
 - [x] 5177 页面展示 TCP 监听、活跃连接、协议 ID、收发流量和发布计数
 - [x] 现有运行快照和 Provider 健康表自动展示 MQTT 与 Modbus TCP Transport
 
@@ -177,6 +189,25 @@ magic-api-iot-plugins/
 ## 更新记录
 
 ### 2026-08-26
+
+- 新增 `magic-api-plugin-cluster`，统一网关节点启动注册、周期心跳、节点发现和优雅摘除。
+- 新增 Nacos、ZooKeeper、etcd 三种 `NodeRegistry` Provider，可通过 `iot.providers.node-registry.type` 单选切换。
+- Nacos 使用临时 Naming 实例，ZooKeeper 使用临时 ZNode，etcd 使用 Lease 绑定节点 Key。
+- 集群启用但节点注册 Provider 缺失时直接启动失败；三种 Provider 均增加地址、路径、超时和凭证参数校验。
+- 测试应用新增 `/api/iot/gateway/cluster`，Provider API、Actuator 和 5177 组件发现链路可感知三种注册中心。
+- `ruoyi-iot-plugin-test-9218` 已在 `10.211.55.3:8848` 的 `iot-gateway-nodes` 服务完成真实注册和心跳，健康状态为 `UP`。
+- 36 模块 `mvn clean test`、`mvn install -DskipTests` 及测试应用 `mvn package -DskipTests` 通过。
+- 本阶段只实现节点注册中心；配置中心的 watch、revision、CAS 等能力留在独立 SPI 的下一阶段。
+
+- 新增 `magic-api-plugin-transport-mqtt-client`，网关可作为 MQTT 3.1.1 客户端连接 EMQX 等外部 Broker。
+- 支持 EMQX `$share` 共享订阅、节点唯一 Client ID、自动重连和恢复订阅、Topic 设备身份映射与 Registry 启用状态校验。
+- 外部 MQTT 上行消息直接转换为统一 `DeviceMessage`；下行命令通过 `devices/{productId}/{deviceId}/commands` 回发。
+- 新 Provider 接入统一 Transport 快照、Provider 健康探测、Actuator 和 5177 监控发现链路，测试工程默认关闭并提供完整环境变量配置。
+- 当前设备会话为收到消息后建立的虚拟路由会话；EMQX 权威上下线事件适配仍待实现。
+- 外部 MQTT 双向集成测试通过；32 模块 `mvn test` 和测试应用 `mvn package` 通过。
+- 测试应用已真实连接 `10.211.55.4:1883`，`/api/iot/gateway/runtime`、Provider API 和 Actuator 均报告 `mqtt-client` 为 `UP`，临时 9225 实例验证后已停止。
+- 测试应用将外部 MQTT Client 默认设为启用，使 5177 Provider 健康表同时展示内置 `mqtt` Broker 与外部 `mqtt-client`；仍可通过 `IOT_MQTT_CLIENT_ENABLED=false` 显式关闭。
+- 修正 5177 对 URI 类型 Transport 目标地址重复追加端口的问题，并让 TCP 摘要按 `transportId=tcp` 选择监听实例；页面验证 `mqtt-client` 为 `UP`、Provider 健康为 `7/7`。
 
 - 新增 `magic-api-plugin-transport-mqtt`，使用 mica-mqtt 2.6.6 提供嵌入式 MQTT 3/5 broker 能力。
 - MQTT Topic 按 `devices/{productId}/{deviceId}/...` 映射属性、事件、命令回复、心跳和固件消息，保留 QoS、retained、duplicate 元数据。

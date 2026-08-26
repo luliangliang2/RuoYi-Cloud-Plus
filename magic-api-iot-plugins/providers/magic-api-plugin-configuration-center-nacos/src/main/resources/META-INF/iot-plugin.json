@@ -1,0 +1,13 @@
+{
+  "id": "configuration-center-nacos",
+  "name": "Nacos Configuration Center Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["configuration-center:nacos", "configuration:watch", "configuration:cas"],
+  "requires": ["configuration-center-spi"],
+  "optionalRequires": [],
+  "loadOrder": 305,
+  "configPrefix": "iot.configuration-center.nacos",
+  "failurePolicy": "REQUIRED"
+}

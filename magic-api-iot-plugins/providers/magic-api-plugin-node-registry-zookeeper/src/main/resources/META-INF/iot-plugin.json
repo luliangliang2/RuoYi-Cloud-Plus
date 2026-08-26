@@ -1,0 +1,13 @@
+{
+  "id": "node-registry-zookeeper",
+  "name": "ZooKeeper Gateway Node Registry Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["node-registry:zookeeper", "cluster:ephemeral-node"],
+  "requires": [],
+  "optionalRequires": ["gateway-cluster"],
+  "loadOrder": 301,
+  "configPrefix": "iot.node-registry.zookeeper",
+  "failurePolicy": "REQUIRED"
+}

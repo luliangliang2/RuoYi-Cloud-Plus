@@ -45,6 +45,46 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-cluster</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-configuration-center</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-node-registry-nacos</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-node-registry-zookeeper</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-node-registry-etcd</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-configuration-center-nacos</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-configuration-center-zookeeper</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-configuration-center-etcd</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
 			<artifactId>magic-api-plugin-device-registry-memory</artifactId>
 			<version>${iot-plugins.version}</version>
 		</dependency>
@@ -76,6 +116,11 @@
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>
 			<artifactId>magic-api-plugin-transport-mqtt</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-transport-mqtt-client</artifactId>
 			<version>${iot-plugins.version}</version>
 		</dependency>
 		<dependency>
