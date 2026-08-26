@@ -53,7 +53,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Reject provider types assigned to the wrong core contract.
 - [x] Run shared behavior contracts against all Memory Providers.
 - [ ] Test lifecycle resource cleanup for threads, channels and subscriptions.
-- [ ] Add Actuator health contributors and Micrometer lifecycle metrics.
+- [x] Add an Actuator `iotProviders` health contributor backed by the shared provider health catalog.
+- [ ] Add Micrometer provider latency/status and plugin lifecycle metrics.
 - [ ] Show plugin dependencies, capabilities, version and last error in the console.
 
 ## P0 - Extension Points (Step 6)
@@ -67,8 +68,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Replace `StorageWriter` with named `StorageWriterProvider` routing and batch writes.
 - [x] Replace inline rule `Consumer` actions with named `RuleActionProvider` resolution.
 - [x] Add the framework-neutral `ProviderHealthIndicator` contract and Spring health catalog.
-- [ ] Implement real health indicators in Redis and message-bus providers.
-- [ ] Export provider health through Actuator and the operations console.
+- [x] Implement real health indicators in Redis and message-bus providers.
+- [x] Export provider health through Actuator and the operations console.
 
 ## P1 - Runtime Loading
 
@@ -89,7 +90,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 
 ## Architecture Rules
 
-- New modules belong under `platform/`, `core/`, `features/` or `adapters/` according to the classification above.
+- New modules belong under `platform/`, `core/`, `features/`, `adapters/` or `providers/` according to the classification above.
 - Step 6 extension contracts are the only supported API; legacy protocol, storage and inline rule action compatibility is intentionally not retained.
 - `plugin-api` must not depend on Spring, Netty, Kafka, Redis, Nacos or Magic API.
 - Plugins receive controlled services through `PluginContext`; they do not access the full Spring context.

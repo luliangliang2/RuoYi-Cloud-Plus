@@ -1,0 +1,13 @@
+{
+  "id": "device-registry-redis",
+  "name": "Redis Device Registry Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["device-registry:redis"],
+  "requires": [],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 301,
+  "configPrefix": "iot.providers.device-registry",
+  "failurePolicy": "REQUIRED"
+}

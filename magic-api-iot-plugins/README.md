@@ -8,7 +8,7 @@ Independent IoT plugin suite for the adjacent `magic-api` project. This reactor 
 - `core/`: gateway model/SPI, protocol, command, observability and security
 - `features/`: device shadow, product model, rule engine, OTA, time-series, storage, northbound and ops console
 - `adapters/`: protocol adapter modules built from detector, frame decoder, message decoder and command encoder extensions
-- `providers/`: replaceable infrastructure providers, currently development-only memory providers
+- `providers/`: replaceable Memory, Redis, Kafka, Pulsar and RocketMQ infrastructure providers
 
 Device registry, device session and message bus are provider extension points. Their contracts
 remain in `magic-api-plugin-iot-core`; concrete implementations do not live in `core/`.
@@ -31,6 +31,22 @@ iot:
 
 The memory providers are separate modules and must be enabled explicitly with `type: memory`.
 They are rejected when the active Spring profile is `prod` or `production`.
+
+Provider health probes are read-only and shared by the gateway API and Actuator. Redis uses
+`PING`; Kafka and Pulsar query configured Topic metadata; RocketMQ checks the configured Topic
+route and reports `DEGRADED` when the broker is reachable but the business Topic has no route.
+
+```yaml
+iot:
+  health:
+    cache-ttl: 10s
+    timeout: 3s
+```
+
+The Spring integration exposes the aggregate at `/actuator/health` as `iotProviders`. The test
+gateway also exposes `/api/iot/gateway/providers`, which is consumed by the console on port 5177.
+Redis connection infrastructure is created by `magic-api-plugin-redis-support` only when the
+registry or session Provider type is `redis`.
 
 External Redis and Kafka integration tests are opt-in:
 

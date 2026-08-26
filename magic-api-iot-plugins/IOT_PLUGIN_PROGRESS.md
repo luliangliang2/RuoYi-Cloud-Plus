@@ -6,9 +6,9 @@
 ## 当前基线
 
 - 更新时间：2026-08-26
-- 当前阶段：第 6 步扩展点标准化主体完成，准备为分布式 Provider 接入真实健康探测
-- 总体进度：约 60%
-- 构建状态：插件 reactor `mvn test` 已通过，27 个模块全部成功（本次更新）
+- 当前阶段：第 6 步 Provider 健康探测和 Actuator/监控页面接入完成，准备接入 Micrometer 指标
+- 总体进度：约 65%
+- 构建状态：插件 reactor `mvn test` 已通过，28 个模块全部成功（本次更新）
 - 测试工程：`ruoyi-iot-plugin-test` `mvn package` 已通过（本次更新）
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
@@ -96,6 +96,10 @@ magic-api-iot-plugins/
 - [x] 增加 Pulsar/RocketMQ 可选外部服务集成测试入口
 - [x] 增加可选 Redis/Kafka 外部服务集成测试
 - [ ] 增加 Docker 可用时的 Testcontainers 集成测试
+- [x] Redis Registry/Session 使用 `PING` 实现真实健康探测
+- [x] Kafka/Pulsar 使用配置 Topic 的分区元数据实现真实健康探测
+- [x] RocketMQ 使用业务 Topic 和默认 Topic 路由实现 `UP`、`DEGRADED`、`DOWN` 探测
+- [x] 新增条件化 `magic-api-plugin-redis-support`，仅在 Redis Registry/Session 启用时创建连接工厂
 
 ### 监控和测试工程
 
@@ -103,20 +107,22 @@ magic-api-iot-plugins/
 - [x] `/api/iot/gateway/status` 返回插件和能力数量
 - [x] `/api/iot/gateway/components` 返回插件版本、能力、依赖、状态和健康信息
 - [x] 5177 监控页面完成基础展示和间距优化
+- [x] `/api/iot/gateway/providers` 返回 Provider 类型、ID、状态、消息、延迟和探测详情
+- [x] Actuator 暴露 `iotProviders` 聚合健康项，并采用最差状态作为聚合结果
+- [x] 5177 页面展示 Provider 健康率和健康明细表格
+- [x] 健康探针支持异步超时、10 秒缓存和并发探测去重
 
 ## 进行中
 
 - [ ] 将设备模型和 SPI 从 `iot-core` 逐步迁移到 `plugin-api`
-- [ ] Redis、Kafka、Pulsar、RocketMQ Provider 实现真实健康探测
-- [ ] 将 Provider 健康快照接入 Actuator 和监控页面
+- [ ] 为 Provider 健康和插件生命周期接入 Micrometer 指标
 
 ## 下一阶段顺序
 
-1. 为 Redis、Kafka、Pulsar、RocketMQ Provider 实现真实健康探测。
-2. 增加 Actuator 健康检查和 Micrometer 指标。
-3. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
-4. 增加 Docker 可用时的 Testcontainers 回归环境。
-5. 再进入外部 JAR 加载和插件生命周期管理。
+1. 增加 Micrometer Provider 延迟、状态和插件生命周期指标。
+2. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
+3. 增加 Docker 可用时的 Testcontainers 回归环境。
+4. 再进入外部 JAR 加载和插件生命周期管理。
 
 ## 长期路线
 
@@ -163,6 +169,20 @@ magic-api-iot-plugins/
 
 ### 2026-08-26
 
+- `ruoyi-iot-plugin-test` 补齐 Redis、Kafka、Pulsar、RocketMQ 已验证环境地址，默认启用 Redis Registry、Redis Session 和 Kafka Message Bus。
+- 消息总线仍遵守单 Provider 约束，可通过 `IOT_MESSAGE_BUS_PROVIDER=kafka|pulsar|rocketmq|memory` 切换；其他地址配置只作为候选环境，不会同时装配多个 MessageBus Bean。
+- 补齐 Redis Registry、Redis Session、Kafka Message Bus 的插件描述；组件接口和监控页可区分启用 Provider 的健康状态与未启用 Provider 的 `INACTIVE` 状态。
+- RocketMQ Spring 自动配置收敛到 `message-bus=rocketmq` 条件内，未选中 RocketMQ 时不再提前创建 Producer。
+- Redis、Kafka、Pulsar、RocketMQ Provider 已实现真实只读健康探测。
+- 新增异步超时、TTL 缓存和并发去重的 `ProbeProviderHealthIndicator`。
+- 新增 `ProviderHealthCatalog` 和 Actuator `iotProviders` 聚合健康项。
+- 测试应用新增 `/api/iot/gateway/providers`，5177 页面新增 Provider 健康率和明细表格。
+- 新增条件化 `magic-api-plugin-redis-support`，Memory 模式不再创建默认 localhost Redis 健康项。
+- Redis `10.211.55.4:6379`、Kafka `10.211.55.4:9092`、Pulsar `10.211.55.4:6650` 探测结果为 `UP`。
+- RocketMQ `10.211.55.4:9876` 可达，但业务 Topic 尚无路由，因此探测结果为 `DEGRADED`。
+- 插件 reactor 28 模块 `mvn test`、`mvn install`，测试应用 `mvn package` 和前端 `npm run build` 均通过。
+- Memory 和 Redis + Kafka 两种启动模式已在 9220 验证；Actuator 均为 `UP`，Memory 模式无 Redis 健康项。
+- 5177 页面已通过真实 API 数据做桌面浏览器验收；移动视口覆盖未作用于持久浏览器窗口，响应式截图仍待后续补充。
 - 第 6 步采用直接收敛策略，不保留旧协议、存储和规则动作兼容层。
 - 新增协议四阶段流水线和 `TransportProvider`，增加完整性、优先级和缺失阶段测试。
 - 删除 `ProtocolAdapter`、`LegacyProtocolAdapterBridge`、`ProtocolRegistry`。

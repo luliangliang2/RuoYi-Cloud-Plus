@@ -11,10 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/iot/gateway")
 public class IotGatewayController {
+    private static final Set<String> PROVIDER_TYPES = Set.of("device-registry", "device-session", "message-bus");
+
     private final DeviceRegistry deviceRegistry;
     private final SessionRepository sessionRepository;
     private final DeviceMessageBus messageBus;
@@ -72,13 +75,24 @@ public class IotGatewayController {
         String module = descriptor.capabilities().isEmpty()
             ? "plugin"
             : descriptor.capabilities().get(0).split(":", 2)[0];
+        var providerHealth = providerHealthCatalog.snapshots().stream()
+            .filter(provider -> descriptor.capabilities().contains(
+                provider.providerType() + ":" + provider.providerId()))
+            .findFirst();
+        boolean providerPlugin = descriptor.capabilities().stream()
+            .map(capability -> capability.split(":", 2)[0])
+            .anyMatch(PROVIDER_TYPES::contains);
+        String health = providerHealth.map(provider -> provider.health().status().name())
+            .orElse(snapshot.health().status().name());
+        String status = providerHealth.map(provider -> provider.health().status().name())
+            .orElse(providerPlugin ? "INACTIVE" : snapshot.state().name());
         return Map.ofEntries(
             Map.entry("id", descriptor.id()),
             Map.entry("name", descriptor.name()),
             Map.entry("module", module),
             Map.entry("implementation", descriptor.provider()),
-            Map.entry("status", snapshot.state().name()),
-            Map.entry("health", snapshot.health().status().name()),
+            Map.entry("status", status),
+            Map.entry("health", health),
             Map.entry("version", descriptor.version()),
             Map.entry("apiVersion", descriptor.apiVersion()),
             Map.entry("capabilities", descriptor.capabilities()),

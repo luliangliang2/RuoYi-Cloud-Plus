@@ -2,11 +2,12 @@ package org.ssssssss.magicapi.iot.bus;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
 import org.ssssssss.magicapi.iot.core.spi.ProbeProviderHealthIndicator;
 import org.ssssssss.magicapi.iot.plugin.api.ProviderHealthIndicator;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @AutoConfiguration
 @ConditionalOnProperty(prefix = "iot.providers.message-bus", name = "type", havingValue = "rocketmq")
-@ConditionalOnBean(RocketMQTemplate.class)
+@Import(RocketMQAutoConfiguration.class)
 public class RocketMqMessageBusAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(DeviceMessageBus.class)

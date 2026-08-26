@@ -7,15 +7,38 @@ iot:
     timeout: ${IOT_HEALTH_TIMEOUT:3s}
   providers:
     device-registry:
-      type: ${IOT_DEVICE_REGISTRY_PROVIDER:memory}
+      type: ${IOT_DEVICE_REGISTRY_PROVIDER:redis}
     device-session:
-      type: ${IOT_DEVICE_SESSION_PROVIDER:memory}
+      type: ${IOT_DEVICE_SESSION_PROVIDER:redis}
     message-bus:
-      type: ${IOT_MESSAGE_BUS_PROVIDER:memory}
+      type: ${IOT_MESSAGE_BUS_PROVIDER:kafka}
+      topic: ${IOT_MESSAGE_BUS_TOPIC:iot-device-messages}
+      retries: ${IOT_MESSAGE_BUS_RETRIES:3}
+      retry-delay: ${IOT_MESSAGE_BUS_RETRY_DELAY:1s}
+      retry-delay-ms: ${IOT_MESSAGE_BUS_RETRY_DELAY_MS:1000}
+      max-pending: ${IOT_MESSAGE_BUS_MAX_PENDING:1000}
+      service-url: ${IOT_PULSAR_SERVICE_URL:pulsar://10.211.55.4:6650}
+      name-server: ${IOT_ROCKETMQ_NAME_SERVER:10.211.55.4:9876}
 
 spring:
   application:
     name: ${IOT_GATEWAY_APP_NAME:ruoyi-iot-plugin-test}
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:10.211.55.4}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: ${SPRING_DATA_REDIS_DATABASE:0}
+      username: ${SPRING_DATA_REDIS_USERNAME:}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:10.211.55.4:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: latest
   autoconfigure:
     exclude:
       - com.baomidou.lock.spring.boot.autoconfigure.LockAutoConfiguration
@@ -23,6 +46,7 @@ spring:
       - org.redisson.spring.starter.RedissonAutoConfigurationV2
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
   cloud:
@@ -42,6 +66,11 @@ spring:
     import:
       - optional:nacos:application-common.yml
       - optional:nacos:${spring.application.name}.yml
+
+rocketmq:
+  name-server: ${IOT_ROCKETMQ_NAME_SERVER:10.211.55.4:9876}
+  producer:
+    group: ${IOT_ROCKETMQ_PRODUCER_GROUP:ruoyi-iot-gateway-producer}
 
 management:
   endpoints:

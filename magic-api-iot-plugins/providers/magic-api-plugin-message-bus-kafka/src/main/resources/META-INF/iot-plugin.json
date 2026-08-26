@@ -1,0 +1,13 @@
+{
+  "id": "message-bus-kafka",
+  "name": "Kafka Message Bus Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["message-bus:kafka"],
+  "requires": [],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 321,
+  "configPrefix": "iot.providers.message-bus",
+  "failurePolicy": "REQUIRED"
+}
