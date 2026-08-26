@@ -8,7 +8,7 @@ Independent IoT plugin suite for the adjacent `magic-api` project. This reactor 
 - `core/`: gateway model/SPI, protocol, command, observability and security
 - `features/`: device shadow, product model, rule engine, OTA, time-series, storage, northbound and ops console
 - `adapters/`: protocol adapter modules built from detector, frame decoder, message decoder and command encoder extensions
-- `providers/`: replaceable Memory, Redis, Kafka, Pulsar and RocketMQ infrastructure providers
+- `providers/`: replaceable infrastructure and TCP/MQTT transport providers
 
 Device registry, device session and message bus are provider extension points. Their contracts
 remain in `magic-api-plugin-iot-core`; concrete implementations do not live in `core/`.
@@ -71,6 +71,59 @@ curl http://127.0.0.1:9218/api/iot/gateway/runtime
 Raw TCP currently assigns `tcp-raw/<channelId>` as a temporary connection identity. It is an
 integration path, not an authenticated production device protocol. A protocol-specific
 authentication handshake must replace the temporary identity before enabling untrusted clients.
+
+## MQTT transport
+
+`magic-api-plugin-transport-mqtt` embeds a mica-mqtt broker. MQTT publish packets are converted
+directly into unified `DeviceMessage` instances, preserving Topic, QoS, retained and duplicate
+metadata. The initial Topic convention is:
+
+```text
+devices/{productId}/{deviceId}/properties
+devices/{productId}/{deviceId}/events/{eventId}
+devices/{productId}/{deviceId}/commands/reply
+devices/{productId}/{deviceId}/heartbeat
+```
+
+```yaml
+iot:
+  transports:
+    mqtt:
+      enabled: true
+      host: 0.0.0.0
+      port: 1883
+      authentication-required: true
+      credential-type: secret
+      downlink-topic: devices/{productId}/{deviceId}/commands
+```
+
+When authentication is enabled, the MQTT username (or client ID when username is empty) uses
+`productId/deviceId` and the password is checked by the selected `DeviceRegistry`. Anonymous mode
+is intended only for local development and protocol testing.
+
+## Modbus TCP
+
+`magic-api-plugin-protocol-modbus-tcp` uses DigitalPetri Modbus for typed PDU encoding and decoding.
+The Netty TCP provider has a dedicated MBAP length-field listener, so fragmented or coalesced TCP
+packets are not treated as Modbus frames. Supported command function codes are `0x01`, `0x02`,
+`0x03`, `0x04`, `0x05`, `0x06`, `0x0F` and `0x10`; exception responses and transaction-to-command
+correlation are included.
+
+```yaml
+iot:
+  transports:
+    modbus-tcp:
+      enabled: true
+      host: 0.0.0.0
+      port: 1502
+      protocol-role: server
+  protocols:
+    modbus-tcp:
+      enabled: true
+```
+
+`protocol-role: server` decodes incoming frames as requests. Use `client` for a future outbound
+connector where incoming frames are responses.
 
 External Redis and Kafka integration tests are opt-in:
 

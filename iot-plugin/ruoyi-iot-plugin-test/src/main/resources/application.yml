@@ -8,6 +8,24 @@ iot:
       host: ${IOT_TCP_HOST:0.0.0.0}
       port: ${IOT_TCP_PORT:19000}
       max-frame-length: ${IOT_TCP_MAX_FRAME_LENGTH:65536}
+      frame-mode: LINE
+      protocol-id: raw
+    modbus-tcp:
+      enabled: ${IOT_MODBUS_TCP_ENABLED:true}
+      host: ${IOT_MODBUS_TCP_HOST:0.0.0.0}
+      port: ${IOT_MODBUS_TCP_PORT:1502}
+      max-frame-length: ${IOT_MODBUS_TCP_MAX_FRAME_LENGTH:260}
+      protocol-role: ${IOT_MODBUS_TCP_ROLE:server}
+    mqtt:
+      enabled: ${IOT_MQTT_ENABLED:true}
+      host: ${IOT_MQTT_HOST:0.0.0.0}
+      port: ${IOT_MQTT_PORT:1883}
+      authentication-required: ${IOT_MQTT_AUTHENTICATION_REQUIRED:false}
+      credential-type: ${IOT_MQTT_CREDENTIAL_TYPE:secret}
+      downlink-topic: ${IOT_MQTT_DOWNLINK_TOPIC:devices/{productId}/{deviceId}/commands}
+  protocols:
+    modbus-tcp:
+      enabled: ${IOT_MODBUS_TCP_ENABLED:true}
   health:
     cache-ttl: ${IOT_HEALTH_CACHE_TTL:10s}
     timeout: ${IOT_HEALTH_TIMEOUT:3s}

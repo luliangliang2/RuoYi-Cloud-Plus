@@ -10,6 +10,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.ssssssss.magicapi.iot.core.model.DeviceIdentity;
 import org.ssssssss.magicapi.iot.core.model.ProtocolContext;
@@ -44,7 +45,7 @@ public final class NettyTcpTransportProvider implements ObservableTransportProvi
     }
 
     @Override
-    public String transportId() { return "tcp"; }
+    public String transportId() { return properties.getTransportId(); }
 
     @Override
     public synchronized void start(TransportMessageHandler handler) {
@@ -58,7 +59,12 @@ public final class NettyTcpTransportProvider implements ObservableTransportProvi
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel channel) {
-                    channel.pipeline().addLast(new LineBasedFrameDecoder(properties.getMaxFrameLength(), true, true));
+                    if (properties.getFrameMode() == TcpFrameMode.MODBUS_TCP) {
+                        channel.pipeline().addLast(new LengthFieldBasedFrameDecoder(
+                            properties.getMaxFrameLength(), 4, 2, 0, 0));
+                    } else {
+                        channel.pipeline().addLast(new LineBasedFrameDecoder(properties.getMaxFrameLength(), true, true));
+                    }
                     channel.pipeline().addLast(new InboundHandler());
                 }
             });
@@ -116,8 +122,11 @@ public final class NettyTcpTransportProvider implements ObservableTransportProvi
             Channel channel = context.channel();
             String connectionId = channel.id().asLongText();
             String remoteAddress = remoteAddress(channel);
-            ProtocolContext protocolContext = new ProtocolContext("tcp", remoteAddress,
-                new DeviceIdentity("tcp-raw", connectionId), Map.of("connectionId", connectionId));
+            ProtocolContext protocolContext = new ProtocolContext(transportId(), remoteAddress,
+                new DeviceIdentity(properties.getProtocolId(), connectionId), Map.of(
+                    "connectionId", connectionId,
+                    "protocolId", properties.getProtocolId(),
+                    "protocolRole", properties.getProtocolRole()));
             clients.add(channel);
             channels.put(connectionId, channel);
             contexts.put(connectionId, protocolContext);

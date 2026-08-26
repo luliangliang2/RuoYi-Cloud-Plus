@@ -14,6 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.5.3</spring-boot.version>
         <junit.version>5.12.2</junit.version>
+        <mica-mqtt.version>2.6.6</mica-mqtt.version>
+        <digitalpetri-modbus.version>2.1.6</digitalpetri-modbus.version>
     </properties>
 
     <modules>
@@ -34,7 +36,9 @@
         <module>features/magic-api-plugin-northbound</module>
         <module>features/magic-api-plugin-ops-console</module>
         <module>adapters/magic-api-plugin-protocol-adapters</module>
+        <module>adapters/magic-api-plugin-protocol-modbus-tcp</module>
         <module>providers/magic-api-plugin-transport-tcp</module>
+        <module>providers/magic-api-plugin-transport-mqtt</module>
         <module>providers/magic-api-plugin-device-registry-memory</module>
         <module>providers/magic-api-plugin-device-session-memory</module>
         <module>providers/magic-api-plugin-message-bus-memory</module>

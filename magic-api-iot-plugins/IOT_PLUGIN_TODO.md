@@ -73,8 +73,10 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add the first Netty TCP transport with line framing, lifecycle cleanup and runtime counters.
 - [x] Register the Raw protocol adapter and connect transport frames to the protocol pipeline and message bus.
 - [ ] Add device authentication handshake before promoting temporary TCP connection identities to registered devices.
-- [ ] Add MQTT, UDP and WebSocket transport providers.
-- [ ] Add Modbus TCP as the first production protocol adapter.
+- [x] Add an embedded-broker MQTT transport with Topic mapping, registry authentication and runtime counters.
+- [ ] Add UDP and WebSocket transport providers.
+- [x] Add Modbus TCP as the first production protocol adapter.
+- [x] Add MBAP-aware TCP stream framing, exception decoding and transaction-aware command correlation.
 
 ## P1 - Runtime Loading
 

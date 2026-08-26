@@ -2,6 +2,7 @@ package org.ssssssss.magicapi.iot.protocol;
 
 import org.springframework.context.SmartLifecycle;
 import org.ssssssss.magicapi.iot.core.model.ProtocolContext;
+import org.ssssssss.magicapi.iot.core.model.DeviceMessage;
 import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
 import org.ssssssss.magicapi.iot.core.spi.TransportProvider;
 
@@ -69,6 +70,17 @@ public final class ProtocolIngressRuntime implements SmartLifecycle, TransportPr
                 messageBus.publish(message);
                 publishedMessages.incrementAndGet();
             });
+        } catch (RuntimeException exception) {
+            errors.incrementAndGet();
+        }
+    }
+
+    @Override
+    public void received(String connectionId, DeviceMessage message, ProtocolContext context) {
+        receivedFrames.incrementAndGet();
+        try {
+            messageBus.publish(message);
+            publishedMessages.incrementAndGet();
         } catch (RuntimeException exception) {
             errors.incrementAndGet();
         }

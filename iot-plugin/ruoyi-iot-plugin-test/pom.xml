@@ -65,7 +65,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-protocol-modbus-tcp</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
 			<artifactId>magic-api-plugin-transport-tcp</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-transport-mqtt</artifactId>
 			<version>${iot-plugins.version}</version>
 		</dependency>
 		<dependency>

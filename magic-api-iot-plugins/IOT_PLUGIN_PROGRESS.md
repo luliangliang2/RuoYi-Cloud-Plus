@@ -6,10 +6,10 @@
 ## 当前基线
 
 - 更新时间：2026-08-26
-- 当前阶段：第 6 步 Provider 健康探测和 Actuator/监控页面接入完成，准备接入 Micrometer 指标
-- 总体进度：约 65%
-- 构建状态：插件 reactor `mvn test` 已通过，29 个模块全部成功（本次更新）
-- 测试工程：`ruoyi-iot-plugin-test` `mvn package` 已通过（本次更新）
+- 当前阶段：第 6 步扩展点继续落地，MQTT Transport 和 Modbus TCP Adapter 已可运行
+- 总体进度：约 70%
+- 构建状态：插件 reactor `mvn test` 已通过，31 个模块全部成功（本次更新）
+- 测试工程：已接入 MQTT/Modbus 模块，`mvn package` 已通过（本次更新）
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
 ## 当前目录规范
@@ -72,6 +72,9 @@ magic-api-iot-plugins/
 - [x] `prod` 和 `production` profile 禁止使用 Memory Provider
 - [x] 从 core 移除空的 registry、session、message-bus 模块
 - [x] `magic-api-plugin-transport-tcp`：Netty TCP 监听、换行分帧、连接管理、收发和资源关闭
+- [x] TCP Transport 支持独立 LINE 和 MODBUS_TCP 监听器，按 MBAP length 字段处理 TCP 粘包/拆包
+- [x] `magic-api-plugin-transport-mqtt`：内嵌 mica-mqtt broker、Topic 映射、QoS 元数据、注册中心鉴权和上下行
+- [x] `magic-api-plugin-protocol-modbus-tcp`：DigitalPetri PDU 编解码、8 类功能码、异常响应和事务关联
 
 ### 分布式 Provider（进行中）
 
@@ -116,6 +119,7 @@ magic-api-iot-plugins/
 - [x] 健康探针支持异步超时、10 秒缓存和并发探测去重
 - [x] `/api/iot/gateway/runtime` 返回协议、Transport、连接、流量和错误快照
 - [x] 5177 页面展示 TCP 监听、活跃连接、协议 ID、收发流量和发布计数
+- [x] 现有运行快照和 Provider 健康表自动展示 MQTT 与 Modbus TCP Transport
 
 ## 进行中
 
@@ -173,6 +177,16 @@ magic-api-iot-plugins/
 ## 更新记录
 
 ### 2026-08-26
+
+- 新增 `magic-api-plugin-transport-mqtt`，使用 mica-mqtt 2.6.6 提供嵌入式 MQTT 3/5 broker 能力。
+- MQTT Topic 按 `devices/{productId}/{deviceId}/...` 映射属性、事件、命令回复、心跳和固件消息，保留 QoS、retained、duplicate 元数据。
+- MQTT 可通过 Device Registry 校验 `productId/deviceId` 和设备密钥；测试工程匿名模式只用于本地开发。
+- 新增 `magic-api-plugin-protocol-modbus-tcp`，使用 DigitalPetri Modbus 2.1.6 编解码 PDU。
+- Modbus TCP 支持 `0x01/02/03/04/05/06/0F/10`，记录 MBAP transactionId、unitId、异常码和 commandId 关联。
+- TCP Transport 新增 MBAP length-field 分帧，拆分写入 12 字节请求仍只产生一个完整协议帧。
+- 临时端口端到端验证：MQTT `18884` 和 Modbus TCP `15022` 各接收 1 条消息并发布到统一 Memory Message Bus，三个 Transport 健康状态均为 `UP`。
+- MQTT Paho 真实客户端测试、Modbus 编解码测试和 TCP Socket 二进制分帧测试通过。
+- 插件 reactor 31 模块全量 `mvn test` 通过，测试工程 `mvn package` 通过。
 
 - 多协议接入进入可运行阶段：新增 Netty Raw-over-TCP 链路，默认监听 `19000`，使用换行符分帧。
 - 新增 `ProtocolIngressRuntime`，完成 TCP -> 协议检测 -> 拆包/解码 -> Kafka Message Bus 的入口链路。
