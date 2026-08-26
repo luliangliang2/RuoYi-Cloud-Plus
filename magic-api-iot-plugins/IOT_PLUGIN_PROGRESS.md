@@ -6,7 +6,7 @@
 ## 当前基线
 
 - 更新时间：2026-08-25
-- 当前阶段：第 5 步 Provider 拆分与实现已完成，准备进入第 6 步扩展点标准化
+- 当前阶段：第 5 步 Provider 拆分、实现和真实环境验收全部完成，准备进入第 6 步扩展点标准化
 - 总体进度：约 50%
 - 构建状态：插件 reactor `mvn clean install` 已通过（本次更新）
 - 测试工程：`ruoyi-iot-plugin-test` `mvn package` 已通过（本次更新）
@@ -79,7 +79,7 @@ magic-api-iot-plugins/
 - [x] Provider 配置规则单元测试
 - [ ] 增加 Kafka broker 集成测试
 - [x] Pulsar 在 `10.211.55.4:6650` 通过发布、Shared 消费、negative ACK 和重投测试
-- [ ] 使用可用 RocketMQ broker 执行真实集成测试
+- [x] RocketMQ 在 `10.211.55.4:9876` 通过发布、消费失败、Broker 重投和成功消费测试
 - [x] 增加 Pulsar/RocketMQ 可选外部服务集成测试入口
 - [x] 增加可选 Redis/Kafka 外部服务集成测试
 - [ ] 增加 Docker 可用时的 Testcontainers 集成测试
@@ -177,6 +177,8 @@ magic-api-iot-plugins/
 - Pulsar Provider 增加 Producer、Shared Consumer、ACK、negative ACK、重投延迟和 DeadLetterPolicy。
 - Pulsar/RocketMQ 客户端代码已通过 clean test，但当前没有对应 broker，尚未做真实服务验证。
 - RocketMQ NameServer `10.211.55.4:9876` 可达，但 Broker 广播 `127.0.0.1:10911`，远程客户端无法回连。
+- RocketMQ Broker 广播地址已修正，`9876/10909/10911/10912` 均可访问。
+- RocketMQ 随机测试 Topic 先预热创建，再验证首次失败、原生重投和第二次成功消费。
 - Pulsar `10.211.55.4:6650` 已开放并通过真实 Provider 集成测试。
 - Pulsar 测试验证第一次消费失败后 negative ACK，随后重投并成功 ACK。
 - Pulsar 宿主机 `8880` 当前无服务监听；消息协议测试不依赖管理 HTTP 端口。

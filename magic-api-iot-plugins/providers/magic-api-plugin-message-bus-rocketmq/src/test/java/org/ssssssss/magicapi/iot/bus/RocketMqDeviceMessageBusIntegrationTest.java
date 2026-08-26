@@ -29,17 +29,24 @@ class RocketMqDeviceMessageBusIntegrationTest {
         template.setProducer(producer);
         RocketMqDeviceMessageBus bus = new RocketMqDeviceMessageBus(template,
             new ObjectMapper().findAndRegisterModules(), nameServer, topic, 3);
+        bus.publish(new DeviceMessage(null, new DeviceIdentity("iot-test", "warmup-" + suffix),
+            DeviceMessageType.HEARTBEAT, "integration", null, null, Map.of(), Map.of()));
         CountDownLatch received = new CountDownLatch(1);
+        CountDownLatch firstAttempt = new CountDownLatch(1);
         AtomicInteger attempts = new AtomicInteger();
         var subscription = bus.subscribe("integration-" + suffix, message -> {
-            if (attempts.getAndIncrement() == 0) throw new IllegalStateException("expected retry");
+            int attempt = attempts.getAndIncrement();
+            firstAttempt.countDown();
+            if (attempt == 0) throw new IllegalStateException("expected retry");
             received.countDown();
         });
         try {
             Thread.sleep(1500);
             bus.publish(new DeviceMessage(null, new DeviceIdentity("iot-test", suffix),
                 DeviceMessageType.EVENT_REPORT, "integration", null, null, Map.of("value", 1), Map.of()));
-            assertTrue(received.await(20, TimeUnit.SECONDS), "RocketMQ consumer did not receive the retried message");
+            assertTrue(firstAttempt.await(15, TimeUnit.SECONDS), "RocketMQ consumer did not receive the published message");
+            assertTrue(received.await(60, TimeUnit.SECONDS),
+                "RocketMQ consumer did not receive the retried message; attempts=" + attempts.get());
             assertTrue(attempts.get() >= 2, "RocketMQ did not redeliver the failed message");
         } finally {
             subscription.close();
