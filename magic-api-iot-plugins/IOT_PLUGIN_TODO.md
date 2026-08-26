@@ -56,6 +56,20 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Add Actuator health contributors and Micrometer lifecycle metrics.
 - [ ] Show plugin dependencies, capabilities, version and last error in the console.
 
+## P0 - Extension Points (Step 6)
+
+- [x] Split protocol processing into `ProtocolDetector`, `FrameDecoder`, `MessageDecoder` and `CommandEncoder`.
+- [x] Add `TransportProvider` as the transport lifecycle and channel boundary.
+- [x] Assemble protocol stages by `protocolId` and reject missing or duplicate stages.
+- [x] Remove the legacy `ProtocolAdapter`, bridge and `ProtocolRegistry` compatibility layer.
+- [x] Convert the raw protocol adapter to the granular protocol SPI.
+- [x] Remove the empty `magic-api-plugin-protocol-sample` module.
+- [x] Replace `StorageWriter` with named `StorageWriterProvider` routing and batch writes.
+- [x] Replace inline rule `Consumer` actions with named `RuleActionProvider` resolution.
+- [x] Add the framework-neutral `ProviderHealthIndicator` contract and Spring health catalog.
+- [ ] Implement real health indicators in Redis and message-bus providers.
+- [ ] Export provider health through Actuator and the operations console.
+
 ## P1 - Runtime Loading
 
 - [ ] Load external plugin JARs from a configured `plugins/` directory.
@@ -76,6 +90,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 ## Architecture Rules
 
 - New modules belong under `platform/`, `core/`, `features/` or `adapters/` according to the classification above.
+- Step 6 extension contracts are the only supported API; legacy protocol, storage and inline rule action compatibility is intentionally not retained.
 - `plugin-api` must not depend on Spring, Netty, Kafka, Redis, Nacos or Magic API.
 - Plugins receive controlled services through `PluginContext`; they do not access the full Spring context.
 - Plugins communicate through API contracts and events, not implementation classes.

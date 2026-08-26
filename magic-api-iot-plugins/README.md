@@ -7,7 +7,7 @@ Independent IoT plugin suite for the adjacent `magic-api` project. This reactor 
 - `platform/`: plugin API, runtime and Spring Boot starter
 - `core/`: gateway model/SPI, protocol, command, observability and security
 - `features/`: device shadow, product model, rule engine, OTA, time-series, storage, northbound and ops console
-- `adapters/`: protocol adapter modules, beginning with `protocol-sample`
+- `adapters/`: protocol adapter modules built from detector, frame decoder, message decoder and command encoder extensions
 - `providers/`: replaceable infrastructure providers, currently development-only memory providers
 
 Device registry, device session and message bus are provider extension points. Their contracts

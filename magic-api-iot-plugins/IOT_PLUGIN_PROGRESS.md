@@ -5,10 +5,10 @@
 
 ## 当前基线
 
-- 更新时间：2026-08-25
-- 当前阶段：第 5 步 Provider 拆分、实现和真实环境验收全部完成，准备进入第 6 步扩展点标准化
-- 总体进度：约 50%
-- 构建状态：插件 reactor `mvn clean install` 已通过（本次更新）
+- 更新时间：2026-08-26
+- 当前阶段：第 6 步扩展点标准化主体完成，准备为分布式 Provider 接入真实健康探测
+- 总体进度：约 60%
+- 构建状态：插件 reactor `mvn test` 已通过，27 个模块全部成功（本次更新）
 - 测试工程：`ruoyi-iot-plugin-test` `mvn package` 已通过（本次更新）
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
@@ -47,6 +47,19 @@ magic-api-iot-plugins/
 - [x] 状态、消息、会话、命令、协议等基础模型
 - [x] 设备注册、设备会话、消息总线作为 Provider 扩展点
 - [x] core 不再默认创建内存实现
+- [x] 协议处理拆分为 Detector、Frame Decoder、Message Decoder、Command Encoder 流水线
+- [x] `TransportProvider` 统一连接生命周期、收发和断连边界
+- [x] 协议流水线按 `protocolId` 组装，缺失阶段和重复阶段启动失败
+- [x] 删除旧 `ProtocolAdapter`、兼容桥和 `ProtocolRegistry`
+
+### 扩展 Provider 契约
+
+- [x] `StorageWriterProvider`：按稳定 Provider ID 路由，支持单条和批量写入
+- [x] `RuleActionProvider`：规则通过稳定 Action ID 解析动作，不再内嵌 `Consumer`
+- [x] `ProviderHealthIndicator`：无 Spring 依赖的统一 Provider 健康契约
+- [x] `ProviderHealthCatalog`：Spring 侧统一收集和排序健康快照
+- [x] Raw 协议适配器已迁移到四阶段 SPI
+- [x] 删除无实现的 `magic-api-plugin-protocol-sample` 模块
 
 ### Provider
 
@@ -94,16 +107,16 @@ magic-api-iot-plugins/
 ## 进行中
 
 - [ ] 将设备模型和 SPI 从 `iot-core` 逐步迁移到 `plugin-api`
-- [ ] 标准化 Transport、Protocol、Codec、Storage 和 Rule Action 扩展点
+- [ ] Redis、Kafka、Pulsar、RocketMQ Provider 实现真实健康探测
+- [ ] 将 Provider 健康快照接入 Actuator 和监控页面
 
 ## 下一阶段顺序
 
-1. 标准化 Transport、Protocol Detector、Frame Decoder、Message Decoder 和 Command Encoder。
-2. 标准化 Storage Writer、Rule Action 和 Provider Health 扩展点。
+1. 为 Redis、Kafka、Pulsar、RocketMQ Provider 实现真实健康探测。
+2. 增加 Actuator 健康检查和 Micrometer 指标。
 3. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
-4. 增加 Actuator 健康检查和 Micrometer 指标。
-5. 增加 Docker 可用时的 Testcontainers 回归环境。
-6. 再进入外部 JAR 加载和插件生命周期管理。
+4. 增加 Docker 可用时的 Testcontainers 回归环境。
+5. 再进入外部 JAR 加载和插件生命周期管理。
 
 ## 长期路线
 
@@ -148,6 +161,18 @@ magic-api-iot-plugins/
 
 ## 更新记录
 
+### 2026-08-26
+
+- 第 6 步采用直接收敛策略，不保留旧协议、存储和规则动作兼容层。
+- 新增协议四阶段流水线和 `TransportProvider`，增加完整性、优先级和缺失阶段测试。
+- 删除 `ProtocolAdapter`、`LegacyProtocolAdapterBridge`、`ProtocolRegistry`。
+- Raw 协议适配器直接实现 Detector、Frame Decoder、Message Decoder、Command Encoder。
+- 删除空的 `magic-api-plugin-protocol-sample` reactor 模块，模块总数从 28 调整为 27。
+- 删除 `StorageWriter`，新增 `StorageWriterProvider` 及批量路由和重复 ID 校验。
+- 删除内嵌 `Consumer` 的 `DeviceRule`，新增 `RuleDefinition` 和 `RuleActionProvider`。
+- 新增 `ProviderHealthIndicator` 和 `ProviderHealthCatalog` 健康发现边界。
+- Storage、Rule 和 Protocol 新增测试，全量 `mvn test` 通过。
+
 ### 2026-08-25
 
 - 建立 platform、core、features、adapters、providers 五类目录规范。
@@ -176,7 +201,6 @@ magic-api-iot-plugins/
 - RocketMQ Provider 增加 `DefaultMQPushConsumer` 动态订阅、原生重试和 `%DLQ%group`。
 - Pulsar Provider 增加 Producer、Shared Consumer、ACK、negative ACK、重投延迟和 DeadLetterPolicy。
 - Pulsar/RocketMQ 客户端代码已通过 clean test，但当前没有对应 broker，尚未做真实服务验证。
-- RocketMQ NameServer `10.211.55.4:9876` 可达，但 Broker 广播 `127.0.0.1:10911`，远程客户端无法回连。
 - RocketMQ Broker 广播地址已修正，`9876/10909/10911/10912` 均可访问。
 - RocketMQ 随机测试 Topic 先预热创建，再验证首次失败、原生重投和第二次成功消费。
 - Pulsar `10.211.55.4:6650` 已开放并通过真实 Provider 集成测试。

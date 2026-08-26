@@ -3,7 +3,7 @@ package org.ssssssss.magicapi.iot.protocol;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.ssssssss.magicapi.iot.core.spi.ProtocolAdapter;
+import org.ssssssss.magicapi.iot.core.spi.*;
 
 import java.util.List;
 
@@ -11,8 +11,9 @@ import java.util.List;
 public class ProtocolAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
-    ProtocolRegistry protocolRegistry(List<ProtocolAdapter> adapters) {
-        return new ProtocolRegistry(adapters);
+    ProtocolPipelineRegistry protocolPipelineRegistry(List<ProtocolDetector> detectors,
+        List<FrameDecoder> frameDecoders, List<MessageDecoder> messageDecoders,
+        List<CommandEncoder> commandEncoders) {
+        return new ProtocolPipelineRegistry(detectors, frameDecoders, messageDecoders, commandEncoders);
     }
 }
-

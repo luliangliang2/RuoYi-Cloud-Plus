@@ -11,6 +11,9 @@ import org.ssssssss.magicapi.iot.plugin.runtime.DefaultCapabilityRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.DefaultPluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginDescriptorValidator;
+import org.ssssssss.magicapi.iot.plugin.api.ProviderHealthIndicator;
+
+import java.util.List;
 
 @AutoConfiguration
 public class IotPluginRuntimeAutoConfiguration {
@@ -39,5 +42,11 @@ public class IotPluginRuntimeAutoConfiguration {
     @Bean
     ProviderBeanValidator providerBeanValidator(ListableBeanFactory beanFactory, Environment environment) {
         return new ProviderBeanValidator(beanFactory, environment);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    ProviderHealthCatalog providerHealthCatalog(List<ProviderHealthIndicator> indicators) {
+        return new ProviderHealthCatalog(indicators);
     }
 }
