@@ -2,6 +2,9 @@ server:
   port: ${IOT_GATEWAY_PORT:9218}
 
 iot:
+  health:
+    cache-ttl: ${IOT_HEALTH_CACHE_TTL:10s}
+    timeout: ${IOT_HEALTH_TIMEOUT:3s}
   providers:
     device-registry:
       type: ${IOT_DEVICE_REGISTRY_PROVIDER:memory}

@@ -49,4 +49,12 @@ public class IotPluginRuntimeAutoConfiguration {
     ProviderHealthCatalog providerHealthCatalog(List<ProviderHealthIndicator> indicators) {
         return new ProviderHealthCatalog(indicators);
     }
+
+    @Bean(name = "iotProvidersHealthIndicator")
+    @ConditionalOnMissingBean(name = "iotProvidersHealthIndicator")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnClass(
+        name = "org.springframework.boot.actuate.health.HealthIndicator")
+    IotProvidersHealthIndicator iotProvidersHealthIndicator(ProviderHealthCatalog catalog) {
+        return new IotProvidersHealthIndicator(catalog);
+    }
 }

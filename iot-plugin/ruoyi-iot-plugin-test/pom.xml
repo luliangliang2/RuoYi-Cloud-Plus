@@ -74,6 +74,31 @@
 			<version>${iot-plugins.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-device-registry-redis</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-device-session-redis</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-message-bus-kafka</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-message-bus-pulsar</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ssssssss.magicapi.iot</groupId>
+			<artifactId>magic-api-plugin-message-bus-rocketmq</artifactId>
+			<version>${iot-plugins.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>

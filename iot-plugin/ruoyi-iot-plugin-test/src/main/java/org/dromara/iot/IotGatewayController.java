@@ -6,6 +6,7 @@ import org.ssssssss.magicapi.iot.core.spi.SessionRepository;
 import org.ssssssss.magicapi.iot.plugin.runtime.CapabilityRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginSnapshot;
+import org.ssssssss.magicapi.iot.plugin.spring.ProviderHealthCatalog;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,25 +20,39 @@ public class IotGatewayController {
     private final DeviceMessageBus messageBus;
     private final PluginRegistry pluginRegistry;
     private final CapabilityRegistry capabilityRegistry;
+    private final ProviderHealthCatalog providerHealthCatalog;
 
     public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
-                                CapabilityRegistry capabilityRegistry) {
+                                CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog) {
         this.deviceRegistry = deviceRegistry;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
         this.pluginRegistry = pluginRegistry;
         this.capabilityRegistry = capabilityRegistry;
+        this.providerHealthCatalog = providerHealthCatalog;
     }
 
     @GetMapping("/status")
     public Map<String, Object> status() {
-        return Map.of("status", "UP",
+        var providerHealth = providerHealthCatalog.snapshots();
+        boolean providersUp = providerHealth.stream()
+            .allMatch(snapshot -> snapshot.health().status() == org.ssssssss.magicapi.iot.plugin.api.PluginHealth.Status.UP);
+        return Map.of("status", providersUp ? "UP" : "DOWN",
             "deviceRegistry", deviceRegistry.getClass().getSimpleName(),
             "sessionRepository", sessionRepository.getClass().getSimpleName(),
             "messageBus", messageBus.getClass().getSimpleName(),
             "pluginCount", pluginRegistry.snapshots().size(),
-            "capabilityCount", capabilityRegistry.capabilities().size());
+            "capabilityCount", capabilityRegistry.capabilities().size(),
+            "providerCount", providerHealth.size(),
+            "healthyProviderCount", providerHealth.stream().filter(snapshot ->
+                snapshot.health().status() == org.ssssssss.magicapi.iot.plugin.api.PluginHealth.Status.UP).count());
+    }
+
+    @GetMapping("/providers")
+    public Map<String, Object> providers() {
+        var providers = providerHealthCatalog.snapshots();
+        return Map.of("count", providers.size(), "providers", providers);
     }
 
     @GetMapping("/components")
