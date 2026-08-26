@@ -1,6 +1,6 @@
 {
   "id": "iot-gateway-cluster",
-  "name": "Gateway Node Cluster Lifecycle",
+  "name": "IoT Gateway Node Cluster Lifecycle",
   "version": "0.1.0-SNAPSHOT",
   "apiVersion": "1.0",
   "provider": "ryan",
