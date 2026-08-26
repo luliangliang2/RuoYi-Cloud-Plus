@@ -181,6 +181,7 @@ magic-api-iot-plugins/
 - 新增 `magic-api-plugin-transport-mqtt`，使用 mica-mqtt 2.6.6 提供嵌入式 MQTT 3/5 broker 能力。
 - MQTT Topic 按 `devices/{productId}/{deviceId}/...` 映射属性、事件、命令回复、心跳和固件消息，保留 QoS、retained、duplicate 元数据。
 - MQTT 可通过 Device Registry 校验 `productId/deviceId` 和设备密钥；测试工程匿名模式只用于本地开发。
+- `prod` 和 `production` profile 禁止 MQTT 匿名启动，避免生产配置遗漏后开放未鉴权 broker。
 - 新增 `magic-api-plugin-protocol-modbus-tcp`，使用 DigitalPetri Modbus 2.1.6 编解码 PDU。
 - Modbus TCP 支持 `0x01/02/03/04/05/06/0F/10`，记录 MBAP transactionId、unitId、异常码和 commandId 关联。
 - TCP Transport 新增 MBAP length-field 分帧，拆分写入 12 字节请求仍只产生一个完整协议帧。

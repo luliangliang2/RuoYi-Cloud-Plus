@@ -4,6 +4,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.StandardEnvironment;
 import org.ssssssss.magicapi.iot.core.model.*;
 import org.ssssssss.magicapi.iot.core.spi.*;
 
@@ -17,6 +18,16 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MicaMqttTransportProviderTest {
+    @Test
+    void rejectsAnonymousBrokerInProduction() {
+        MqttTransportProperties properties = new MqttTransportProperties();
+        StandardEnvironment environment = new StandardEnvironment();
+        environment.setActiveProfiles("prod");
+        var guard = new MqttTransportAutoConfiguration().mqttTransportProductionGuard(properties, environment);
+        IllegalStateException exception = assertThrows(IllegalStateException.class, guard::afterPropertiesSet);
+        assertTrue(exception.getMessage().contains("authentication"));
+    }
+
     @Test
     void acceptsMqttPublishAndMapsItToDeviceMessage() throws Exception {
         MqttTransportProperties properties = new MqttTransportProperties();

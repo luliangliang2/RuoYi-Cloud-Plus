@@ -99,7 +99,8 @@ iot:
 
 When authentication is enabled, the MQTT username (or client ID when username is empty) uses
 `productId/deviceId` and the password is checked by the selected `DeviceRegistry`. Anonymous mode
-is intended only for local development and protocol testing.
+is intended only for local development and protocol testing; `prod` and `production` profiles
+reject startup when MQTT authentication is disabled.
 
 ## Modbus TCP
 
