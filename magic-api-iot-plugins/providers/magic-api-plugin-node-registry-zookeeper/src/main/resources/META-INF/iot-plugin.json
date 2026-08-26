@@ -6,7 +6,7 @@
   "provider": "ryan",
   "capabilities": ["node-registry:zookeeper", "cluster:ephemeral-node"],
   "requires": [],
-  "optionalRequires": ["gateway-cluster"],
+  "optionalRequires": ["iot-gateway-cluster"],
   "loadOrder": 301,
   "configPrefix": "iot.node-registry.zookeeper",
   "failurePolicy": "REQUIRED"

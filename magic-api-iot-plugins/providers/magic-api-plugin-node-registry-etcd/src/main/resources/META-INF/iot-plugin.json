@@ -6,7 +6,7 @@
   "provider": "ryan",
   "capabilities": ["node-registry:etcd", "cluster:lease-node"],
   "requires": [],
-  "optionalRequires": ["gateway-cluster"],
+  "optionalRequires": ["iot-gateway-cluster"],
   "loadOrder": 302,
   "configPrefix": "iot.node-registry.etcd",
   "failurePolicy": "REQUIRED"

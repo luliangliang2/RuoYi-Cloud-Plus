@@ -30,7 +30,7 @@
         <module>core/magic-api-plugin-command</module>
         <module>core/magic-api-plugin-observability</module>
         <module>core/magic-api-plugin-security</module>
-        <module>core/magic-api-plugin-cluster</module>
+        <module>core/magic-api-plugin-iot-cluster</module>
         <module>core/magic-api-plugin-configuration-center</module>
         <module>features/magic-api-plugin-device-shadow</module>
         <module>features/magic-api-plugin-product-model</module>

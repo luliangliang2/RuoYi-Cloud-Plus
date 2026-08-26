@@ -45,7 +45,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>
-			<artifactId>magic-api-plugin-cluster</artifactId>
+			<artifactId>magic-api-plugin-iot-cluster</artifactId>
 			<version>${iot-plugins.version}</version>
 		</dependency>
 		<dependency>

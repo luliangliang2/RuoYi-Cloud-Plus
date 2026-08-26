@@ -6,7 +6,7 @@
   "provider": "ryan",
   "capabilities": ["node-registry:nacos", "cluster:ephemeral-node"],
   "requires": [],
-  "optionalRequires": ["gateway-cluster"],
+  "optionalRequires": ["iot-gateway-cluster"],
   "loadOrder": 300,
   "configPrefix": "iot.node-registry.nacos",
   "failurePolicy": "REQUIRED"

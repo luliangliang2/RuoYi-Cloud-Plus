@@ -29,6 +29,8 @@ iot:
       type: kafka
     node-registry:
       type: nacos
+    configuration-center:
+      type: nacos
 ```
 
 The memory providers are separate modules and must be enabled explicitly with `type: memory`.
@@ -53,7 +55,7 @@ registry or session Provider type is `redis`.
 ## Distributed gateway node registry
 
 Gateway node discovery is independent from device registration and device session routing.
-`magic-api-plugin-cluster` owns the common startup registration, heartbeat, discovery and
+`magic-api-plugin-iot-cluster` owns the common startup registration, heartbeat, discovery and
 graceful removal lifecycle. Select exactly one node registry Provider:
 
 ```yaml
@@ -88,8 +90,37 @@ Nacos uses ephemeral Naming instances, ZooKeeper uses ephemeral ZNodes, and etcd
 to leases. Enabling `iot.cluster` without a selected and instantiated `NodeRegistry` fails startup.
 The test gateway exposes the current membership at `/api/iot/gateway/cluster`.
 
-These modules implement node registration only. Dynamic configuration is a separate concern;
-Nacos, ZooKeeper and etcd configuration-center providers will use a dedicated configuration SPI.
+These modules implement node registration only. Dynamic configuration is handled by the separate
+configuration-center SPI described below.
+
+## Distributed configuration center
+
+`magic-api-plugin-configuration-center` defines framework-neutral `get`, prefix `list`, `watch`,
+revision and CAS operations. Select one Provider independently from the node registry:
+
+```yaml
+iot:
+  providers:
+    configuration-center:
+      type: nacos # nacos | zookeeper | etcd
+  configuration-center:
+    nacos:
+      server-addr: 10.211.55.3:8848
+      data-id: iot-gateway-config.json
+      group: DEFAULT_GROUP
+    zookeeper:
+      connect-string: 127.0.0.1:2181
+      root-path: /iot/gateway/config
+    etcd:
+      endpoints:
+        - http://127.0.0.1:2379
+      root-prefix: /iot/gateway/config/
+```
+
+Nacos stores logical keys in one CAS-protected JSON document so prefix listing remains available.
+ZooKeeper and etcd store one backend key per logical key. Revisions are opaque tokens prefixed by
+`nacos:`, `zookeeper:` or `etcd:`; clients must return them unchanged to CAS or delete operations.
+The test gateway exposes list/get/put/CAS/delete under `/api/iot/gateway/configuration`.
 
 ## Raw TCP transport
 

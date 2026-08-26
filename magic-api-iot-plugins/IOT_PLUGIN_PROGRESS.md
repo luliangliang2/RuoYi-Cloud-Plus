@@ -6,10 +6,10 @@
 ## 当前基线
 
 - 更新时间：2026-08-26
-- 当前阶段：分布式机器人网关节点注册中心已落地，下一阶段为独立配置中心 SPI
-- 总体进度：约 74%
-- 构建状态：插件 reactor `mvn clean test` 已通过，36 个模块全部成功（本次更新）
-- 测试工程：已接入 Nacos、ZooKeeper、etcd 节点注册 Provider，`mvn package` 已通过（本次更新）
+- 当前阶段：独立配置中心 SPI 及 Nacos、ZooKeeper、etcd Provider 已落地，待完成 etcd 真实环境验证
+- 总体进度：约 78%
+- 构建状态：插件 reactor `mvn clean test` 已通过，40 个模块全部成功（本次更新）
+- 测试工程：已接入可独立选型的节点注册中心和配置中心 Provider，`mvn package -DskipTests` 已通过
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
 ## 当前目录规范
@@ -79,7 +79,7 @@ magic-api-iot-plugins/
 ### 分布式 Provider（进行中）
 
 - [x] `NodeRegistry` 统一网关节点注册、心跳、发现、摘除和健康契约
-- [x] `magic-api-plugin-cluster` 统一节点生命周期，集群启用但 Provider 缺失时启动失败
+- [x] `magic-api-plugin-iot-cluster` 统一节点生命周期，集群启用但 Provider 缺失时启动失败
 - [x] Nacos Provider 使用临时 Naming 实例注册网关节点
 - [x] ZooKeeper Provider 使用临时 ZNode 注册网关节点
 - [x] etcd Provider 使用 Lease 绑定节点 Key，并在心跳时续租
@@ -87,7 +87,15 @@ magic-api-iot-plugins/
 - [x] Nacos `10.211.55.3:8848` 真实注册、发现、心跳和健康探测通过
 - [x] ZooKeeper 嵌入式临时节点集成测试通过
 - [ ] etcd 真实集群集成测试
-- [ ] 独立配置中心 SPI 及 Nacos、ZooKeeper、etcd 配置 Provider
+- [x] `ConfigurationCenter` 独立 SPI，支持 get、前缀 list、put、watch、revision、CAS 和带 revision 删除
+- [x] Nacos 配置 Provider：单 JSON 文档、原生 MD5-CAS、前缀过滤和文档差异 watch
+- [x] ZooKeeper 配置 Provider：持久 ZNode、version CAS、CuratorCache watch
+- [x] etcd 配置 Provider：前缀 Key、modRevision 事务 CAS、原生 prefix watch
+- [x] 配置中心 Provider 类型/Bean 缺失和冲突校验，生产环境禁止静默缺失
+- [x] Nacos Provider 内存测试桩验证原生 MD5-CAS 和 watch 差异事件
+- [x] ZooKeeper 嵌入式集成测试验证 put/list/watch/CAS/delete
+- [x] Nacos `10.211.55.3:8848` 真实配置读写、过期 CAS 拒绝、有效 CAS 和带 revision 删除验证
+- [ ] etcd 真实集群配置中心集成测试
 
 - [x] Redis Device Registry Provider 模块和自动配置
 - [x] Redis Device Session Provider 模块和节点索引
@@ -130,20 +138,23 @@ magic-api-iot-plugins/
 - [x] 健康探针支持异步超时、10 秒缓存和并发探测去重
 - [x] `/api/iot/gateway/runtime` 返回协议、Transport、连接、流量和错误快照
 - [x] `/api/iot/gateway/cluster` 返回本节点、注册中心类型、心跳错误和活跃节点列表
+- [x] `/api/iot/gateway/configuration` 提供配置 list/get/put/CAS/delete 测试接口
 - [x] 5177 页面展示 TCP 监听、活跃连接、协议 ID、收发流量和发布计数
 - [x] 现有运行快照和 Provider 健康表自动展示 MQTT 与 Modbus TCP Transport
 
 ## 进行中
 
+- [ ] 完成 etcd 配置中心真实环境验证
 - [ ] 将设备模型和 SPI 从 `iot-core` 逐步迁移到 `plugin-api`
 - [ ] 为 Provider 健康和插件生命周期接入 Micrometer 指标
 
 ## 下一阶段顺序
 
-1. 增加 Micrometer Provider 延迟、状态和插件生命周期指标。
-2. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
-3. 增加 Docker 可用时的 Testcontainers 回归环境。
-4. 再进入外部 JAR 加载和插件生命周期管理。
+1. 完成 etcd 配置中心真实环境验证。
+2. 增加 Micrometer Provider 延迟、状态和插件生命周期指标。
+3. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
+4. 增加 Docker 可用时的 Testcontainers 回归环境。
+5. 再进入外部 JAR 加载和插件生命周期管理。
 
 ## 长期路线
 
@@ -190,7 +201,17 @@ magic-api-iot-plugins/
 
 ### 2026-08-26
 
-- 新增 `magic-api-plugin-cluster`，统一网关节点启动注册、周期心跳、节点发现和优雅摘除。
+- 为避免与 Magic API 自带集群插件冲突，将模块由 `magic-api-plugin-cluster` 重命名为 `magic-api-plugin-iot-cluster`，运行时插件 ID 同步改为 `iot-gateway-cluster`；`iot.cluster.*` 配置键和 Java 包保持兼容。
+- 新增独立 `magic-api-plugin-configuration-center` SPI，统一 get、前缀 list、put、watch、opaque revision、CAS 和带 revision 删除。
+- 新增 Nacos、ZooKeeper、etcd 三种配置中心 Provider，可通过 `iot.providers.configuration-center.type` 独立于节点注册中心单选切换。
+- Nacos 使用单 JSON 文档和原生 MD5-CAS；ZooKeeper 使用 ZNode version；etcd 使用 modRevision 事务。
+- 配置中心纳入核心 Provider 配置/Bean 缺失与冲突校验、健康探测、Actuator、Provider API 和 5177 组件发现。
+- 测试应用新增配置 list/get/put/CAS/delete 管理接口；Nacos 契约测试与 ZooKeeper 嵌入式集成测试通过。
+- Nacos `10.211.55.3:8848` 真实创建、前缀查询、过期 CAS 拒绝、有效 CAS 和删除通过，临时测试键已清理。
+- 测试应用运行于 `9218`，配置中心 Provider 与 Actuator 均为 `UP`；5177 数据源可识别 Nacos 为启用、ZooKeeper/etcd 为未启用。
+- 40 模块 `mvn clean test`、`mvn install -DskipTests` 和测试应用 `mvn package -DskipTests` 通过；etcd 真实验证状态单独记录，不以编译通过替代。
+
+- 新增 `magic-api-plugin-iot-cluster`，统一网关节点启动注册、周期心跳、节点发现和优雅摘除。
 - 新增 Nacos、ZooKeeper、etcd 三种 `NodeRegistry` Provider，可通过 `iot.providers.node-registry.type` 单选切换。
 - Nacos 使用临时 Naming 实例，ZooKeeper 使用临时 ZNode，etcd 使用 Lease 绑定节点 Key。
 - 集群启用但节点注册 Provider 缺失时直接启动失败；三种 Provider 均增加地址、路径、超时和凭证参数校验。

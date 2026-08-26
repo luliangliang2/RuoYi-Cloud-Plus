@@ -1,5 +1,5 @@
 {
-  "id": "gateway-cluster",
+  "id": "iot-gateway-cluster",
   "name": "Gateway Node Cluster Lifecycle",
   "version": "0.1.0-SNAPSHOT",
   "apiVersion": "1.0",
