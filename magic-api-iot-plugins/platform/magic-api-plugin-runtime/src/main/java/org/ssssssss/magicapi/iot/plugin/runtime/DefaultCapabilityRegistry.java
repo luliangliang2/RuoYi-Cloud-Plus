@@ -18,6 +18,14 @@ public class DefaultCapabilityRegistry implements CapabilityRegistry {
     }
 
     @Override
+    public void unregister(String pluginId) {
+        providers.forEach((capability, pluginIds) -> {
+            pluginIds.remove(pluginId);
+            if (pluginIds.isEmpty()) providers.remove(capability, pluginIds);
+        });
+    }
+
+    @Override
     public List<String> providers(String capability) {
         return List.copyOf(providers.getOrDefault(capability, new CopyOnWriteArrayList<>()));
     }

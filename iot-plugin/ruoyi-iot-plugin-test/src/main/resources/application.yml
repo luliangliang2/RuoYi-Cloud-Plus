@@ -2,6 +2,19 @@ server:
   port: ${IOT_GATEWAY_PORT:9218}
 
 iot:
+  plugins:
+    external:
+      enabled: ${IOT_EXTERNAL_PLUGINS_ENABLED:true}
+      directory: ${IOT_EXTERNAL_PLUGINS_DIRECTORY:plugins}
+      data-directory: ${IOT_EXTERNAL_PLUGINS_DATA_DIRECTORY:data/iot-plugins}
+  handshake:
+    enabled: ${IOT_HANDSHAKE_ENABLED:false}
+    timeout: ${IOT_HANDSHAKE_TIMEOUT:10s}
+    max-attempts: ${IOT_HANDSHAKE_MAX_ATTEMPTS:3}
+    gateway-node-id: ${IOT_GATEWAY_NODE_ID:${spring.application.name}-${server.port}}
+    required-protocols: ${IOT_HANDSHAKE_REQUIRED_PROTOCOLS:}
+    providers:
+      raw: ${IOT_RAW_HANDSHAKE_PROVIDER:json-device-v1}
   cluster:
     enabled: ${IOT_CLUSTER_ENABLED:true}
     node-id: ${IOT_GATEWAY_NODE_ID:${spring.application.name}-${server.port}}

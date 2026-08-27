@@ -8,7 +8,11 @@ import org.ssssssss.magicapi.iot.protocol.ProtocolIngressRuntime;
 import org.ssssssss.magicapi.iot.plugin.runtime.CapabilityRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginRegistry;
 import org.ssssssss.magicapi.iot.plugin.runtime.PluginSnapshot;
+import org.ssssssss.magicapi.iot.plugin.runtime.ExternalPluginManager;
+import org.ssssssss.magicapi.iot.plugin.runtime.PluginServiceRegistry;
 import org.ssssssss.magicapi.iot.plugin.spring.ProviderHealthCatalog;
+import org.ssssssss.magicapi.iot.plugin.spring.HandshakeDebugService;
+import org.ssssssss.magicapi.iot.core.spi.HandshakeProviderRegistry;
 import org.ssssssss.magicapi.iot.cluster.GatewayNodeCoordinator;
 import org.ssssssss.magicapi.iot.config.ConfigurationCenter;
 import org.ssssssss.magicapi.iot.config.ConfigurationRuntime;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.nio.file.Path;
 
 @RestController
 @RequestMapping("/api/iot/gateway")
@@ -41,6 +46,10 @@ public class IotGatewayController {
     private final ObjectProvider<NacosConfigurationCenterProperties> nacosProperties;
     private final ObjectProvider<ZookeeperConfigurationCenterProperties> zookeeperProperties;
     private final ObjectProvider<EtcdConfigurationCenterProperties> etcdProperties;
+    private final PluginServiceRegistry pluginServices;
+    private final HandshakeProviderRegistry handshakeProviders;
+    private final HandshakeDebugService handshakeDebug;
+    private final ExternalPluginManager externalPlugins;
 
     public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
@@ -50,7 +59,11 @@ public class IotGatewayController {
                                 ConfigurationRuntime configurationRuntime,
                                 ObjectProvider<NacosConfigurationCenterProperties> nacosProperties,
                                 ObjectProvider<ZookeeperConfigurationCenterProperties> zookeeperProperties,
-                                ObjectProvider<EtcdConfigurationCenterProperties> etcdProperties) {
+                                ObjectProvider<EtcdConfigurationCenterProperties> etcdProperties,
+                                PluginServiceRegistry pluginServices,
+                                HandshakeProviderRegistry handshakeProviders,
+                                HandshakeDebugService handshakeDebug,
+                                ObjectProvider<ExternalPluginManager> externalPlugins) {
         this.deviceRegistry = deviceRegistry;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
@@ -64,6 +77,10 @@ public class IotGatewayController {
         this.nacosProperties = nacosProperties;
         this.zookeeperProperties = zookeeperProperties;
         this.etcdProperties = etcdProperties;
+        this.pluginServices = pluginServices;
+        this.handshakeProviders = handshakeProviders;
+        this.handshakeDebug = handshakeDebug;
+        this.externalPlugins = externalPlugins.getIfAvailable();
     }
 
     @GetMapping("/status")
@@ -173,6 +190,75 @@ public class IotGatewayController {
             "components", items);
     }
 
+    @GetMapping("/spi")
+    public Map<String, Object> spi() {
+        var services = pluginServices.snapshots();
+        return Map.of("count", services.size(), "services", services,
+            "handshakeProviders", handshakeProviders.handshakes().stream().map(provider -> Map.of(
+                "id", provider.serviceId(), "protocols", provider.supportedProtocols())).toList(),
+            "authenticators", handshakeProviders.authenticators().stream().map(authenticator -> Map.of(
+                "id", authenticator.serviceId())).toList());
+    }
+
+    @GetMapping("/spi/matches")
+    public Map<String, Object> spiMatches(@RequestParam String protocolId) {
+        var candidates = handshakeProviders.handshakes().stream()
+            .filter(provider -> provider.supportedProtocols().contains(protocolId))
+            .map(provider -> Map.of("id", provider.serviceId(), "protocols", provider.supportedProtocols()))
+            .toList();
+        return Map.of("protocolId", protocolId, "count", candidates.size(), "candidates", candidates,
+            "conflict", candidates.size() > 1);
+    }
+
+    @PostMapping("/spi/handshake/debug")
+    public HandshakeDebugService.DebugResult debugHandshake(
+        @RequestBody HandshakeDebugService.DebugRequest request) {
+        return handshakeDebug.debug(request);
+    }
+
+    @GetMapping("/plugins/external")
+    public Map<String, Object> externalPlugins() {
+        if (externalPlugins == null) return Map.of("enabled", false, "plugins", List.of(), "errors", Map.of());
+        return Map.of("enabled", true, "directory", externalPlugins.pluginDirectory().toString(),
+            "plugins", externalPlugins.snapshots(), "errors", externalPlugins.discoveryErrors());
+    }
+
+    @PostMapping("/plugins/external/rescan")
+    public Map<String, Object> rescanExternalPlugins() {
+        requireExternalPlugins().rescan();
+        return externalPlugins();
+    }
+
+    @PostMapping("/plugins/external/enable")
+    public Object enableExternalPlugin(@RequestBody ExternalPluginPath request) {
+        return requireExternalPlugins().enable(Path.of(request.jar()));
+    }
+
+    @PostMapping("/plugins/external/{pluginId}/disable")
+    public void disableExternalPlugin(@PathVariable String pluginId) {
+        requireExternalPlugins().disable(pluginId);
+    }
+
+    @PostMapping("/plugins/external/{pluginId}/reload")
+    public Object reloadExternalPlugin(@PathVariable String pluginId) {
+        return requireExternalPlugins().reload(pluginId);
+    }
+
+    @PostMapping("/plugins/external/{pluginId}/upgrade")
+    public Object upgradeExternalPlugin(@PathVariable String pluginId, @RequestBody ExternalPluginPath request) {
+        return requireExternalPlugins().upgrade(pluginId, Path.of(request.jar()));
+    }
+
+    @PostMapping("/plugins/external/{pluginId}/rollback")
+    public Object rollbackExternalPlugin(@PathVariable String pluginId) {
+        return requireExternalPlugins().rollback(pluginId);
+    }
+
+    private ExternalPluginManager requireExternalPlugins() {
+        if (externalPlugins == null) throw new IllegalStateException("External plugin loading is disabled");
+        return externalPlugins;
+    }
+
     private Map<String, Object> componentView(PluginSnapshot snapshot) {
         var descriptor = snapshot.descriptor();
         String module = descriptor.capabilities().isEmpty()
@@ -208,4 +294,5 @@ public class IotGatewayController {
 
     public record ConfigurationWrite(String key, String value) { }
     public record ConfigurationCasWrite(String key, String value, String expectedRevision) { }
+    public record ExternalPluginPath(String jar) { }
 }

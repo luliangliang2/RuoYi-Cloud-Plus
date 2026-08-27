@@ -20,7 +20,7 @@ public class ProtocolAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     ProtocolIngressRuntime protocolIngressRuntime(ProtocolPipelineRegistry registry,
-        DeviceMessageBus messageBus, List<TransportProvider> transports) {
-        return new ProtocolIngressRuntime(registry, messageBus, transports);
+        DeviceMessageBus messageBus, List<TransportProvider> transports, HandshakeCoordinator handshakes) {
+        return new ProtocolIngressRuntime(registry, messageBus, transports, handshakes);
     }
 }

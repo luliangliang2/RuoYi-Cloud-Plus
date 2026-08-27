@@ -13,6 +13,8 @@ public interface PluginRegistry {
 
     void update(String pluginId, PluginState state, PluginHealth health, String lastError);
 
+    void unregister(String pluginId);
+
     Optional<PluginSnapshot> find(String pluginId);
 
     List<PluginSnapshot> snapshots();

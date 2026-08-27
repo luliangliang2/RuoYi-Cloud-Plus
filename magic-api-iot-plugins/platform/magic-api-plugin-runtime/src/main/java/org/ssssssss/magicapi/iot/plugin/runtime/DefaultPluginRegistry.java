@@ -39,6 +39,11 @@ public class DefaultPluginRegistry implements PluginRegistry {
     }
 
     @Override
+    public void unregister(String pluginId) {
+        plugins.remove(pluginId);
+    }
+
+    @Override
     public Optional<PluginSnapshot> find(String pluginId) {
         return Optional.ofNullable(plugins.get(pluginId));
     }

@@ -43,6 +43,7 @@
         <module>features/magic-api-plugin-ops-console</module>
         <module>adapters/magic-api-plugin-protocol-adapters</module>
         <module>adapters/magic-api-plugin-protocol-modbus-tcp</module>
+        <module>adapters/magic-api-plugin-handshake-basic</module>
         <module>providers/magic-api-plugin-transport-tcp</module>
         <module>providers/magic-api-plugin-transport-mqtt</module>
         <module>providers/magic-api-plugin-transport-mqtt-client</module>
