@@ -99,6 +99,27 @@ public final class ExternalPluginManager implements AutoCloseable {
         return load(normalized).snapshot();
     }
 
+    public synchronized ExternalPluginValidation validate(Path jar) {
+        Path normalized = jar.toAbsolutePath().normalize();
+        requireInsidePluginDirectory(normalized);
+        validateJarContents(normalized);
+        PluginDescriptor descriptor = readDescriptor(normalized);
+        List<String> missingDependencies = descriptor.requires().stream()
+            .filter(dependency -> pluginRegistry.find(dependency).isEmpty()).toList();
+        List<String> services;
+        try (URLClassLoader classLoader = new URLClassLoader("iot-plugin-validation-" + descriptor.id(),
+            new java.net.URL[]{normalized.toUri().toURL()}, parentClassLoader)) {
+            services = ServiceLoader.load(PluginService.class, classLoader).stream()
+                .filter(provider -> provider.type().getClassLoader() == classLoader)
+                .map(provider -> provider.type().getName()).sorted().toList();
+        } catch (IOException | RuntimeException exception) {
+            throw new PluginRuntimeException("Failed to validate external plugin: " + normalized, exception);
+        }
+        boolean duplicate = loaded.containsKey(descriptor.id()) || pluginRegistry.find(descriptor.id()).isPresent();
+        return new ExternalPluginValidation(descriptor.id(), descriptor.version(), normalized.toString(),
+            missingDependencies.isEmpty(), duplicate, missingDependencies, services);
+    }
+
     public synchronized void disable(String pluginId) {
         LoadedPlugin plugin = loaded.remove(pluginId);
         if (plugin == null) return;

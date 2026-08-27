@@ -234,6 +234,11 @@ public class IotGatewayController {
         return requireExternalPlugins().enable(Path.of(request.jar()));
     }
 
+    @PostMapping("/plugins/external/validate")
+    public Object validateExternalPlugin(@RequestBody ExternalPluginPath request) {
+        return requireExternalPlugins().validate(Path.of(request.jar()));
+    }
+
     @PostMapping("/plugins/external/{pluginId}/disable")
     public void disableExternalPlugin(@PathVariable String pluginId) {
         requireExternalPlugins().disable(pluginId);

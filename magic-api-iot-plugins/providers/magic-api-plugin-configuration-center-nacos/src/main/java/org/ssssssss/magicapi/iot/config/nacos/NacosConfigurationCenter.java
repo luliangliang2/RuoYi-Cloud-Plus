@@ -211,8 +211,10 @@ public final class NacosConfigurationCenter implements ConfigurationCenter, Auto
             if (closed.get()) return;
             Document previous = current.getAndSet(parse(configInfo));
             Document next = current.get();
+            // Nacos stores all logical keys in one document, so every document update changes
+            // the CAS revision of every existing key even when its value is unchanged.
             next.values().forEach((key, value) -> {
-                if (key.startsWith(prefix) && !Objects.equals(previous.values().get(key), value))
+                if (key.startsWith(prefix))
                     notifyListener(ConfigurationEvent.put(new ConfigurationValue(key, value, next.revision())));
             });
             previous.values().keySet().stream()

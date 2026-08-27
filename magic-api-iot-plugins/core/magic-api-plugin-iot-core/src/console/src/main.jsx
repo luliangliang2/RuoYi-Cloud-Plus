@@ -50,6 +50,10 @@ function App() {
   const [configurationNotice, setConfigurationNotice] = useState('');
   const [error, setError] = useState('');
   const [updatedAt, setUpdatedAt] = useState();
+  const [debugRequest, setDebugRequest] = useState({ protocolId: 'raw', transportId: 'tcp', remoteAddress: '127.0.0.1:10001', handshakeProviderId: 'vendor-pipe-v1', encoding: 'text', payload: 'HELLO|robot|agv-001|secret' });
+  const [debugResult, setDebugResult] = useState(null);
+  const [debugging, setDebugging] = useState(false);
+  const [pluginValidation, setPluginValidation] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -98,6 +102,83 @@ function App() {
       setExternal(nextExternal);
     } catch (err) { setError(err.message || 'SPI API unavailable'); }
   }, []);
+
+  const rescanExternalPlugins = async () => {
+    try {
+      const response = await fetch('/api/iot/gateway/plugins/external/rescan', { method: 'POST' });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadSpi();
+    } catch (err) { setError(err.message || '插件扫描失败'); }
+  };
+
+  const reloadExternalPlugin = async pluginId => {
+    try {
+      const response = await fetch(`/api/iot/gateway/plugins/external/${encodeURIComponent(pluginId)}/reload`, { method: 'POST' });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadSpi();
+    } catch (err) { setError(err.message || '插件重新加载失败'); }
+  };
+
+  const disableExternalPlugin = async pluginId => {
+    try {
+      const response = await fetch(`/api/iot/gateway/plugins/external/${encodeURIComponent(pluginId)}/disable`, { method: 'POST' });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadSpi();
+    } catch (err) { setError(err.message || '插件禁用失败'); }
+  };
+
+  const enableExternalPlugin = async jar => {
+    try {
+      const response = await fetch('/api/iot/gateway/plugins/external/enable', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jar }) });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadSpi();
+    } catch (err) { setError(err.message || '插件启用失败'); }
+  };
+
+  const promptEnableExternalPlugin = () => {
+    const jar = window.prompt('请输入要启用的插件 JAR 绝对路径');
+    if (jar?.trim()) enableExternalPlugin(jar.trim());
+  };
+
+  const validateExternalPlugin = async () => {
+    const jar = window.prompt('请输入要验证的插件 JAR 绝对路径');
+    if (!jar?.trim()) return;
+    try {
+      const response = await fetch('/api/iot/gateway/plugins/external/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jar: jar.trim() }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
+      setPluginValidation(result);
+    } catch (err) { setError(err.message || '插件验证失败'); }
+  };
+
+  const upgradeExternalPlugin = async pluginId => {
+    const jar = window.prompt('请输入新版本 JAR 的绝对路径');
+    if (!jar?.trim()) return;
+    try {
+      const response = await fetch(`/api/iot/gateway/plugins/external/${encodeURIComponent(pluginId)}/upgrade`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ jar: jar.trim() }) });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadSpi();
+    } catch (err) { setError(err.message || '插件升级失败'); }
+  };
+
+  const rollbackExternalPlugin = async pluginId => {
+    try {
+      const response = await fetch(`/api/iot/gateway/plugins/external/${encodeURIComponent(pluginId)}/rollback`, { method: 'POST' });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadSpi();
+    } catch (err) { setError(err.message || '插件回滚失败'); }
+  };
+
+  const debugHandshake = async () => {
+    setDebugging(true);
+    try {
+      const response = await fetch('/api/iot/gateway/spi/handshake/debug', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(debugRequest) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
+      setDebugResult(result);
+    } catch (err) { setDebugResult({ error: err.message || '握手调试失败' }); }
+    finally { setDebugging(false); }
+  };
 
   useEffect(() => { if (view === 'configuration') loadConfiguration(); }, [view, loadConfiguration]);
   useEffect(() => { if (view === 'plugins') loadSpi(); }, [view, loadSpi]);
@@ -203,14 +284,28 @@ function App() {
     { title: '调用', key: 'calls', render: (_, item) => `${item.successes || 0} / ${item.invocations || 0}` },
     { title: '错误', dataIndex: 'lastError', key: 'lastError', ellipsis: true }
   ];
+  const externalPluginColumns = [
+    { title: '插件', dataIndex: 'pluginId', key: 'pluginId', render: value => <Text strong>{value}</Text> },
+    { title: '版本', dataIndex: 'version', key: 'version' },
+    { title: '状态', dataIndex: 'state', key: 'state', render: value => <Badge status={value === 'RUNNING' ? 'success' : value === 'DEGRADED' ? 'warning' : 'error'} text={value} /> },
+    { title: 'SPI 服务', dataIndex: 'services', key: 'services', render: value => value?.length || 0 },
+    { title: 'JAR', dataIndex: 'jar', key: 'jar', ellipsis: true },
+    { title: '操作', key: 'actions', width: 280, render: (_, item) => <Space wrap>
+      <Popconfirm title="确认禁用此插件？" onConfirm={() => disableExternalPlugin(item.pluginId)}><Button size="small" danger icon={<DeleteOutlined />}>禁用</Button></Popconfirm>
+      <Button size="small" icon={<ReloadOutlined />} onClick={() => reloadExternalPlugin(item.pluginId)} disabled={item.state === 'STOPPING'}>重载</Button>
+      <Button size="small" icon={<SaveOutlined />} onClick={() => upgradeExternalPlugin(item.pluginId)}>升级</Button>
+      <Popconfirm title="使用上一版本回滚？" onConfirm={() => rollbackExternalPlugin(item.pluginId)}><Button size="small">回滚</Button></Popconfirm>
+    </Space> }
+  ];
   const pluginView = <Content className="content">
-    <div className="page-heading"><div><Text className="eyebrow">PLUGIN RUNTIME</Text><Title level={2}>SPI 与外部插件</Title><Text type="secondary">查看插件发现、ServiceLoader 注册、调用统计与加载错误</Text></div><Button icon={<ReloadOutlined />} onClick={loadSpi}>刷新</Button></div>
+    <div className="page-heading"><div><Text className="eyebrow">PLUGIN RUNTIME</Text><Title level={2}>SPI 与外部插件</Title><Text type="secondary">查看插件发现、ServiceLoader 注册、调用统计与加载错误</Text></div><Space><Button icon={<CheckCircleOutlined />} onClick={validateExternalPlugin}>验证 JAR</Button><Button icon={<PlusOutlined />} onClick={promptEnableExternalPlugin}>启用插件</Button><Button icon={<ReloadOutlined />} onClick={rescanExternalPlugins}>扫描并更新</Button><Button icon={<ReloadOutlined />} onClick={loadSpi}>刷新状态</Button></Space></div>
     <Row gutter={[16, 16]} className="metrics">
       <Col xs={24} sm={8}><Card bordered={false}><Statistic title="已注册 SPI 服务" value={spi.services?.length || 0} prefix={<ApiOutlined />} /></Card></Col>
       <Col xs={24} sm={8}><Card bordered={false}><Statistic title="握手 Provider" value={spi.handshakeProviders?.length || 0} prefix={<SettingOutlined />} /></Card></Col>
       <Col xs={24} sm={8}><Card bordered={false}><Statistic title="外部插件" value={external.plugins?.length || 0} prefix={<CloudServerOutlined />} /></Card></Col>
     </Row>
-    {Object.keys(external.errors || {}).length > 0 && <Alert type="error" showIcon message="外部插件发现错误" description={Object.entries(external.errors).map(([jar, reason]) => <div key={jar}>{jar}: {reason}</div>)} />}
+    {Object.keys(external.errors || {}).length > 0 && <Alert type="error" showIcon message="外部插件发现错误" description={Object.entries(external.errors).map(([jar, reason]) => <Space key={jar} direction="vertical"><Text>{jar}: {reason}</Text><Button size="small" icon={<PlusOutlined />} onClick={() => enableExternalPlugin(jar)}>尝试启用</Button></Space>)} />}
+    {pluginValidation && <Alert className="plugin-validation" type={pluginValidation.dependenciesSatisfied && !pluginValidation.duplicatePluginId ? 'success' : 'warning'} showIcon message={`${pluginValidation.pluginId} JAR 验证${pluginValidation.dependenciesSatisfied && !pluginValidation.duplicatePluginId ? '通过' : '需处理'}`} description={<Space direction="vertical"><Text>版本：{pluginValidation.version}，SPI 服务：{pluginValidation.services?.length || 0} 个</Text>{pluginValidation.missingDependencies?.length > 0 && <Text type="danger">缺少依赖：{pluginValidation.missingDependencies.join(', ')}</Text>}{pluginValidation.duplicatePluginId && <Text type="danger">插件 ID 已存在</Text>}</Space>} closable onClose={() => setPluginValidation(null)} />}
     <div className="spi-sections">
       <Card title="SPI 服务注册表" bordered={false}><Table rowKey={item => `${item.serviceType}:${item.serviceId}`} columns={spiColumns} dataSource={spi.services || []} pagination={false} locale={{ emptyText: <Empty description="暂无 SPI 服务" /> }} scroll={{ x: 900 }} /></Card>
       <Card title="握手与认证 Provider" bordered={false}>
@@ -218,6 +313,17 @@ function App() {
           { key: 'handshake', label: 'Handshake', children: (spi.handshakeProviders || []).map(item => `${item.id} [${(item.protocols || []).join(', ')}]`).join('; ') || '-' },
           { key: 'auth', label: 'Authenticator', children: (spi.authenticators || []).map(item => item.id).join(', ') || '-' }
         ]} />
+      </Card>
+      <Card title="外部插件" bordered={false} extra={<Tag color={external.enabled ? 'green' : 'default'}>{external.enabled ? '已启用' : '未启用'}</Tag>}>
+        <Table rowKey="pluginId" columns={externalPluginColumns} dataSource={external.plugins || []} pagination={false} locale={{ emptyText: <Empty description="暂无外部插件" /> }} scroll={{ x: 900 }} />
+      </Card>
+      <Card title="握手 SPI 调试验证" bordered={false}>
+        <Row gutter={[12, 12]}>
+          {['protocolId', 'transportId', 'remoteAddress', 'handshakeProviderId', 'encoding'].map(key => <Col xs={24} sm={12} lg={key === 'handshakeProviderId' ? 8 : 4} key={key}><Input addonBefore={key} value={debugRequest[key]} onChange={event => setDebugRequest({ ...debugRequest, [key]: event.target.value })} /></Col>)}
+          <Col xs={24}><Input.TextArea rows={3} addonBefore="payload" value={debugRequest.payload} onChange={event => setDebugRequest({ ...debugRequest, payload: event.target.value })} /></Col>
+          <Col xs={24}><Space><Button type="primary" icon={<ThunderboltOutlined />} loading={debugging} onClick={debugHandshake}>执行握手验证</Button>{debugResult && <Button onClick={() => setDebugResult(null)}>清除结果</Button>}</Space></Col>
+          {debugResult && <Col xs={24}><pre className="spi-debug-result">{JSON.stringify(debugResult, null, 2)}</pre></Col>}
+        </Row>
       </Card>
     </div>
   </Content>;

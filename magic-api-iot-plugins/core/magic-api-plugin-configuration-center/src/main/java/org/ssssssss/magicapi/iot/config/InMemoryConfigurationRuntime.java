@@ -45,24 +45,19 @@ public final class InMemoryConfigurationRuntime implements ConfigurationRuntime 
 
     @Override public ConfigurationCenter.ConfigurationValue put(String key, String value) {
         ConfigurationCenter.ConfigurationValue result = center.put(key, value);
-        apply(ConfigurationCenter.ConfigurationEvent.put(result));
+        reloadAndReparse();
         return result;
     }
 
     @Override public ConfigurationCenter.CasResult compareAndSet(String key, String expectedRevision, String value) {
         ConfigurationCenter.CasResult result = center.compareAndSet(key, expectedRevision, value);
-        result.current().ifPresent(current -> {
-            apply(ConfigurationCenter.ConfigurationEvent.put(current));
-        });
+        reloadAndReparse();
         return result;
     }
 
     @Override public ConfigurationCenter.CasResult delete(String key, String expectedRevision) {
         ConfigurationCenter.CasResult result = center.delete(key, expectedRevision);
-        if (result.applied()) {
-            values.remove(key);
-            reparseAll();
-        }
+        reloadAndReparse();
         return result;
     }
 
@@ -85,6 +80,11 @@ public final class InMemoryConfigurationRuntime implements ConfigurationRuntime 
             .collect(Collectors.toMap(ConfigurationCenter.ConfigurationValue::key, value -> value));
         values.keySet().retainAll(latest.keySet());
         values.putAll(latest);
+    }
+
+    private void reloadAndReparse() {
+        reload();
+        reparseAll();
     }
 
     private void apply(ConfigurationCenter.ConfigurationEvent event) {

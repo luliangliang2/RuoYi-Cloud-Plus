@@ -47,8 +47,9 @@ class NacosConfigurationCenterTest {
             assertTrue(center.delete("robot/speed", updated.current().orElseThrow().revision()).applied());
             assertTrue(center.get("robot/speed").isEmpty());
             assertEquals(List.of(ConfigurationCenter.EventType.PUT, ConfigurationCenter.EventType.PUT,
-                ConfigurationCenter.EventType.DELETE), events.stream()
+                ConfigurationCenter.EventType.PUT, ConfigurationCenter.EventType.DELETE), events.stream()
                 .map(ConfigurationCenter.ConfigurationEvent::type).toList());
+            assertFalse(events.get(0).revision().equals(events.get(1).revision()));
 
             assertFalse(created.revision().equals(updated.current().orElseThrow().revision()));
             watch.close();

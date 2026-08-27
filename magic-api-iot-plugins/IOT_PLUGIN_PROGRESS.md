@@ -219,11 +219,16 @@ magic-api-iot-plugins/
 
 ### 2026-08-27
 
+- 修复 Nacos 配置管理删除 key 的过期 revision 问题：Nacos 单文档变更会刷新所有现存 key 的本地 revision，运行时写入后也会重新对齐权威快照。
+- 配置中心和 Nacos Provider 定向测试通过，测试应用已重新打包；运行中的旧实例需要重启后生效。
 - 完成第六步外部 JAR 插件框架：描述读取、依赖校验、ServiceLoader 发现、独立 ClassLoader 和共享 API 防打包校验。
 - 增加外部插件启用、停用、重载、升级、回滚和资源关闭；插件服务支持调用排空，避免停用时新调用进入。
 - 增加 Handshake SPI、Authenticator SPI、Provider Registry 和内置握手插件迁移。
 - 测试应用新增 SPI 快照、握手 dry-run、外部插件扫描与生命周期管理接口；5177 增加 SPI 插件视图。
 - 示例插件可通过 `HELLO|productId|deviceId|credential` 报文验证 ServiceLoader 发现和握手匹配。
+- 示例握手插件将 `handshake-basic` 调整为可选依赖，避免 SPI 发现阶段因认证器生命周期顺序产生误报；认证器缺失时仍由握手协调器返回明确认证失败。
+- 5177 SPI 页面补齐外部插件启用、禁用、重载、升级、回滚、目录扫描和 JAR 验证操作，并增加握手 dry-run 调试表单。
+- 新增 `/api/iot/gateway/plugins/external/validate`，只校验描述、依赖、共享 API 和 ServiceLoader，不会启动插件。
 - 定向验证命令 `mvn -pl platform/magic-api-plugin-runtime,adapters/magic-api-plugin-handshake-basic -am test` 通过，运行时 1 项、核心 4 项、握手 1 项测试成功。
 - 临时测试实例因 Nacos `10.211.55.3:9848` 不可用而停止；外部插件链路已通过动态 JAR 单元测试验证，真实应用验证需恢复 Nacos gRPC 后进行。
 
