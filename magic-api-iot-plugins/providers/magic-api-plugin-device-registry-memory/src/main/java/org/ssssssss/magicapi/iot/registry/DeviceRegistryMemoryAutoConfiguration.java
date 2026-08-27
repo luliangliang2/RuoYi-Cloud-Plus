@@ -14,7 +14,7 @@ public class DeviceRegistryMemoryAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(DeviceRegistry.class)
-    DeviceRegistry deviceRegistry() {
+    InMemoryDeviceRegistry deviceRegistry() {
         return new InMemoryDeviceRegistry();
     }
 

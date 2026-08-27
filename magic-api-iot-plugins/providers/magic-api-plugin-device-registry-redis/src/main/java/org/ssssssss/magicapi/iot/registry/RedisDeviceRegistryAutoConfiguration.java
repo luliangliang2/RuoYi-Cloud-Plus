@@ -18,7 +18,7 @@ import java.util.Map;
 public class RedisDeviceRegistryAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(DeviceRegistry.class)
-	DeviceRegistry deviceRegistry(StringRedisTemplate redis, ObjectMapper mapper) {
+	RedisDeviceRegistry deviceRegistry(StringRedisTemplate redis, ObjectMapper mapper) {
 		return new RedisDeviceRegistry(redis, mapper);
 	}
 

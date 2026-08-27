@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Empty, Input, Layout, Popconfirm, Progress, Row, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Empty, Input, Layout, Modal, Popconfirm, Progress, Row, Select, Space, Statistic, Switch, Table, Tag, Tooltip, Typography } from 'antd';
 import { ApiOutlined, CheckCircleOutlined, ClusterOutlined, CloudServerOutlined, DashboardOutlined, DatabaseOutlined, DeleteOutlined, EditOutlined, FileTextOutlined, HeartOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import './style.css';
 
@@ -54,6 +54,16 @@ function App() {
   const [debugResult, setDebugResult] = useState(null);
   const [debugging, setDebugging] = useState(false);
   const [pluginValidation, setPluginValidation] = useState(null);
+  const [devicePage, setDevicePage] = useState({ items: [], total: 0, page: 1, pageSize: 20 });
+  const [deviceFilters, setDeviceFilters] = useState({ productId: '', keyword: '' });
+  const [deviceForm, setDeviceForm] = useState({ productId: 'robot', deviceId: '', protocolId: 'raw', enabled: true, capabilities: '{}', credentialType: 'secret', credential: '', generateCredential: true });
+  const [deviceError, setDeviceError] = useState('');
+  const [deviceNotice, setDeviceNotice] = useState('');
+  const [credentialDevice, setCredentialDevice] = useState(null);
+  const [credentialTypes, setCredentialTypes] = useState([]);
+  const [credentialForm, setCredentialForm] = useState({ type: 'secret', value: '' });
+  const [generatedCredential, setGeneratedCredential] = useState('');
+  const [editingDevice, setEditingDevice] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -183,6 +193,106 @@ function App() {
   useEffect(() => { if (view === 'configuration') loadConfiguration(); }, [view, loadConfiguration]);
   useEffect(() => { if (view === 'plugins') loadSpi(); }, [view, loadSpi]);
 
+  const loadDevices = useCallback(async (page = 1, pageSize = devicePage.pageSize) => {
+    try {
+      const query = new URLSearchParams({ productId: deviceFilters.productId, keyword: deviceFilters.keyword, page: String(page), pageSize: String(pageSize) });
+      setDevicePage(await getJson(`/api/iot/gateway/devices?${query}`));
+      setDeviceError('');
+    } catch (err) { setDeviceError(err.message || '设备注册中心不可用'); }
+  }, [deviceFilters, devicePage.pageSize]);
+
+  useEffect(() => { if (view === 'devices') loadDevices(); }, [view, loadDevices]);
+
+  const registerDevice = async () => {
+    try {
+      let capabilities;
+      try { capabilities = JSON.parse(deviceForm.capabilities || '{}'); }
+      catch { throw new Error('能力定义必须是 JSON 对象'); }
+      const editing = editingDevice;
+      const url = editing
+        ? `/api/iot/gateway/devices/${encodeURIComponent(editing.productId)}/${encodeURIComponent(editing.deviceId)}`
+        : '/api/iot/gateway/devices';
+      const response = await fetch(url, { method: editing ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...deviceForm, capabilities }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
+      setGeneratedCredential(result.generatedCredential || '');
+      setDeviceNotice(editing ? `设备 ${editing.productId}/${editing.deviceId} 已更新` : `设备 ${result.device.identity.productId}/${result.device.identity.deviceId} 已登记`);
+      setEditingDevice(null);
+      setDeviceForm({ ...deviceForm, deviceId: '', credential: '' });
+      await loadDevices();
+    } catch (err) { setDeviceError(err.message || '设备登记失败'); }
+  };
+
+  const editDevice = item => {
+    setEditingDevice(item.identity);
+    setDeviceForm({ productId: item.identity.productId, deviceId: item.identity.deviceId, protocolId: item.protocolId, enabled: item.enabled, capabilities: JSON.stringify(item.capabilities || {}, null, 2), credentialType: 'secret', credential: '', generateCredential: false });
+  };
+
+  const deleteDevice = async item => {
+    try {
+      const { productId, deviceId } = item.identity;
+      const response = await fetch(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      if (editingDevice?.productId === productId && editingDevice?.deviceId === deviceId) setEditingDevice(null);
+      setDeviceNotice(`设备 ${productId}/${deviceId} 已删除`);
+      await loadDevices(1, devicePage.pageSize);
+    } catch (err) { setDeviceError(err.message || '设备删除失败'); }
+  };
+
+  const changeDeviceStatus = async item => {
+    try {
+      const { productId, deviceId } = item.identity;
+      const response = await fetch(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/status`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !item.enabled }) });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      await loadDevices(devicePage.page, devicePage.pageSize);
+    } catch (err) { setDeviceError(err.message || '设备状态更新失败'); }
+  };
+
+  const openCredentials = async item => {
+    try {
+      const { productId, deviceId } = item.identity;
+      const result = await getJson(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials`);
+      setCredentialDevice(item);
+      setCredentialTypes(result.credentialTypes || []);
+      setCredentialForm({ type: 'secret', value: '' });
+      setGeneratedCredential('');
+    } catch (err) { setDeviceError(err.message || '凭证信息读取失败'); }
+  };
+
+  const saveCredential = async generate => {
+    if (!credentialDevice) return;
+    try {
+      const { productId, deviceId } = credentialDevice.identity;
+      const response = await fetch(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: credentialForm.type, value: credentialForm.value, generate }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
+      setCredentialTypes(result.credentialTypes || []);
+      setGeneratedCredential(result.generatedCredential || '');
+      setCredentialForm({ ...credentialForm, value: '' });
+    } catch (err) { setDeviceError(err.message || '凭证设置失败'); }
+  };
+
+  const verifyCredential = async () => {
+    if (!credentialDevice) return;
+    try {
+      const { productId, deviceId } = credentialDevice.identity;
+      const response = await fetch(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(credentialForm) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
+      setDeviceNotice(result.verified ? '凭证验证通过' : '凭证验证失败');
+    } catch (err) { setDeviceError(err.message || '凭证验证失败'); }
+  };
+
+  const deleteCredential = async type => {
+    if (!credentialDevice) return;
+    try {
+      const { productId, deviceId } = credentialDevice.identity;
+      const response = await fetch(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials/${encodeURIComponent(type)}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      setCredentialTypes(credentialTypes.filter(item => item !== type));
+    } catch (err) { setDeviceError(err.message || '凭证删除失败'); }
+  };
+
   const saveConfiguration = async (key, value, revision) => {
     try {
       const response = revision
@@ -255,6 +365,54 @@ function App() {
     : configurationMeta.provider === 'zookeeper'
       ? [{ key: 'connectString', label: '连接串' }, { key: 'rootPath', label: 'Root Path' }]
       : [{ key: 'endpoints', label: 'Endpoints' }, { key: 'rootPrefix', label: 'Root Prefix' }];
+
+  const deviceColumns = [
+    { title: '设备', key: 'identity', render: (_, item) => <div><Text strong>{item.identity.deviceId}</Text><div><Text type="secondary">{item.identity.productId}</Text></div></div> },
+    { title: '协议', dataIndex: 'protocolId', key: 'protocolId', render: value => <Tag color="blue">{value}</Tag> },
+    { title: '状态', dataIndex: 'enabled', key: 'enabled', render: value => <Badge status={value ? 'success' : 'default'} text={value ? '启用' : '停用'} /> },
+    { title: '能力', dataIndex: 'capabilities', key: 'capabilities', render: value => Object.keys(value || {}).length ? Object.keys(value).map(key => <Tag key={key}>{key}</Tag>) : '-' },
+    { title: '版本', dataIndex: 'version', key: 'version', width: 80 },
+    { title: '操作', key: 'actions', width: 300, render: (_, item) => <Space wrap><Button size="small" onClick={() => changeDeviceStatus(item)}>{item.enabled ? '停用' : '启用'}</Button><Button size="small" icon={<EditOutlined />} onClick={() => editDevice(item)}>编辑</Button><Button size="small" icon={<SettingOutlined />} onClick={() => openCredentials(item)}>凭证</Button><Popconfirm title="确认删除该设备及其凭证？" description="删除后不可恢复" onConfirm={() => deleteDevice(item)}><Button size="small" danger icon={<DeleteOutlined />}>删除</Button></Popconfirm></Space> }
+  ];
+
+  const devicesView = <Content className="content">
+    <div className="page-heading"><div><Text className="eyebrow">DEVICE ONBOARDING</Text><Title level={2}>设备接入</Title><Text type="secondary">登记设备身份、控制启停状态并管理认证凭证</Text></div><Button icon={<ReloadOutlined />} onClick={() => loadDevices(devicePage.page, devicePage.pageSize)}>刷新</Button></div>
+    {deviceError && <Alert className="device-alert" type="error" showIcon message="设备操作失败" description={deviceError} closable onClose={() => setDeviceError('')} />}
+    {deviceNotice && <Alert className="device-alert" type="success" showIcon message={deviceNotice} closable onClose={() => setDeviceNotice('')} />}
+    {generatedCredential && <Alert className="device-alert" type="warning" showIcon message="新凭证仅显示一次" description={<Text copyable code>{generatedCredential}</Text>} closable onClose={() => setGeneratedCredential('')} />}
+    <Row gutter={[16, 16]}>
+      <Col xs={24} lg={17}>
+        <Card title={<Space><ApiOutlined />设备注册清单</Space>} extra={<Tag color="blue">{devicePage.total || 0} 台</Tag>} bordered={false}>
+          <Space className="device-filters" wrap><Input placeholder="产品 ID" value={deviceFilters.productId} onChange={event => setDeviceFilters({ ...deviceFilters, productId: event.target.value })} /><Input.Search placeholder="设备 ID" value={deviceFilters.keyword} onChange={event => setDeviceFilters({ ...deviceFilters, keyword: event.target.value })} onSearch={() => loadDevices(1, devicePage.pageSize)} enterButton="查询" /></Space>
+          <Table rowKey={item => item.identity.productId + '/' + item.identity.deviceId} columns={deviceColumns} dataSource={devicePage.items || []} pagination={{ current: devicePage.page, pageSize: devicePage.pageSize, total: devicePage.total, showSizeChanger: true, onChange: loadDevices }} locale={{ emptyText: <Empty description="暂无登记设备" /> }} scroll={{ x: 760 }} />
+        </Card>
+      </Col>
+      <Col xs={24} lg={7}>
+        <Card title={<Space>{editingDevice ? <EditOutlined /> : <PlusOutlined />}{editingDevice ? '编辑设备' : '登记设备'}</Space>} bordered={false}>
+          <div className="device-form">
+            <Input addonBefore="产品" disabled={Boolean(editingDevice)} value={deviceForm.productId} onChange={event => setDeviceForm({ ...deviceForm, productId: event.target.value })} />
+            <Input addonBefore="设备" disabled={Boolean(editingDevice)} placeholder="例如 agv-001" value={deviceForm.deviceId} onChange={event => setDeviceForm({ ...deviceForm, deviceId: event.target.value })} />
+            <Select value={deviceForm.protocolId} onChange={value => setDeviceForm({ ...deviceForm, protocolId: value })} options={[{ value: 'raw', label: 'Raw TCP' }, { value: 'mqtt', label: 'MQTT' }, { value: 'modbus-tcp', label: 'Modbus TCP' }]} />
+            <Input.TextArea rows={4} value={deviceForm.capabilities} onChange={event => setDeviceForm({ ...deviceForm, capabilities: event.target.value })} placeholder='能力 JSON，例如 {"lift":"supported"}' />
+            <Input addonBefore="凭证类型" value={deviceForm.credentialType} onChange={event => setDeviceForm({ ...deviceForm, credentialType: event.target.value })} />
+            {!deviceForm.generateCredential && <Input.Password addonBefore="凭证" value={deviceForm.credential} onChange={event => setDeviceForm({ ...deviceForm, credential: event.target.value })} />}
+            <div className="device-switch-row"><Text>自动生成凭证</Text><Switch checked={deviceForm.generateCredential} onChange={checked => setDeviceForm({ ...deviceForm, generateCredential: checked })} /></div>
+            <div className="device-switch-row"><Text>登记后启用</Text><Switch checked={deviceForm.enabled} onChange={checked => setDeviceForm({ ...deviceForm, enabled: checked })} /></div>
+            <Space direction="vertical" style={{ width: '100%' }}><Button type="primary" block icon={<SaveOutlined />} disabled={!deviceForm.productId.trim() || !deviceForm.deviceId.trim()} onClick={registerDevice}>{editingDevice ? '保存修改' : '登记设备'}</Button>{editingDevice && <Button block onClick={() => { setEditingDevice(null); setDeviceForm({ ...deviceForm, deviceId: '', credential: '' }); }}>取消编辑</Button>}</Space>
+          </div>
+        </Card>
+      </Col>
+    </Row>
+    <Modal title={credentialDevice ? `凭证管理：${credentialDevice.identity.productId}/${credentialDevice.identity.deviceId}` : '凭证管理'} open={Boolean(credentialDevice)} onCancel={() => setCredentialDevice(null)} footer={null} destroyOnHidden>
+      <div className="credential-panel">
+        <div><Text type="secondary">已配置类型</Text><div className="credential-tags">{credentialTypes.length ? credentialTypes.map(type => <Tag key={type} closable onClose={event => { event.preventDefault(); deleteCredential(type); }}>{type}</Tag>) : <Text type="secondary">暂无凭证</Text>}</div></div>
+        <Input addonBefore="类型" value={credentialForm.type} onChange={event => setCredentialForm({ ...credentialForm, type: event.target.value })} />
+        <Input.Password addonBefore="凭证" value={credentialForm.value} onChange={event => setCredentialForm({ ...credentialForm, value: event.target.value })} />
+        <Space wrap><Button type="primary" onClick={() => saveCredential(false)} disabled={!credentialForm.type.trim() || !credentialForm.value}>设置凭证</Button><Button onClick={() => saveCredential(true)} disabled={!credentialForm.type.trim()}>自动轮换</Button><Button icon={<CheckCircleOutlined />} onClick={verifyCredential} disabled={!credentialForm.value}>验证</Button></Space>
+        {generatedCredential && <Alert type="warning" showIcon message="自动生成凭证仅显示一次" description={<Text copyable code>{generatedCredential}</Text>} />}
+      </div>
+    </Modal>
+  </Content>;
 
   const configurationView = <Content className="content">
     <div className="page-heading"><div><Text className="eyebrow">CONFIGURATION CENTER</Text><Title level={2}>配置管理</Title><Text type="secondary">通过当前激活的 {configurationMeta.provider} 配置中心管理网关运行配置</Text></div><Space><Badge status="processing" text={`${configurationMeta.provider} ACTIVE`} /><Button icon={<ReloadOutlined />} onClick={loadConfiguration}>刷新</Button></Space></div>
@@ -332,14 +490,14 @@ function App() {
     <Sider width={244} className="app-sider">
       <div className="brand"><div className="brand-mark"><DashboardOutlined /></div><div><b>IoT Gateway</b><span>Control Center</span></div></div>
       <div className={`nav-item ${view === 'dashboard' ? 'active' : ''}`} onClick={() => setView('dashboard')}><DashboardOutlined /> 运行监控</div>
-      <div className="nav-item"><ApiOutlined /> 设备接入</div>
+      <div className={`nav-item ${view === 'devices' ? 'active' : ''}`} onClick={() => setView('devices')}><ApiOutlined /> 设备接入</div>
       <div className="nav-item"><ClusterOutlined /> 节点集群</div>
       <div className={`nav-item ${view === 'configuration' ? 'active' : ''}`} onClick={() => setView('configuration')}><SettingOutlined /> 配置管理</div>
       <div className={`nav-item ${view === 'plugins' ? 'active' : ''}`} onClick={() => setView('plugins')}><ThunderboltOutlined /> SPI 插件</div>
     </Sider>
     <Layout>
       <Header className="topbar"><Space><CloudServerOutlined /><Text strong>网关运行监控</Text><Tag color="cyan">DEV</Tag></Space><Space><Text type="secondary">自动刷新 10s</Text><ReloadOutlined onClick={load} className="clickable"/></Space></Header>
-      {view === 'configuration' ? configurationView : view === 'plugins' ? pluginView : <Content className="content">
+      {view === 'devices' ? devicesView : view === 'configuration' ? configurationView : view === 'plugins' ? pluginView : <Content className="content">
         <div className="page-heading"><div><Text className="eyebrow">MAGIC API IOT PLUGINS</Text><Title level={2}>Gateway Overview</Title><Text type="secondary">观察当前 Spring 容器中的 IoT 插件、连接能力与运行健康度</Text></div><Space><Badge status={status.status === 'UP' ? 'success' : 'error'} text={status.status === 'UP' ? '网关在线' : '连接异常'} /><Text type="secondary">{updatedAt ? `更新于 ${updatedAt.toLocaleTimeString()}` : '等待数据'}</Text></Space></div>
         {error && <Alert type="warning" showIcon message="无法读取网关状态" description={error} closable onClose={() => setError('')} />}
         <Row gutter={[16, 16]} className="metrics">

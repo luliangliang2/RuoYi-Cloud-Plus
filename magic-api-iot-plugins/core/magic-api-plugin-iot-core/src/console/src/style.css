@@ -285,6 +285,40 @@ body {
   margin-bottom: 16px;
 }
 
+.device-alert {
+  margin-bottom: 16px;
+}
+
+.device-filters {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.device-filters .ant-input-affix-wrapper,
+.device-filters > .ant-input,
+.device-filters .ant-input-search {
+  width: min(260px, 100%);
+}
+
+.device-form,
+.credential-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.device-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.credential-tags {
+  min-height: 32px;
+  margin-top: 8px;
+}
+
 @media (max-width: 800px) {
   .app-sider {
     display: none;

@@ -2,6 +2,10 @@ package org.dromara.iot;
 
 import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
 import org.ssssssss.magicapi.iot.core.spi.DeviceRegistry;
+import org.ssssssss.magicapi.iot.core.spi.DeviceRegistryAdmin;
+import org.ssssssss.magicapi.iot.core.spi.DeviceCredential;
+import org.ssssssss.magicapi.iot.core.spi.RegisteredDevice;
+import org.ssssssss.magicapi.iot.core.model.DeviceIdentity;
 import org.ssssssss.magicapi.iot.core.spi.SessionRepository;
 import org.ssssssss.magicapi.iot.core.spi.ObservableTransportProvider;
 import org.ssssssss.magicapi.iot.protocol.ProtocolIngressRuntime;
@@ -26,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.nio.file.Path;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/iot/gateway")
@@ -34,6 +40,7 @@ public class IotGatewayController {
         "node-registry", "configuration-center", "transport");
 
     private final DeviceRegistry deviceRegistry;
+    private final DeviceRegistryAdmin deviceRegistryAdmin;
     private final SessionRepository sessionRepository;
     private final DeviceMessageBus messageBus;
     private final PluginRegistry pluginRegistry;
@@ -51,7 +58,8 @@ public class IotGatewayController {
     private final HandshakeDebugService handshakeDebug;
     private final ExternalPluginManager externalPlugins;
 
-    public IotGatewayController(DeviceRegistry deviceRegistry, SessionRepository sessionRepository,
+    public IotGatewayController(DeviceRegistry deviceRegistry, DeviceRegistryAdmin deviceRegistryAdmin,
+                                SessionRepository sessionRepository,
                                 DeviceMessageBus messageBus, PluginRegistry pluginRegistry,
                                 CapabilityRegistry capabilityRegistry, ProviderHealthCatalog providerHealthCatalog,
                                 ProtocolIngressRuntime protocolRuntime, List<ObservableTransportProvider> transports,
@@ -65,6 +73,7 @@ public class IotGatewayController {
                                 HandshakeDebugService handshakeDebug,
                                 ObjectProvider<ExternalPluginManager> externalPlugins) {
         this.deviceRegistry = deviceRegistry;
+        this.deviceRegistryAdmin = deviceRegistryAdmin;
         this.sessionRepository = sessionRepository;
         this.messageBus = messageBus;
         this.pluginRegistry = pluginRegistry;
@@ -104,6 +113,91 @@ public class IotGatewayController {
     public Map<String, Object> providers() {
         var providers = providerHealthCatalog.snapshots();
         return Map.of("count", providers.size(), "providers", providers);
+    }
+
+    @GetMapping("/devices")
+    public DeviceRegistryAdmin.DevicePage devices(@RequestParam(defaultValue = "") String productId,
+                                                   @RequestParam(defaultValue = "") String keyword,
+                                                   @RequestParam(defaultValue = "1") int page,
+                                                   @RequestParam(defaultValue = "20") int pageSize) {
+        return deviceRegistryAdmin.search(productId, keyword, page, pageSize);
+    }
+
+    @GetMapping("/devices/{productId}/{deviceId}")
+    public RegisteredDevice device(@PathVariable String productId, @PathVariable String deviceId) {
+        return deviceRegistry.find(new DeviceIdentity(productId, deviceId))
+            .orElseThrow(() -> new IllegalArgumentException("Device is not registered: " + productId + "/" + deviceId));
+    }
+
+    @PostMapping("/devices")
+    public Map<String, Object> registerDevice(@RequestBody DeviceRegistration request) {
+        DeviceIdentity identity = new DeviceIdentity(request.productId(), request.deviceId());
+        RegisteredDevice saved = deviceRegistryAdmin.register(new RegisteredDevice(identity, request.enabled(),
+            requireText(request.protocolId(), "protocolId"), request.capabilities(), 1L));
+        String generatedCredential = configureCredential(identity, request.credentialType(), request.credential(),
+            request.generateCredential());
+        return Map.of("device", saved, "credentialTypes", deviceRegistryAdmin.credentialTypes(identity),
+            "generatedCredential", generatedCredential);
+    }
+
+    @PutMapping("/devices/{productId}/{deviceId}")
+    public Map<String, Object> updateDevice(@PathVariable String productId, @PathVariable String deviceId,
+                                             @RequestBody DeviceUpdate request) {
+        DeviceIdentity identity = new DeviceIdentity(productId, deviceId);
+        RegisteredDevice current = requireDevice(identity);
+        RegisteredDevice updated = deviceRegistryAdmin.update(new RegisteredDevice(identity, request.enabled(),
+            requireText(request.protocolId(), "protocolId"), request.capabilities(), current.version() + 1));
+        String generatedCredential = configureCredential(identity, request.credentialType(), request.credential(),
+            request.generateCredential());
+        return Map.of("device", updated, "credentialTypes", deviceRegistryAdmin.credentialTypes(identity),
+            "generatedCredential", generatedCredential);
+    }
+
+    @DeleteMapping("/devices/{productId}/{deviceId}")
+    public void deleteDevice(@PathVariable String productId, @PathVariable String deviceId) {
+        deviceRegistryAdmin.delete(new DeviceIdentity(productId, deviceId));
+    }
+
+    @PutMapping("/devices/{productId}/{deviceId}/status")
+    public RegisteredDevice changeDeviceStatus(@PathVariable String productId, @PathVariable String deviceId,
+                                                @RequestBody DeviceStatusChange request) {
+        return deviceRegistryAdmin.setEnabled(new DeviceIdentity(productId, deviceId), request.enabled());
+    }
+
+    @GetMapping("/devices/{productId}/{deviceId}/credentials")
+    public Map<String, Object> deviceCredentials(@PathVariable String productId, @PathVariable String deviceId) {
+        DeviceIdentity identity = new DeviceIdentity(productId, deviceId);
+        requireDevice(identity);
+        return Map.of("productId", productId, "deviceId", deviceId,
+            "credentialTypes", deviceRegistryAdmin.credentialTypes(identity));
+    }
+
+    @PutMapping("/devices/{productId}/{deviceId}/credentials")
+    public Map<String, Object> setDeviceCredential(@PathVariable String productId, @PathVariable String deviceId,
+                                                   @RequestBody CredentialWrite request) {
+        DeviceIdentity identity = new DeviceIdentity(productId, deviceId);
+        requireDevice(identity);
+        String generatedCredential = configureCredential(identity, request.type(), request.value(), request.generate());
+        return Map.of("credentialTypes", deviceRegistryAdmin.credentialTypes(identity),
+            "generatedCredential", generatedCredential);
+    }
+
+    @DeleteMapping("/devices/{productId}/{deviceId}/credentials/{credentialType}")
+    public void deleteDeviceCredential(@PathVariable String productId, @PathVariable String deviceId,
+                                       @PathVariable String credentialType) {
+        DeviceIdentity identity = new DeviceIdentity(productId, deviceId);
+        requireDevice(identity);
+        deviceRegistryAdmin.deleteCredential(identity, requireText(credentialType, "credentialType"));
+    }
+
+    @PostMapping("/devices/{productId}/{deviceId}/credentials/verify")
+    public Map<String, Object> verifyDeviceCredential(@PathVariable String productId, @PathVariable String deviceId,
+                                                       @RequestBody CredentialVerify request) {
+        DeviceIdentity identity = new DeviceIdentity(productId, deviceId);
+        requireDevice(identity);
+        boolean verified = deviceRegistryAdmin.verifyCredential(identity,
+            new DeviceCredential(requireText(request.type(), "credentialType"), requireText(request.value(), "credential")));
+        return Map.of("verified", verified);
     }
 
     @GetMapping("/runtime")
@@ -264,6 +358,30 @@ public class IotGatewayController {
         return externalPlugins;
     }
 
+    private RegisteredDevice requireDevice(DeviceIdentity identity) {
+        return deviceRegistry.find(identity)
+            .orElseThrow(() -> new IllegalArgumentException("Device is not registered: " + identity.routingKey()));
+    }
+
+    private String configureCredential(DeviceIdentity identity, String type, String value, boolean generate) {
+        String credentialType = type == null || type.isBlank() ? "secret" : type.trim();
+        String credential = generate ? generateCredential() : value;
+        if (credential == null || credential.isBlank()) return "";
+        deviceRegistryAdmin.setCredential(identity, new DeviceCredential(credentialType, credential));
+        return generate ? credential : "";
+    }
+
+    private static String generateCredential() {
+        byte[] bytes = new byte[24];
+        new SecureRandom().nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private static String requireText(String value, String name) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(name + " must not be blank");
+        return value.trim();
+    }
+
     private Map<String, Object> componentView(PluginSnapshot snapshot) {
         var descriptor = snapshot.descriptor();
         String module = descriptor.capabilities().isEmpty()
@@ -300,4 +418,12 @@ public class IotGatewayController {
     public record ConfigurationWrite(String key, String value) { }
     public record ConfigurationCasWrite(String key, String value, String expectedRevision) { }
     public record ExternalPluginPath(String jar) { }
+    public record DeviceRegistration(String productId, String deviceId, boolean enabled, String protocolId,
+                                     Map<String, String> capabilities, String credentialType, String credential,
+                                     boolean generateCredential) { }
+    public record DeviceUpdate(boolean enabled, String protocolId, Map<String, String> capabilities,
+                               String credentialType, String credential, boolean generateCredential) { }
+    public record DeviceStatusChange(boolean enabled) { }
+    public record CredentialWrite(String type, String value, boolean generate) { }
+    public record CredentialVerify(String type, String value) { }
 }

@@ -96,6 +96,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add the first Netty TCP transport with line framing, lifecycle cleanup and runtime counters.
 - [x] Register the Raw protocol adapter and connect transport frames to the protocol pipeline and message bus.
 - [ ] Add device authentication handshake before promoting temporary TCP connection identities to registered devices.
+- [ ] Replace Redis Device Registry management-time `SCAN` pagination with maintained product/device indexes for large fleets.
 - [x] Add an embedded-broker MQTT transport with Topic mapping, registry authentication and runtime counters.
 - [x] Add an external MQTT/EMQX client transport with shared subscriptions, reconnect, registry validation and command downlink.
 - [ ] Add an EMQX lifecycle event adapter for authoritative device online/offline session updates.

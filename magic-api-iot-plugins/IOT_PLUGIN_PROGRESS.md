@@ -6,10 +6,10 @@
 ## 当前基线
 
 - 更新时间：2026-08-27
-- 当前阶段：第六步外部插件加载与 SPI 调试链路已完成，进入热插拔安全边界和指标建设
-- 总体进度：约 88%
-- 构建状态：etcd 定向集成测试 6 个 reactor 模块全部成功，测试工程 `clean package` 已通过
-- 测试工程：已通过 `9226` 临时实例验证 etcd 配置中心管理 API 和 Actuator 健康链路
+- 当前阶段：第六步外部插件加载与 SPI 调试链路已完成，设备接入管理能力已落地，进入热插拔安全边界和指标建设
+- 总体进度：约 89%
+- 构建状态：设备注册 Memory/Redis Provider 定向测试、测试工程打包和 5177 前端构建均已通过
+- 测试工程：设备登记、查询、启停、凭证管理和握手认证链路等待最新 9218 实例的最终联调确认
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
 ## 当前目录规范
@@ -53,6 +53,10 @@ magic-api-iot-plugins/
 - [x] 删除旧 `ProtocolAdapter`、兼容桥和 `ProtocolRegistry`
 - [x] `ProtocolIngressRuntime` 将 Transport 帧经协议流水线转换后发布到统一 Message Bus
 - [x] Raw 协议适配器已自动装配，当前使用连接级临时设备身份
+- [x] `DeviceRegistry` 仅承担运行时设备查找、保存和认证
+- [x] `DeviceRegistryAdmin` 独立承担设备分页查询、启停和凭证管理
+- [x] 设备启停作为管理动作执行，每次变更递增设备版本
+- [x] 凭证明文不提供读取接口，自动生成凭证只在生成当次返回一次
 
 ### 扩展 Provider 契约
 
@@ -75,6 +79,8 @@ magic-api-iot-plugins/
 - [x] TCP Transport 支持独立 LINE 和 MODBUS_TCP 监听器，按 MBAP length 字段处理 TCP 粘包/拆包
 - [x] `magic-api-plugin-transport-mqtt`：内嵌 mica-mqtt broker、Topic 映射、QoS 元数据、注册中心鉴权和上下行
 - [x] `magic-api-plugin-protocol-modbus-tcp`：DigitalPetri PDU 编解码、8 类功能码、异常响应和事务关联
+- [x] Memory Device Registry 实现统一设备管理契约
+- [x] Redis Device Registry 实现统一设备管理契约
 
 ### 分布式 Provider
 
@@ -218,6 +224,17 @@ magic-api-iot-plugins/
 ## 更新记录
 
 ### 2026-08-27
+
+- 设备注册管理与设备接入统一收敛到 5177 的“设备接入”页面，取消独立租户/住户概念。
+- 新增 `DeviceRegistryAdmin` 管理 SPI：设备分页查询、登记、启停、凭证类型查询、设置/轮换、删除和验证；运行时 `DeviceRegistry` 仍只负责查找、保存和认证。
+- 设备管理 API 已接入测试工程：`/api/iot/gateway/devices` 及状态、凭证子资源；启停动作使设备版本递增，凭证明文不提供读取接口，自动生成凭证只返回一次。
+- 5177 设备接入页已支持产品/设备筛选、分页、协议选择、能力 JSON、登记启用、设备启停和凭证管理弹窗。
+- 真实联调：Redis 中登记 `robot/agv-001`，启用/停用/再启用后版本为 3；正确凭证验证成功，错误凭证验证失败；`HELLO|robot|agv-001|secret` 经 `vendor-pipe-v1` 握手认证成功，principal 为 `robot/agv-001`。
+- 5177 页面实测显示设备接入清单、登记表单和凭证管理弹窗；最新 9218 实例已启动并加载 Redis Registry、Kafka、Nacos 等 Provider。
+- 设备注册管理已补齐显式 CRUD：`POST` 仅新增并拒绝重复主键，`PUT /devices/{productId}/{deviceId}` 修改设备协议、能力和启用状态，`DELETE` 同时删除设备及凭证；详情查询和分页查询保留。
+- 设备接入页面新增编辑、保存修改、取消编辑和删除确认操作；编辑时锁定产品 ID/设备 ID，避免修改主键造成数据漂移。
+- 新增 Memory Provider CRUD 生命周期测试；Memory/Redis Registry 编译和测试通过，5177 前端构建通过。
+- 最新 9218 实例已完成真实 CRUD 验证：`POST` 新增、`PUT` 修改、详情/分页 `GET` 查询、`DELETE` 删除均可用；删除后列表为 0 条。Redis 管理查询当前仍使用 `SCAN`，已纳入大规模设备索引优化 TODO。
 
 - 修复 Nacos 配置管理删除 key 的过期 revision 问题：Nacos 单文档变更会刷新所有现存 key 的本地 revision，运行时写入后也会重新对齐权威快照。
 - 配置中心和 Nacos Provider 定向测试通过，测试应用已重新打包；运行中的旧实例需要重启后生效。
