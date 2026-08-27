@@ -103,12 +103,14 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add Modbus TCP as the first production protocol adapter.
 - [x] Add MBAP-aware TCP stream framing, exception decoding and transaction-aware command correlation.
 
-## P1 - Runtime Loading
+## P1 - Runtime Loading (Completed)
 
-- [ ] Load external plugin JARs from a configured `plugins/` directory.
-- [ ] Introduce one controlled class loader per external plugin.
-- [ ] Prevent plugins from bundling duplicate plugin API classes.
-- [ ] Add install, enable, disable, upgrade and rollback operations.
+- [x] Load external plugin JARs from a configured `plugins/` directory.
+- [x] Introduce one controlled class loader per external plugin.
+- [x] Prevent plugins from bundling duplicate plugin API classes.
+- [x] Add enable, disable, reload, upgrade and rollback operations.
+- [x] Discover `IotPlugin` and `PluginService` through `ServiceLoader`.
+- [x] Register and expose plugin descriptors and SPI diagnostics.
 - [ ] Support configuration refresh only for explicitly refreshable fields.
 - [ ] Persist plugin installation and desired-state records.
 
@@ -117,7 +119,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Support hot loading for stateless protocol adapters.
 - [ ] Drain commands and messages before stopping a stateful plugin.
 - [ ] Migrate or close device channels before transport plugin removal.
-- [ ] Verify class-loader release and detect resource leaks.
+- [x] Close external plugin class loaders during disable, reload, upgrade and shutdown.
+- [ ] Detect resource leaks with thread/channel/subscription leak tests.
 - [ ] Support rolling plugin upgrades across gateway nodes.
 
 ## Architecture Rules

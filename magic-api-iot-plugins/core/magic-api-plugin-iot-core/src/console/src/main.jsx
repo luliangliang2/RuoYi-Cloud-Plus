@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Empty, Input, Layout, Popconfirm, Progress, Row, Space, Statistic, Table, Tag, Typography } from 'antd';
+import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Empty, Input, Layout, Popconfirm, Progress, Row, Space, Statistic, Table, Tag, Tooltip, Typography } from 'antd';
 import { ApiOutlined, CheckCircleOutlined, ClusterOutlined, CloudServerOutlined, DashboardOutlined, DatabaseOutlined, DeleteOutlined, EditOutlined, FileTextOutlined, HeartOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import './style.css';
 
@@ -25,12 +25,20 @@ function transportTarget(snapshot) {
     : `${snapshot.bindAddress}:${snapshot.port}`;
 }
 
+function shortTypeName(type) {
+  if (!type) return '-';
+  const normalized = type.split('$')[0];
+  return normalized.slice(normalized.lastIndexOf('.') + 1);
+}
+
 function App() {
   const [status, setStatus] = useState(fallback);
   const [components, setComponents] = useState([]);
   const [providers, setProviders] = useState([]);
   const [runtime, setRuntime] = useState({ protocol: { protocolIds: [] }, transports: [] });
   const [view, setView] = useState('dashboard');
+  const [spi, setSpi] = useState({ services: [], handshakeProviders: [], authenticators: [] });
+  const [external, setExternal] = useState({ enabled: false, plugins: [], errors: {} });
   const [configuration, setConfiguration] = useState([]);
   const [configurationMeta, setConfigurationMeta] = useState({ provider: 'UNKNOWN', details: {} });
   const [memory, setMemory] = useState({ values: [], parsed: {}, parserErrors: {} });
@@ -80,7 +88,19 @@ function App() {
     }
   }, []);
 
+  const loadSpi = useCallback(async () => {
+    try {
+      const [nextSpi, nextExternal] = await Promise.all([
+        getJson('/api/iot/gateway/spi'),
+        getJson('/api/iot/gateway/plugins/external')
+      ]);
+      setSpi(nextSpi);
+      setExternal(nextExternal);
+    } catch (err) { setError(err.message || 'SPI API unavailable'); }
+  }, []);
+
   useEffect(() => { if (view === 'configuration') loadConfiguration(); }, [view, loadConfiguration]);
+  useEffect(() => { if (view === 'plugins') loadSpi(); }, [view, loadSpi]);
 
   const saveConfiguration = async (key, value, revision) => {
     try {
@@ -175,6 +195,33 @@ function App() {
     </Row>
   </Content>;
 
+  const spiColumns = [
+    { title: '服务类型', dataIndex: 'serviceType', key: 'serviceType', width: 220, render: value => <Tooltip title={value}><span className="spi-type-label">{shortTypeName(value)}</span></Tooltip> },
+    { title: 'Service ID', dataIndex: 'serviceId', key: 'serviceId', render: value => <Text strong>{value}</Text> },
+    { title: '插件', dataIndex: 'pluginId', key: 'pluginId' },
+    { title: '来源', dataIndex: 'source', key: 'source', ellipsis: true },
+    { title: '调用', key: 'calls', render: (_, item) => `${item.successes || 0} / ${item.invocations || 0}` },
+    { title: '错误', dataIndex: 'lastError', key: 'lastError', ellipsis: true }
+  ];
+  const pluginView = <Content className="content">
+    <div className="page-heading"><div><Text className="eyebrow">PLUGIN RUNTIME</Text><Title level={2}>SPI 与外部插件</Title><Text type="secondary">查看插件发现、ServiceLoader 注册、调用统计与加载错误</Text></div><Button icon={<ReloadOutlined />} onClick={loadSpi}>刷新</Button></div>
+    <Row gutter={[16, 16]} className="metrics">
+      <Col xs={24} sm={8}><Card bordered={false}><Statistic title="已注册 SPI 服务" value={spi.services?.length || 0} prefix={<ApiOutlined />} /></Card></Col>
+      <Col xs={24} sm={8}><Card bordered={false}><Statistic title="握手 Provider" value={spi.handshakeProviders?.length || 0} prefix={<SettingOutlined />} /></Card></Col>
+      <Col xs={24} sm={8}><Card bordered={false}><Statistic title="外部插件" value={external.plugins?.length || 0} prefix={<CloudServerOutlined />} /></Card></Col>
+    </Row>
+    {Object.keys(external.errors || {}).length > 0 && <Alert type="error" showIcon message="外部插件发现错误" description={Object.entries(external.errors).map(([jar, reason]) => <div key={jar}>{jar}: {reason}</div>)} />}
+    <div className="spi-sections">
+      <Card title="SPI 服务注册表" bordered={false}><Table rowKey={item => `${item.serviceType}:${item.serviceId}`} columns={spiColumns} dataSource={spi.services || []} pagination={false} locale={{ emptyText: <Empty description="暂无 SPI 服务" /> }} scroll={{ x: 900 }} /></Card>
+      <Card title="握手与认证 Provider" bordered={false}>
+        <Descriptions size="small" column={{ xs: 1, sm: 2 }} items={[
+          { key: 'handshake', label: 'Handshake', children: (spi.handshakeProviders || []).map(item => `${item.id} [${(item.protocols || []).join(', ')}]`).join('; ') || '-' },
+          { key: 'auth', label: 'Authenticator', children: (spi.authenticators || []).map(item => item.id).join(', ') || '-' }
+        ]} />
+      </Card>
+    </div>
+  </Content>;
+
   return <Layout className="app-shell">
     <Sider width={244} className="app-sider">
       <div className="brand"><div className="brand-mark"><DashboardOutlined /></div><div><b>IoT Gateway</b><span>Control Center</span></div></div>
@@ -182,10 +229,11 @@ function App() {
       <div className="nav-item"><ApiOutlined /> 设备接入</div>
       <div className="nav-item"><ClusterOutlined /> 节点集群</div>
       <div className={`nav-item ${view === 'configuration' ? 'active' : ''}`} onClick={() => setView('configuration')}><SettingOutlined /> 配置管理</div>
+      <div className={`nav-item ${view === 'plugins' ? 'active' : ''}`} onClick={() => setView('plugins')}><ThunderboltOutlined /> SPI 插件</div>
     </Sider>
     <Layout>
       <Header className="topbar"><Space><CloudServerOutlined /><Text strong>网关运行监控</Text><Tag color="cyan">DEV</Tag></Space><Space><Text type="secondary">自动刷新 10s</Text><ReloadOutlined onClick={load} className="clickable"/></Space></Header>
-      {view === 'configuration' ? configurationView : <Content className="content">
+      {view === 'configuration' ? configurationView : view === 'plugins' ? pluginView : <Content className="content">
         <div className="page-heading"><div><Text className="eyebrow">MAGIC API IOT PLUGINS</Text><Title level={2}>Gateway Overview</Title><Text type="secondary">观察当前 Spring 容器中的 IoT 插件、连接能力与运行健康度</Text></div><Space><Badge status={status.status === 'UP' ? 'success' : 'error'} text={status.status === 'UP' ? '网关在线' : '连接异常'} /><Text type="secondary">{updatedAt ? `更新于 ${updatedAt.toLocaleTimeString()}` : '等待数据'}</Text></Space></div>
         {error && <Alert type="warning" showIcon message="无法读取网关状态" description={error} closable onClose={() => setError('')} />}
         <Row gutter={[16, 16]} className="metrics">

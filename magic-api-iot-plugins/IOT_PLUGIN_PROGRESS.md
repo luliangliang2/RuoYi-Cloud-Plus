@@ -5,9 +5,9 @@
 
 ## 当前基线
 
-- 更新时间：2026-08-26
-- 当前阶段：etcd 三节点真实业务验证完成，进入 Provider Micrometer 指标建设
-- 总体进度：约 80%
+- 更新时间：2026-08-27
+- 当前阶段：第六步外部插件加载与 SPI 调试链路已完成，进入热插拔安全边界和指标建设
+- 总体进度：约 88%
 - 构建状态：etcd 定向集成测试 6 个 reactor 模块全部成功，测试工程 `clean package` 已通过
 - 测试工程：已通过 `9226` 临时实例验证 etcd 配置中心管理 API 和 Actuator 健康链路
 - 业务边界：IoT 插件不引入租户、住户等业务概念
@@ -130,6 +130,21 @@ magic-api-iot-plugins/
 - [x] RocketMQ 使用业务 Topic 和默认 Topic 路由实现 `UP`、`DEGRADED`、`DOWN` 探测
 - [x] 新增条件化 `magic-api-plugin-redis-support`，仅在 Redis Registry/Session 启用时创建连接工厂
 
+### 第六步：插件扩展与外部 JAR
+
+- [x] `PluginService` 通用 SPI 服务标记和 `PluginServiceRegistry`
+- [x] SPI 服务类型/服务 ID 冲突校验、调用统计、失败记录和停止排空
+- [x] `DeviceHandshakeProvider`、`DeviceAuthenticator` 和握手协调器
+- [x] 内置 JSON 握手插件迁移到 Handshake SPI
+- [x] 外部 JAR `META-INF/iot-plugin.json` 描述注册
+- [x] 外部 JAR `ServiceLoader` 服务发现
+- [x] 每个外部插件独立 `URLClassLoader`，并校验禁止打包共享 API
+- [x] 外部插件依赖校验、启用、停用、重载、升级和回滚
+- [x] 插件调试 API：SPI 快照、匹配查询、握手 dry-run、外部插件扫描和生命周期操作
+- [x] 5177 监控页展示 SPI 服务、握手 Provider、Authenticator、外部插件和发现错误
+- [x] 示例外部握手插件 `handshake-vendor-pipe`
+- [x] 外部 JAR 动态发现、ServiceLoader、调用统计、停用、启用和 ClassLoader 关闭验证
+
 ### 监控和测试工程
 
 - [x] 测试应用接入插件 Starter
@@ -158,7 +173,7 @@ magic-api-iot-plugins/
 2. 为 Provider、Transport、Protocol 增加配置解析器并定义热更新边界。
 3. 将稳定的模型和 SPI 从 `iot-core` 迁移到 `plugin-api`。
 4. 增加 Docker 可用时的 Testcontainers 回归环境。
-5. 再进入外部 JAR 加载和插件生命周期管理。
+5. 完成外部插件真实运行实例验证，并补充热插拔资源泄漏和滚动升级验证。
 
 ## 长期路线
 
@@ -185,9 +200,8 @@ magic-api-iot-plugins/
 
 ### 动态插件
 
-- 第一阶段只支持启动期发现和启停配置。
-- 第二阶段支持外部 JAR 发现和独立 ClassLoader。
-- 第三阶段再支持协议插件热加载、连接排空、升级和回滚。
+- 当前已支持启动期发现、独立 ClassLoader、启停、重载、升级和回滚。
+- 协议插件热加载、连接迁移、跨节点滚动升级仍需单独实现。
 - 有状态插件在卸载前必须完成命令排空和设备连接迁移。
 
 ## 每次更新规则
@@ -202,6 +216,16 @@ magic-api-iot-plugins/
 - 如果目录、artifactId、配置键或 API 发生变化，必须同步更新 README 和 TODO。
 
 ## 更新记录
+
+### 2026-08-27
+
+- 完成第六步外部 JAR 插件框架：描述读取、依赖校验、ServiceLoader 发现、独立 ClassLoader 和共享 API 防打包校验。
+- 增加外部插件启用、停用、重载、升级、回滚和资源关闭；插件服务支持调用排空，避免停用时新调用进入。
+- 增加 Handshake SPI、Authenticator SPI、Provider Registry 和内置握手插件迁移。
+- 测试应用新增 SPI 快照、握手 dry-run、外部插件扫描与生命周期管理接口；5177 增加 SPI 插件视图。
+- 示例插件可通过 `HELLO|productId|deviceId|credential` 报文验证 ServiceLoader 发现和握手匹配。
+- 定向验证命令 `mvn -pl platform/magic-api-plugin-runtime,adapters/magic-api-plugin-handshake-basic -am test` 通过，运行时 1 项、核心 4 项、握手 1 项测试成功。
+- 临时测试实例因 Nacos `10.211.55.3:9848` 不可用而停止；外部插件链路已通过动态 JAR 单元测试验证，真实应用验证需恢复 Nacos gRPC 后进行。
 
 ### 2026-08-26
 

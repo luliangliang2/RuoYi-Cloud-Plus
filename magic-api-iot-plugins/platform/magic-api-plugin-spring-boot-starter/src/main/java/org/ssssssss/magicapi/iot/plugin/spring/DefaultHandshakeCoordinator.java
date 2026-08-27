@@ -33,8 +33,11 @@ final class DefaultHandshakeCoordinator implements HandshakeCoordinator {
         String protocolId = protocolId(context);
         if (!properties.isEnabled() || !properties.getRequiredProtocols().contains(protocolId)) return;
         String providerId = properties.getProviders().get(protocolId);
-        if (providerId == null || providerId.isBlank())
-            throw new PluginRuntimeException("Required handshake provider is not configured for protocol: " + protocolId);
+        if (providerId == null || providerId.isBlank()) {
+            states.put(connectionId, new State(context, "", Instant.now()));
+            states.get(connectionId).rejected = "Required handshake provider is not configured for protocol: " + protocolId;
+            return;
+        }
         State state = new State(context, providerId, Instant.now());
         states.put(connectionId, state);
         var result = services.invoke(DeviceHandshakeProvider.class, providerId,
@@ -49,6 +52,7 @@ final class DefaultHandshakeCoordinator implements HandshakeCoordinator {
         if (state == null || state.authenticatedContext != null)
             return Decision.forward(state == null ? context : state.authenticatedContext);
         if (!state.rejected.isBlank()) return new Decision(false, true, null, context, state.rejected);
+        if (state.providerId.isBlank()) return Decision.reject("Handshake provider is not configured");
         if (Instant.now().isAfter(state.connectedAt.plus(properties.getTimeout())))
             return new Decision(false, true, null, context, "Handshake timed out");
         if (++state.attempts > properties.getMaxAttempts())

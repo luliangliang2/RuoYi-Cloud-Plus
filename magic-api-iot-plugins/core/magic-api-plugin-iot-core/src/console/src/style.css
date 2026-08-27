@@ -139,6 +139,16 @@ body {
   margin-bottom: 16px;
 }
 
+.spi-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.spi-sections > .ant-card {
+  margin: 0;
+}
+
 .configuration-meta,
 .configuration-layout {
   margin-bottom: 16px;
@@ -246,6 +256,17 @@ body {
 
 .ant-table {
   font-size: 12px;
+}
+
+.spi-type-label {
+  display: inline-block;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  color: #315b60;
+  font-weight: 600;
 }
 
 @media (max-width: 800px) {

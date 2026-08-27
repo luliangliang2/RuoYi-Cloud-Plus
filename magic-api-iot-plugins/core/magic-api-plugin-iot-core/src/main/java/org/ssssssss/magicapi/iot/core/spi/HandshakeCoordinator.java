@@ -21,5 +21,9 @@ public interface HandshakeCoordinator {
         public static Decision forward(ProtocolContext context) {
             return new Decision(true, false, null, context, "");
         }
+
+        public static Decision reject(String reason) {
+            return new Decision(false, true, null, null, reason);
+        }
     }
 }

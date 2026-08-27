@@ -106,12 +106,10 @@
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-api</artifactId>
-			<version>${iot-jetcd-grpc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-core</artifactId>
-			<version>${iot-jetcd-grpc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ssssssss.magicapi.iot</groupId>

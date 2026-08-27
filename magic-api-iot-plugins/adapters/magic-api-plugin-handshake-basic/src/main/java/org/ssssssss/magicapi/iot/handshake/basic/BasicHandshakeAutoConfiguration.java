@@ -9,11 +9,13 @@ import org.ssssssss.magicapi.iot.core.spi.DeviceRegistry;
 
 @AutoConfiguration
 public class BasicHandshakeAutoConfiguration {
-    @Bean DeviceHandshakeProvider jsonDeviceHandshakeProvider(ObjectMapper mapper) {
-        return new JsonDeviceHandshakeProvider(mapper);
-    }
+	@Bean
+	DeviceHandshakeProvider jsonDeviceHandshakeProvider(ObjectMapper mapper) {
+		return new JsonDeviceHandshakeProvider(mapper);
+	}
 
-    @Bean DeviceAuthenticator registryDeviceAuthenticator(DeviceRegistry registry) {
-        return new RegistryDeviceAuthenticator(registry);
-    }
+	@Bean
+	DeviceAuthenticator registryDeviceAuthenticator(DeviceRegistry registry) {
+		return new RegistryDeviceAuthenticator(registry);
+	}
 }

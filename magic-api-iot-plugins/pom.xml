@@ -63,6 +63,7 @@
         <module>providers/magic-api-plugin-message-bus-pulsar</module>
         <module>providers/magic-api-plugin-message-bus-rocketmq</module>
         <module>platform/magic-api-plugin-testkit</module>
+        <module>examples/magic-api-plugin-handshake-example</module>
     </modules>
 
     <dependencyManagement>

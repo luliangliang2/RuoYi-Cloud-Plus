@@ -52,6 +52,36 @@ gateway also exposes `/api/iot/gateway/providers`, which is consumed by the cons
 Redis connection infrastructure is created by `magic-api-plugin-redis-support` only when the
 registry or session Provider type is `redis`.
 
+## SPI and external plugins
+
+The extension boundary is based on the framework-neutral `magic-api-plugin-api`. Handshake
+providers, authenticators and other plugin services are discovered through `ServiceLoader` and
+registered by the runtime Provider Registry. Built-in handshake implementations use the same SPI
+as external implementations.
+
+External JARs are loaded from the configured directory with one `URLClassLoader` per plugin:
+
+```yaml
+iot:
+  plugins:
+    external:
+      enabled: true
+      directory: plugins
+      data-directory: data/iot-plugins
+```
+
+Each JAR must contain `META-INF/iot-plugin.json` and the relevant
+`META-INF/services/...` files. A plugin ID must be unique, dependencies must already be
+registered, and shared IoT API/model/SPI classes must not be bundled in the JAR. The runtime
+supports scan, enable, disable, reload, upgrade and rollback; plugin services are drained before
+their class loader is closed.
+
+The test gateway exposes `/api/iot/gateway/spi` for registry snapshots,
+`/api/iot/gateway/spi/matches` for handshake matching and
+`/api/iot/gateway/spi/handshake/debug` for a dry-run handshake. External plugin operations are
+available under `/api/iot/gateway/plugins/external`. The 5177 console has a corresponding SPI
+view. An example plugin is located at `examples/magic-api-plugin-handshake-example`.
+
 ## Distributed gateway node registry
 
 Gateway node discovery is independent from device registration and device session routing.

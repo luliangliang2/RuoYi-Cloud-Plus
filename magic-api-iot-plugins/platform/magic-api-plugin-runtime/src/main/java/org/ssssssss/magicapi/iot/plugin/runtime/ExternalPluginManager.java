@@ -117,11 +117,13 @@ public final class ExternalPluginManager implements AutoCloseable {
 
     public synchronized ExternalPluginSnapshot upgrade(String pluginId, Path stagedJar) {
         LoadedPlugin current = requireLoaded(pluginId);
+        Path normalizedStagedJar = stagedJar.toAbsolutePath().normalize();
+        requireInsidePluginDirectory(normalizedStagedJar);
         Path target = current.jar;
         Path backup = backupPath(target);
         Path staging = pluginDirectory.resolve(target.getFileName() + ".upgrade");
         try {
-            Files.copy(stagedJar, staging, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(normalizedStagedJar, staging, StandardCopyOption.REPLACE_EXISTING);
             readDescriptor(staging);
             Files.copy(target, backup, StandardCopyOption.REPLACE_EXISTING);
             stopAndRelease(current);
@@ -184,7 +186,8 @@ public final class ExternalPluginManager implements AutoCloseable {
 
         URLClassLoader classLoader;
         try {
-            classLoader = new URLClassLoader(new java.net.URL[]{jar.toUri().toURL()}, parentClassLoader);
+            classLoader = new URLClassLoader("iot-plugin-" + descriptor.id(),
+                new java.net.URL[]{jar.toUri().toURL()}, parentClassLoader);
         } catch (IOException exception) {
             throw new PluginRuntimeException("Failed to create plugin class loader: " + jar, exception);
         }
@@ -225,7 +228,7 @@ public final class ExternalPluginManager implements AutoCloseable {
             PluginState state = health.status() == PluginHealth.Status.UP ? PluginState.RUNNING : PluginState.DEGRADED;
             pluginRegistry.update(descriptor.id(), state, health, "");
             LoadedPlugin loadedPlugin = new LoadedPlugin(descriptor, jar, classLoader, scheduler, entrypoint,
-                services, Instant.now(), "");
+                services, Instant.now(), state, "");
             loaded.put(descriptor.id(), loadedPlugin);
             return loadedPlugin;
         } catch (RuntimeException exception) {
@@ -240,12 +243,14 @@ public final class ExternalPluginManager implements AutoCloseable {
 
     private void stopAndRelease(LoadedPlugin plugin) {
         try {
+            plugin.state = PluginState.STOPPING;
             pluginRegistry.update(plugin.descriptor.id(), PluginState.STOPPING,
                 new PluginHealth(PluginHealth.Status.UNKNOWN, "Plugin stopping", Map.of()), "");
             plugin.services.forEach(service -> {
                 try { service.stop(); } catch (RuntimeException ignored) { }
             });
             plugin.entrypoint.stop();
+            plugin.state = PluginState.STOPPED;
         } finally {
             serviceRegistry.unregisterPlugin(plugin.descriptor.id());
             capabilityRegistry.unregister(plugin.descriptor.id());
@@ -312,13 +317,36 @@ public final class ExternalPluginManager implements AutoCloseable {
         return error.getMessage() == null ? error.getClass().getName() : error.getMessage();
     }
 
-    private record LoadedPlugin(PluginDescriptor descriptor, Path jar, URLClassLoader classLoader,
-                                ScheduledExecutorService scheduler, IotPlugin entrypoint,
-                                List<PluginService> services, Instant loadedAt, String lastError) {
+    private static final class LoadedPlugin {
+        private final PluginDescriptor descriptor;
+        private final Path jar;
+        private final URLClassLoader classLoader;
+        private final ScheduledExecutorService scheduler;
+        private final IotPlugin entrypoint;
+        private final List<PluginService> services;
+        private final Instant loadedAt;
+        private volatile PluginState state;
+        private volatile String lastError;
+
+        private LoadedPlugin(PluginDescriptor descriptor, Path jar, URLClassLoader classLoader,
+                             ScheduledExecutorService scheduler, IotPlugin entrypoint,
+                             List<PluginService> services, Instant loadedAt, PluginState state,
+                             String lastError) {
+            this.descriptor = descriptor;
+            this.jar = jar;
+            this.classLoader = classLoader;
+            this.scheduler = scheduler;
+            this.entrypoint = entrypoint;
+            this.services = List.copyOf(services);
+            this.loadedAt = loadedAt;
+            this.state = state;
+            this.lastError = lastError == null ? "" : lastError;
+        }
+
         private ExternalPluginSnapshot snapshot() {
             return new ExternalPluginSnapshot(descriptor.id(), descriptor.version(), jar.toString(),
                 classLoader.getName() == null ? classLoader.toString() : classLoader.getName(),
-                PluginState.RUNNING, services.stream().map(service -> service.getClass().getName()).toList(),
+                state, services.stream().map(service -> service.getClass().getName()).toList(),
                 loadedAt, lastError);
         }
     }

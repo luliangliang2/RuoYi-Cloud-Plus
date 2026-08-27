@@ -33,7 +33,10 @@ public final class DefaultPluginServiceRegistry implements PluginServiceRegistry
 
     @Override
     public void unregisterPlugin(String pluginId) {
+        List<Entry> removed = services.entrySet().stream().filter(entry -> entry.getValue().pluginId.equals(pluginId))
+            .map(java.util.Map.Entry::getValue).distinct().toList();
         services.entrySet().removeIf(entry -> entry.getValue().pluginId.equals(pluginId));
+        removed.forEach(Entry::drain);
     }
 
     @Override
@@ -53,6 +56,8 @@ public final class DefaultPluginServiceRegistry implements PluginServiceRegistry
     public <T extends PluginService, R> R invoke(Class<T> serviceType, String serviceId, Function<T, R> invocation) {
         Entry entry = services.get(new ServiceKey(serviceType, serviceId));
         if (entry == null) throw new PluginRuntimeException("Plugin service not found: " + serviceType.getName() + ":" + serviceId);
+        if (entry.closing) throw new PluginRuntimeException("Plugin service is stopping: " + serviceType.getName() + ":" + serviceId);
+        entry.activeInvocations.incrementAndGet();
         entry.invocations.incrementAndGet();
         entry.lastInvokedAt = Instant.now();
         try {
@@ -64,6 +69,10 @@ public final class DefaultPluginServiceRegistry implements PluginServiceRegistry
             entry.failures.incrementAndGet();
             entry.lastError = exception.getMessage() == null ? exception.getClass().getName() : exception.getMessage();
             throw exception;
+        } finally {
+            if (entry.activeInvocations.decrementAndGet() == 0) {
+                synchronized (entry) { entry.notifyAll(); }
+            }
         }
     }
 
@@ -75,9 +84,20 @@ public final class DefaultPluginServiceRegistry implements PluginServiceRegistry
     }
 
     private static List<Class<?>> serviceTypes(Class<?> implementation) {
-        return java.util.Arrays.stream(implementation.getInterfaces())
-            .filter(type -> type != PluginService.class && PluginService.class.isAssignableFrom(type))
-            .toList();
+        java.util.LinkedHashSet<Class<?>> result = new java.util.LinkedHashSet<>();
+        Class<?> current = implementation;
+        while (current != null) {
+            for (Class<?> type : current.getInterfaces()) collectServiceTypes(type, result);
+            current = current.getSuperclass();
+        }
+        if (result.isEmpty()) result.add(PluginService.class);
+        return List.copyOf(result);
+    }
+
+    private static void collectServiceTypes(Class<?> type, java.util.Set<Class<?>> result) {
+        if (!PluginService.class.isAssignableFrom(type)) return;
+        if (type != PluginService.class) result.add(type);
+        for (Class<?> parent : type.getInterfaces()) collectServiceTypes(parent, result);
     }
 
     private record ServiceKey(Class<?> type, String id) { }
@@ -91,6 +111,8 @@ public final class DefaultPluginServiceRegistry implements PluginServiceRegistry
         private final AtomicLong invocations = new AtomicLong();
         private final AtomicLong successes = new AtomicLong();
         private final AtomicLong failures = new AtomicLong();
+        private final AtomicLong activeInvocations = new AtomicLong();
+        private volatile boolean closing;
         private volatile Instant lastInvokedAt;
         private volatile String lastError = "";
 
@@ -105,6 +127,19 @@ public final class DefaultPluginServiceRegistry implements PluginServiceRegistry
             return new PluginServiceSnapshot(pluginId, service.serviceId(), serviceType.getName(),
                 service.getClass().getName(), source, invocations.get(), successes.get(), failures.get(),
                 registeredAt, lastInvokedAt, lastError);
+        }
+
+        private void drain() {
+            closing = true;
+            long deadline = System.nanoTime() + java.time.Duration.ofSeconds(5).toNanos();
+            synchronized (this) {
+                while (activeInvocations.get() > 0 && System.nanoTime() < deadline) {
+                    try { wait(50); } catch (InterruptedException exception) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
         }
     }
 }
