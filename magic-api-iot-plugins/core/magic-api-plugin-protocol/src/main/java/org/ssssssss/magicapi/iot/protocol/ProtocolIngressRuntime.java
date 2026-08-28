@@ -17,166 +17,212 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class ProtocolIngressRuntime implements SmartLifecycle, TransportProvider.TransportMessageHandler {
-    private final ProtocolPipelineRegistry pipelines;
-    private final DeviceMessageBus messageBus;
-    private final List<TransportProvider> transports;
-    private final HandshakeCoordinator handshakes;
-    private final TelemetryRecorder telemetry;
-    private final AtomicBoolean running = new AtomicBoolean();
-    private final AtomicLong activeConnections = new AtomicLong();
-    private final AtomicLong receivedFrames = new AtomicLong();
-    private final AtomicLong publishedMessages = new AtomicLong();
-    private final AtomicLong unsupportedFrames = new AtomicLong();
-    private final AtomicLong errors = new AtomicLong();
+	private final ProtocolPipelineRegistry pipelines;
+	private final DeviceMessageBus messageBus;
+	private final List<TransportProvider> transports;
+	private final HandshakeCoordinator handshakes;
+	private final TelemetryRecorder telemetry;
+	private final AtomicBoolean running = new AtomicBoolean();
+	private final AtomicLong activeConnections = new AtomicLong();
+	private final AtomicLong receivedFrames = new AtomicLong();
+	private final AtomicLong publishedMessages = new AtomicLong();
+	private final AtomicLong unsupportedFrames = new AtomicLong();
+	private final AtomicLong errors = new AtomicLong();
 
-    public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
-                                  List<TransportProvider> transports) {
-        this(pipelines, messageBus, transports, new HandshakeCoordinator() {
-            @Override public void connected(String connectionId, ProtocolContext context) { }
-            @Override public Decision received(String connectionId, ByteBuffer payload, ProtocolContext context) {
-                return Decision.forward(context);
-            }
-            @Override public void disconnected(String connectionId) { }
-        }, new TelemetryRecorder() {
-            @Override public void increment(String metric, Map<String, String> tags) { }
-            @Override public void record(String metric, Duration duration, Map<String, String> tags) { }
-            @Override public long value(String metric, Map<String, String> tags) { return 0; }
-        });
-    }
+	public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
+			List<TransportProvider> transports) {
+		this(pipelines, messageBus, transports, new HandshakeCoordinator() {
+			@Override
+			public void connected(String connectionId, ProtocolContext context) {
+			}
 
-    public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
-                                  List<TransportProvider> transports, HandshakeCoordinator handshakes) {
-        this(pipelines, messageBus, transports, handshakes, new TelemetryRecorder() {
-            @Override public void increment(String metric, Map<String, String> tags) { }
-            @Override public void record(String metric, Duration duration, Map<String, String> tags) { }
-            @Override public long value(String metric, Map<String, String> tags) { return 0; }
-        });
-    }
+			@Override
+			public Decision received(String connectionId, ByteBuffer payload, ProtocolContext context) {
+				return Decision.forward(context);
+			}
 
-    public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
-                                  List<TransportProvider> transports, HandshakeCoordinator handshakes,
-                                  TelemetryRecorder telemetry) {
-        this.pipelines = Objects.requireNonNull(pipelines, "pipelines");
-        this.messageBus = Objects.requireNonNull(messageBus, "messageBus");
-        this.transports = List.copyOf(transports);
-        this.handshakes = Objects.requireNonNull(handshakes, "handshakes");
-        this.telemetry = Objects.requireNonNull(telemetry, "telemetry");
-    }
+			@Override
+			public void disconnected(String connectionId) {
+			}
+		}, new TelemetryRecorder() {
+			@Override
+			public void increment(String metric, Map<String, String> tags) {
+			}
 
-    @Override
-    public void start() {
-        if (!running.compareAndSet(false, true)) return;
-        try {
-            transports.forEach(transport -> transport.start(this));
-        } catch (RuntimeException exception) {
-            running.set(false);
-            transports.forEach(this::closeQuietly);
-            throw exception;
-        }
-    }
+			@Override
+			public void record(String metric, Duration duration, Map<String, String> tags) {
+			}
 
-    @Override
-    public void stop() {
-        if (!running.compareAndSet(true, false)) return;
-        transports.forEach(this::closeQuietly);
-    }
+			@Override
+			public long value(String metric, Map<String, String> tags) {
+				return 0;
+			}
+		});
+	}
 
-    @Override public boolean isRunning() { return running.get(); }
-    @Override public boolean isAutoStartup() { return true; }
-    @Override public int getPhase() { return Integer.MAX_VALUE - 100; }
+	public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
+			List<TransportProvider> transports, HandshakeCoordinator handshakes) {
+		this(pipelines, messageBus, transports, handshakes, new TelemetryRecorder() {
+			@Override
+			public void increment(String metric, Map<String, String> tags) {
+			}
 
-    @Override
-    public void connected(String connectionId, ProtocolContext context) {
-        activeConnections.incrementAndGet();
-        long started = System.nanoTime();
-        try {
-            handshakes.connected(connectionId, context);
-            telemetry.increment("iot.provider.calls", tags("handshake", context.transport(), "success"));
-        } catch (RuntimeException exception) {
-            errors.incrementAndGet();
-            telemetry.increment("iot.provider.calls", tags("handshake", context.transport(), "error"));
-            transport(context.transport()).ifPresent(transport -> transport.disconnect(connectionId));
-        } finally {
-            telemetry.record("iot.provider.latency", elapsed(started), tags("handshake", context.transport(), "done"));
-        }
-    }
+			@Override
+			public void record(String metric, Duration duration, Map<String, String> tags) {
+			}
 
-    @Override
-    public void received(String connectionId, ByteBuffer payload, ProtocolContext context) {
-        receivedFrames.incrementAndGet();
-        long started = System.nanoTime();
-        try {
-            HandshakeCoordinator.Decision decision = handshakes.received(connectionId, payload.asReadOnlyBuffer(), context);
-            if (decision.response().hasRemaining())
-                transport(context.transport()).ifPresent(transport -> transport.send(connectionId, decision.response()));
-            if (decision.close()) {
-                transport(context.transport()).ifPresent(transport -> transport.disconnect(connectionId));
-                return;
-            }
-            if (!decision.forward()) return;
-            ProtocolContext effectiveContext = decision.context();
-            var pipeline = pipelines.detect(payload.asReadOnlyBuffer(), effectiveContext);
-            if (pipeline.isEmpty()) {
-                unsupportedFrames.incrementAndGet();
-                return;
-            }
-            pipeline.orElseThrow().decode(payload.asReadOnlyBuffer(), effectiveContext).forEach(message -> {
-                messageBus.publish(message);
-                publishedMessages.incrementAndGet();
-                telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "success"));
-            });
-            telemetry.increment("iot.provider.calls", tags("protocol", effectiveContext.transport(), "success"));
-        } catch (RuntimeException exception) {
-            errors.incrementAndGet();
-            telemetry.increment("iot.provider.calls", tags("protocol", context.transport(), "error"));
-        } finally {
-            telemetry.record("iot.provider.latency", elapsed(started), tags("protocol", context.transport(), "done"));
-        }
-    }
+			@Override
+			public long value(String metric, Map<String, String> tags) {
+				return 0;
+			}
+		});
+	}
 
-    @Override
-    public void received(String connectionId, DeviceMessage message, ProtocolContext context) {
-        receivedFrames.incrementAndGet();
-        long started = System.nanoTime();
-        try {
-            messageBus.publish(message);
-            publishedMessages.incrementAndGet();
-            telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "success"));
-        } catch (RuntimeException exception) {
-            errors.incrementAndGet();
-            telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "error"));
-        } finally {
-            telemetry.record("iot.provider.latency", elapsed(started), tags("message-bus", context.transport(), "done"));
-        }
-    }
+	public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
+			List<TransportProvider> transports, HandshakeCoordinator handshakes, TelemetryRecorder telemetry) {
+		this.pipelines = Objects.requireNonNull(pipelines, "pipelines");
+		this.messageBus = Objects.requireNonNull(messageBus, "messageBus");
+		this.transports = List.copyOf(transports);
+		this.handshakes = Objects.requireNonNull(handshakes, "handshakes");
+		this.telemetry = Objects.requireNonNull(telemetry, "telemetry");
+	}
 
-    @Override
-    public void disconnected(String connectionId, ProtocolContext context, Throwable cause) {
-        activeConnections.updateAndGet(current -> Math.max(0, current - 1));
-        handshakes.disconnected(connectionId);
-        if (cause != null) errors.incrementAndGet();
-    }
+	@Override
+	public void start() {
+		if (!running.compareAndSet(false, true))
+			return;
+		try {
+			transports.forEach(transport -> transport.start(this));
+		} catch (RuntimeException exception) {
+			running.set(false);
+			transports.forEach(this::closeQuietly);
+			throw exception;
+		}
+	}
 
-    public ProtocolRuntimeSnapshot snapshot() {
-        return new ProtocolRuntimeSnapshot(isRunning(), pipelines.protocolIds(), transports.size(),
-            activeConnections.get(), receivedFrames.get(), publishedMessages.get(),
-            unsupportedFrames.get(), errors.get());
-    }
+	@Override
+	public void stop() {
+		if (!running.compareAndSet(true, false))
+			return;
+		transports.forEach(this::closeQuietly);
+	}
 
-    private void closeQuietly(TransportProvider transport) {
-        try { transport.close(); } catch (Exception exception) { errors.incrementAndGet(); }
-    }
+	@Override
+	public boolean isRunning() {
+		return running.get();
+	}
 
-    private java.util.Optional<TransportProvider> transport(String transportId) {
-        return transports.stream().filter(transport -> transport.transportId().equals(transportId)).findFirst();
-    }
+	@Override
+	public boolean isAutoStartup() {
+		return true;
+	}
 
-    private static Duration elapsed(long started) {
-        return Duration.ofNanos(System.nanoTime() - started);
-    }
+	@Override
+	public int getPhase() {
+		return Integer.MAX_VALUE - 100;
+	}
 
-    private static Map<String, String> tags(String provider, String transport, String status) {
-        return Map.of("provider", provider == null ? "unknown" : provider,
-            "transport", transport == null ? "unknown" : transport, "status", status);
-    }
+	@Override
+	public void connected(String connectionId, ProtocolContext context) {
+		activeConnections.incrementAndGet();
+		long started = System.nanoTime();
+		try {
+			handshakes.connected(connectionId, context);
+			telemetry.increment("iot.provider.calls", tags("handshake", context.transport(), "success"));
+		} catch (RuntimeException exception) {
+			errors.incrementAndGet();
+			telemetry.increment("iot.provider.calls", tags("handshake", context.transport(), "error"));
+			transport(context.transport()).ifPresent(transport -> transport.disconnect(connectionId));
+		} finally {
+			telemetry.record("iot.provider.latency", elapsed(started), tags("handshake", context.transport(), "done"));
+		}
+	}
+
+	@Override
+	public void received(String connectionId, ByteBuffer payload, ProtocolContext context) {
+		receivedFrames.incrementAndGet();
+		long started = System.nanoTime();
+		try {
+			HandshakeCoordinator.Decision decision = handshakes.received(connectionId, payload.asReadOnlyBuffer(),
+					context);
+			if (decision.response().hasRemaining())
+				transport(context.transport())
+						.ifPresent(transport -> transport.send(connectionId, decision.response()));
+			if (decision.close()) {
+				transport(context.transport()).ifPresent(transport -> transport.disconnect(connectionId));
+				return;
+			}
+			if (!decision.forward())
+				return;
+			ProtocolContext effectiveContext = decision.context();
+			var pipeline = pipelines.detect(payload.asReadOnlyBuffer(), effectiveContext);
+			if (pipeline.isEmpty()) {
+				unsupportedFrames.incrementAndGet();
+				return;
+			}
+			pipeline.orElseThrow().decode(payload.asReadOnlyBuffer(), effectiveContext).forEach(message -> {
+				messageBus.publish(message);
+				publishedMessages.incrementAndGet();
+				telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "success"));
+			});
+			telemetry.increment("iot.provider.calls", tags("protocol", effectiveContext.transport(), "success"));
+		} catch (RuntimeException exception) {
+			errors.incrementAndGet();
+			telemetry.increment("iot.provider.calls", tags("protocol", context.transport(), "error"));
+		} finally {
+			telemetry.record("iot.provider.latency", elapsed(started), tags("protocol", context.transport(), "done"));
+		}
+	}
+
+	@Override
+	public void received(String connectionId, DeviceMessage message, ProtocolContext context) {
+		receivedFrames.incrementAndGet();
+		long started = System.nanoTime();
+		try {
+			messageBus.publish(message);
+			publishedMessages.incrementAndGet();
+			telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "success"));
+		} catch (RuntimeException exception) {
+			errors.incrementAndGet();
+			telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "error"));
+		} finally {
+			telemetry.record("iot.provider.latency", elapsed(started),
+					tags("message-bus", context.transport(), "done"));
+		}
+	}
+
+	@Override
+	public void disconnected(String connectionId, ProtocolContext context, Throwable cause) {
+		activeConnections.updateAndGet(current -> Math.max(0, current - 1));
+		handshakes.disconnected(connectionId);
+		if (cause != null)
+			errors.incrementAndGet();
+	}
+
+	public ProtocolRuntimeSnapshot snapshot() {
+		return new ProtocolRuntimeSnapshot(isRunning(), pipelines.protocolIds(), transports.size(),
+				activeConnections.get(), receivedFrames.get(), publishedMessages.get(), unsupportedFrames.get(),
+				errors.get());
+	}
+
+	private void closeQuietly(TransportProvider transport) {
+		try {
+			transport.close();
+		} catch (Exception exception) {
+			errors.incrementAndGet();
+		}
+	}
+
+	private java.util.Optional<TransportProvider> transport(String transportId) {
+		return transports.stream().filter(transport -> transport.transportId().equals(transportId)).findFirst();
+	}
+
+	private static Duration elapsed(long started) {
+		return Duration.ofNanos(System.nanoTime() - started);
+	}
+
+	private static Map<String, String> tags(String provider, String transport, String status) {
+		return Map.of("provider", provider == null ? "unknown" : provider, "transport",
+				transport == null ? "unknown" : transport, "status", status);
+	}
 }

@@ -10,6 +10,7 @@
     <dependencies>
         <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-iot-core</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-api</artifactId><version>${project.version}</version></dependency>
+        <dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-runtime</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
     </dependencies>
 </project>

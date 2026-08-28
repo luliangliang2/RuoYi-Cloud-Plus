@@ -137,9 +137,10 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add etcd CAS version protection and opt-in live cluster integration coverage for scripts.
 - [ ] Add configuration-center watch integration for desired script releases and event bindings.
 - [x] Add permission-aware action executor and registry contracts backed by explicit controlled SPI adapters.
+- [x] Bind script handshake, authentication and route actions to the registered SPI service boundary.
 - [ ] Add timeout isolation with dedicated executors/process workers and hard resource quotas.
 - [x] Replace Groovy token checks with AST-level sandboxing.
-- [ ] Move untrusted Groovy execution to an isolated worker with hard resource quotas.
+- [x] Add opt-in isolated Groovy worker execution with process timeout, concurrency, source and response quotas.
 - [ ] Add script audit logs, metrics, circuit breakers, invocation traces and cluster rolling release.
 
 ## Architecture Rules

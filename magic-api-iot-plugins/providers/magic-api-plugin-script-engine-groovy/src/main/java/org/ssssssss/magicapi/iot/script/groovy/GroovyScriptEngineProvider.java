@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Arrays;
 
 public final class GroovyScriptEngineProvider implements ScriptEngineProvider {
+	private final GroovyWorkerExecutor worker;
+
+	public GroovyScriptEngineProvider() { this(null); }
+
+	public GroovyScriptEngineProvider(GroovyWorkerExecutor worker) { this.worker = worker; }
 	private static final Set<String> FORBIDDEN = Set.of("java.io", "java.net", "java.lang.reflect", "ProcessBuilder",
 			"Runtime", "ClassLoader", "System.exit", "System.getProperties", "System.getenv");
 
@@ -38,6 +43,7 @@ public final class GroovyScriptEngineProvider implements ScriptEngineProvider {
 	}
 
 	public ScriptExecutionResult execute(ScriptDefinition definition, ScriptExecutionContext context) {
+		if (worker != null) return worker.execute(definition, context);
 		long start = System.nanoTime();
 		try {
 			Binding binding = new Binding();
