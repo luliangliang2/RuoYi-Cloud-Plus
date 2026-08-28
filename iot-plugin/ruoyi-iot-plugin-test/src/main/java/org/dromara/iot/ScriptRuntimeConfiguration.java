@@ -6,11 +6,13 @@ import org.ssssssss.magicapi.iot.script.graalvm.GraalVmScriptEngineProvider;
 import org.ssssssss.magicapi.iot.script.groovy.GroovyScriptEngineProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import java.util.List;
 
 @Configuration
 public class ScriptRuntimeConfiguration {
     @Bean
+    @ConditionalOnProperty(prefix = "iot.script.registry", name = "type", havingValue = "memory")
     ScriptRegistry scriptRegistry() { return new InMemoryScriptRegistry(); }
 
     @Bean

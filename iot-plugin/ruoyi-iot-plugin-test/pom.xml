@@ -104,6 +104,7 @@
 			<version>${iot-plugins.version}</version>
 		</dependency>
 		<dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-script-runtime</artifactId><version>${iot-plugins.version}</version></dependency>
+		<dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-script-registry-etcd</artifactId><version>${iot-plugins.version}</version></dependency>
 		<dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-script-engine-aviator</artifactId><version>${iot-plugins.version}</version></dependency>
 		<dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-script-engine-graalvm</artifactId><version>${iot-plugins.version}</version></dependency>
 		<dependency><groupId>org.ssssssss.magicapi.iot</groupId><artifactId>magic-api-plugin-script-engine-groovy</artifactId><version>${iot-plugins.version}</version></dependency>

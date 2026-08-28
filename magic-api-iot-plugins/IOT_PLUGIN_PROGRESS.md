@@ -390,3 +390,11 @@ magic-api-iot-plugins/
 - Kafka 失败消费验证了 3 次实际调用后进入 `.DLT`。
 - Provider 配置改为按契约限制类型，拒绝 `device-registry=kafka` 等错误组合。
 - 外部集成测试默认关闭，通过 `-Diot.integration.enabled=true` 显式启用。
+### 2026-08-28
+
+- 新增 `providers/magic-api-plugin-script-registry-etcd`，脚本当前版本和历史版本统一写入 etcd：`/iot/gateway/scripts/{scriptId}/current` 与 `versions/{version}`。
+- 脚本保存使用 etcd 事务校验当前 `modRevision`，版本号不连续或并发更新会明确返回 `Script version conflict`，避免多节点互相覆盖。
+- 测试工程新增 `magic-api-plugin-script-registry-etcd` 依赖，默认 `IOT_SCRIPT_REGISTRY_PROVIDER=etcd`，连接 `10.211.55.4:2379/22379/32379`；内存实现仅在显式 `type=memory` 时启用。
+- 新 Provider 增加 Spring Boot 自动装配、凭证/地址/路径/超时校验、Jackson Java Time 运行时依赖、Provider 健康探测和插件描述注册。
+- 新增 etcd 配置单测及真实集成测试；真实集成验证两个独立 Registry 实例之间的保存、查询、发布、回滚、删除通过。
+- 新模块定向测试、插件 reactor 安装和 `ruoyi-iot-plugin-test` `mvn clean package -DskipTests` 均通过。

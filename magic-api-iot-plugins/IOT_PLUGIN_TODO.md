@@ -131,7 +131,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add draft save, validate, publish, enable/disable, rollback, delete and dry-run APIs.
 - [x] Add Monaco Editor script management and dry-run console to the 5177 operations UI.
 - [x] Define a standard action-plan DSL for handshake, authentication, routing and message actions.
-- [ ] Persist script metadata, source and version history in a distributed provider instead of node memory.
+- [x] Persist script metadata, source and version history in the etcd distributed Provider.
+- [x] Add etcd CAS version protection and opt-in live cluster integration coverage for scripts.
 - [ ] Add configuration-center watch integration for desired script releases and event bindings.
 - [ ] Add permission-aware action executors backed by Handshake, Authenticator, Route, MessageBus and Command SPIs.
 - [ ] Add timeout isolation with dedicated executors/process workers and hard resource quotas.

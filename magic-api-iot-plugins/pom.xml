@@ -40,6 +40,7 @@
         <module>providers/magic-api-plugin-script-engine-aviator</module>
         <module>providers/magic-api-plugin-script-engine-graalvm</module>
         <module>providers/magic-api-plugin-script-engine-groovy</module>
+        <module>providers/magic-api-plugin-script-registry-etcd</module>
         <module>features/magic-api-plugin-device-shadow</module>
         <module>features/magic-api-plugin-product-model</module>
         <module>features/magic-api-plugin-rule-engine</module>

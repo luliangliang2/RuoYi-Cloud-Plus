@@ -1,0 +1,8 @@
+{
+  "id": "script-registry-etcd",
+  "name": "etcd Script Registry Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "category": "provider",
+  "capabilities": ["script-registry:etcd", "script-versioning", "script-distributed"],
+  "configPrefix": "iot.script.registry.etcd"
+}

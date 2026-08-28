@@ -138,6 +138,18 @@ iot:
       type: ${IOT_NODE_REGISTRY_PROVIDER:nacos}
     configuration-center:
       type: ${IOT_CONFIGURATION_CENTER_PROVIDER:nacos}
+  script:
+    registry:
+      type: ${IOT_SCRIPT_REGISTRY_PROVIDER:etcd}
+      etcd:
+        endpoints:
+          - ${IOT_SCRIPT_ETCD_ENDPOINT:http://10.211.55.4:2379}
+          - ${IOT_SCRIPT_ETCD_ENDPOINT_2:http://10.211.55.4:22379}
+          - ${IOT_SCRIPT_ETCD_ENDPOINT_3:http://10.211.55.4:32379}
+        username: ${IOT_SCRIPT_ETCD_USERNAME:}
+        password: ${IOT_SCRIPT_ETCD_PASSWORD:}
+        root-prefix: ${IOT_SCRIPT_ETCD_ROOT_PREFIX:/iot/gateway/scripts/}
+        request-timeout: ${IOT_SCRIPT_ETCD_REQUEST_TIMEOUT:5s}
 
 spring:
   application:
