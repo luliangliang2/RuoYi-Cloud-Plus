@@ -6,9 +6,18 @@ import java.util.Map;
 public final class ScriptRuntime {
 	private final ScriptRegistry registry;
 	private final Map<String, ScriptEngineProvider> engines;
+	private final ScriptActionExecutorRegistry actionExecutors;
+	private final ScriptPermissionPolicy permissionPolicy;
 
 	public ScriptRuntime(ScriptRegistry registry, Collection<ScriptEngineProvider> providers) {
+		this(registry, providers, new ScriptActionExecutorRegistry(), (action, context) -> false);
+	}
+
+	public ScriptRuntime(ScriptRegistry registry, Collection<ScriptEngineProvider> providers,
+			ScriptActionExecutorRegistry actionExecutors, ScriptPermissionPolicy permissionPolicy) {
 		this.registry = registry;
+		this.actionExecutors = java.util.Objects.requireNonNull(actionExecutors, "actionExecutors");
+		this.permissionPolicy = java.util.Objects.requireNonNull(permissionPolicy, "permissionPolicy");
 		this.engines = providers.stream()
 				.collect(java.util.stream.Collectors.toUnmodifiableMap(ScriptEngineProvider::engineId, p -> p));
 	}
@@ -36,12 +45,26 @@ public final class ScriptRuntime {
 		long started = System.nanoTime();
 		try {
 			ScriptExecutionResult result = engine(definition).execute(definition, context);
+			if (!context.dryRun()) {
+				for (ScriptExecutionResult.ScriptAction action : result.actions()) {
+					if (!permissionPolicy.allowed(action.actionId(), context))
+						return rejected("Action is not allowed: " + action.actionId(), result, started);
+					if (!actionExecutors.contains(action.actionId()))
+						return rejected("No executor registered for action: " + action.actionId(), result, started);
+					actionExecutors.execute(action, context);
+				}
+			}
 			return new ScriptExecutionResult(result.status(), result.output(), result.actions(), result.spiCalls(),
 					result.reason(), (System.nanoTime() - started) / 1_000_000);
 		} catch (RuntimeException error) {
 			return new ScriptExecutionResult(ScriptExecutionResult.Status.ERROR, Map.of(), java.util.List.of(),
 					java.util.List.of(), error.getMessage(), (System.nanoTime() - started) / 1_000_000);
 		}
+	}
+
+	private static ScriptExecutionResult rejected(String reason, ScriptExecutionResult result, long started) {
+		return new ScriptExecutionResult(ScriptExecutionResult.Status.REJECTED, result.output(), result.actions(),
+				result.spiCalls(), reason, (System.nanoTime() - started) / 1_000_000);
 	}
 
 	private ScriptEngineProvider engine(ScriptDefinition definition) {

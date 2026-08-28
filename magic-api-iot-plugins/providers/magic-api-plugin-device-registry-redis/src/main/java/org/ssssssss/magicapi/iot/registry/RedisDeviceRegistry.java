@@ -30,6 +30,10 @@ public class RedisDeviceRegistry implements DeviceRegistry, DeviceRegistryAdmin 
 		return key(id) + ":credential:" + c.type();
 	}
 
+	private String allDevicesIndex() { return "iot:device:index:all"; }
+
+	private String productIndex(String productId) { return "iot:device:index:product:" + productId; }
+
 	@Override
 	public Optional<RegisteredDevice> find(DeviceIdentity identity) {
 		String value = redis.opsForValue().get(key(identity));
@@ -46,6 +50,8 @@ public class RedisDeviceRegistry implements DeviceRegistry, DeviceRegistryAdmin 
 	public RegisteredDevice save(RegisteredDevice device) {
 		try {
 			redis.opsForValue().set(key(device.identity()), mapper.writeValueAsString(device));
+			redis.opsForSet().add(allDevicesIndex(), device.identity().routingKey());
+			redis.opsForSet().add(productIndex(device.identity().productId()), device.identity().routingKey());
 			return device;
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed to save device: " + device.identity().routingKey(), e);
@@ -71,6 +77,8 @@ public class RedisDeviceRegistry implements DeviceRegistry, DeviceRegistryAdmin 
 		if (find(identity).isEmpty())
 			throw new IllegalArgumentException("Device is not registered: " + identity.routingKey());
 		redis.delete(key(identity));
+		redis.opsForSet().remove(allDevicesIndex(), identity.routingKey());
+		redis.opsForSet().remove(productIndex(identity.productId()), identity.routingKey());
 		String prefix = key(identity) + ":credential:";
 		redis.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
 			try (var cursor = connection.scan(org.springframework.data.redis.core.ScanOptions.scanOptions().match(prefix + "*").count(100).build())) {
@@ -92,26 +100,18 @@ public class RedisDeviceRegistry implements DeviceRegistry, DeviceRegistryAdmin 
 		String product = productId == null ? "" : productId.trim();
 		String query = keyword == null ? "" : keyword.trim().toLowerCase();
 		java.util.List<RegisteredDevice> matched = new java.util.ArrayList<>();
-		redis.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
-			try (var cursor = connection.scan(org.springframework.data.redis.core.ScanOptions.scanOptions()
-					.match("iot:device:*").count(500).build())) {
-				while (cursor.hasNext()) {
-					String redisKey = new String(cursor.next(), StandardCharsets.UTF_8);
-					if (redisKey.contains(":credential:")) continue;
-					String value = redis.opsForValue().get(redisKey);
-					if (value == null) continue;
-					try {
-						RegisteredDevice device = mapper.readValue(value, RegisteredDevice.class);
-						if (!product.isEmpty() && !device.identity().productId().equals(product)) continue;
-						if (!query.isEmpty() && !device.identity().deviceId().toLowerCase().contains(query)) continue;
-						matched.add(device);
-					} catch (Exception exception) {
-						throw new IllegalStateException("Invalid device registry record: " + redisKey, exception);
-					}
-				}
-			}
-			return null;
-		});
+		java.util.Set<String> identities = product.isEmpty()
+				? redis.opsForSet().members(allDevicesIndex())
+				: redis.opsForSet().members(productIndex(product));
+		if (identities == null) identities = java.util.Set.of();
+		for (String routingKey : identities) {
+			String[] parts = routingKey.split("/", 2);
+			if (parts.length != 2 || (!query.isEmpty() && !parts[1].toLowerCase().contains(query))) continue;
+			String value = redis.opsForValue().get(key(new DeviceIdentity(parts[0], parts[1])));
+			if (value == null) continue;
+			try { matched.add(mapper.readValue(value, RegisteredDevice.class)); }
+			catch (Exception exception) { throw new IllegalStateException("Invalid device registry record: " + routingKey, exception); }
+		}
 		matched.sort(java.util.Comparator.comparing(device -> device.identity().routingKey()));
 		int from = Math.min(matched.size(), (safePage - 1) * safeSize);
 		int to = Math.min(matched.size(), from + safeSize);

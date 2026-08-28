@@ -96,7 +96,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add the first Netty TCP transport with line framing, lifecycle cleanup and runtime counters.
 - [x] Register the Raw protocol adapter and connect transport frames to the protocol pipeline and message bus.
 - [ ] Add device authentication handshake before promoting temporary TCP connection identities to registered devices.
-- [ ] Replace Redis Device Registry management-time `SCAN` pagination with maintained product/device indexes for large fleets.
+- [x] Replace Redis Device Registry management-time `SCAN` pagination with maintained product/device indexes for large fleets.
 - [x] Add an embedded-broker MQTT transport with Topic mapping, registry authentication and runtime counters.
 - [x] Add an external MQTT/EMQX client transport with shared subscriptions, reconnect, registry validation and command downlink.
 - [x] Add an EMQX lifecycle event adapter for authoritative device online/offline session updates.
@@ -134,9 +134,10 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Persist script metadata, source and version history in the etcd distributed Provider.
 - [x] Add etcd CAS version protection and opt-in live cluster integration coverage for scripts.
 - [ ] Add configuration-center watch integration for desired script releases and event bindings.
-- [ ] Add permission-aware action executors backed by Handshake, Authenticator, Route, MessageBus and Command SPIs.
+- [x] Add permission-aware action executor and registry contracts backed by explicit controlled SPI adapters.
 - [ ] Add timeout isolation with dedicated executors/process workers and hard resource quotas.
-- [ ] Replace Groovy token checks with AST-level sandboxing and move untrusted Groovy execution to an isolated worker.
+- [x] Replace Groovy token checks with AST-level sandboxing.
+- [ ] Move untrusted Groovy execution to an isolated worker with hard resource quotas.
 - [ ] Add script audit logs, metrics, circuit breakers, invocation traces and cluster rolling release.
 
 ## Architecture Rules
