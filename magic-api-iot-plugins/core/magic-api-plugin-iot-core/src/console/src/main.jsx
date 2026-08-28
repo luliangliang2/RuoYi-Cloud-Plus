@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Empty, Input, Layout, Modal, Popconfirm, Progress, Row, Select, Space, Statistic, Switch, Table, Tag, Tooltip, Typography } from 'antd';
+import Editor from '@monaco-editor/react';
+import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Divider, Empty, Input, Layout, List, Modal, Popconfirm, Progress, Row, Select, Space, Statistic, Switch, Table, Tag, Tooltip, Typography } from 'antd';
 import { ApiOutlined, CheckCircleOutlined, ClusterOutlined, CloudServerOutlined, DashboardOutlined, DatabaseOutlined, DeleteOutlined, EditOutlined, FileTextOutlined, HeartOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, SettingOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import './style.css';
 
@@ -31,12 +32,78 @@ function shortTypeName(type) {
   return normalized.slice(normalized.lastIndexOf('.') + 1);
 }
 
+function durationToMs(duration) {
+  if (typeof duration === 'number') return duration;
+  if (duration && typeof duration === 'object') {
+    if (typeof duration.seconds === 'number') return duration.seconds * 1000 + Math.floor((duration.nanos || 0) / 1000000);
+    if (typeof duration.millis === 'number') return duration.millis;
+  }
+  if (typeof duration === 'string') {
+    const match = duration.match(/^PT(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?$/i);
+    if (match) return Math.round((Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0)) * 1000);
+    const millis = Number(duration);
+    if (Number.isFinite(millis)) return millis;
+  }
+  return 2000;
+}
+
+const SCRIPT_LANGUAGE_OPTIONS = [
+  { value: 'javascript', label: 'JavaScript', engine: 'graalvm' },
+  { value: 'python', label: 'Python', engine: null },
+  { value: 'java', label: 'Java', engine: null },
+  { value: 'groovy', label: 'Groovy', engine: 'groovy' },
+  { value: 'aviator', label: 'Aviator', engine: 'aviator' }
+];
+
+function defaultLanguageForEngine(engineId) {
+  return SCRIPT_LANGUAGE_OPTIONS.find(item => item.engine === engineId)?.value || 'javascript';
+}
+
+function configureScriptEditor(editor, monaco) {
+  const moduleSuggestions = [
+    { label: "import iot", detail: "IoT facade module", insertText: "import { iot } from 'iot';", kind: monaco.languages.CompletionItemKind.Module },
+    { label: "import iot.device", detail: "设备上下文与认证动作", insertText: "import { device } from 'iot.device';", kind: monaco.languages.CompletionItemKind.Module },
+    { label: "import iot.route", detail: "设备路由动作", insertText: "import { route } from 'iot.route';", kind: monaco.languages.CompletionItemKind.Module },
+    { label: "import iot.message", detail: "消息投递动作", insertText: "import { message } from 'iot.message';", kind: monaco.languages.CompletionItemKind.Module },
+    { label: "import iot.command", detail: "设备命令动作", insertText: "import { command } from 'iot.command';", kind: monaco.languages.CompletionItemKind.Module }
+  ];
+  const symbols = [
+    { label: "input", detail: "当前事件输入", insertText: "input", kind: monaco.languages.CompletionItemKind.Variable },
+    { label: "attributes", detail: "执行上下文属性", insertText: "attributes", kind: monaco.languages.CompletionItemKind.Variable },
+    { label: "route.bind", detail: "生成设备路由动作", insertText: "route.bind", kind: monaco.languages.CompletionItemKind.Method },
+    { label: "device.authenticate", detail: "生成设备认证动作", insertText: "device.authenticate", kind: monaco.languages.CompletionItemKind.Method },
+    { label: "message.publish", detail: "生成消息投递动作", insertText: "message.publish", kind: monaco.languages.CompletionItemKind.Method },
+    { label: "command.send", detail: "生成设备命令动作", insertText: "command.send", kind: monaco.languages.CompletionItemKind.Method },
+    { label: "actions", detail: "标准动作计划数组", insertText: "actions", kind: monaco.languages.CompletionItemKind.Property }
+  ];
+  const actionSnippets = [
+    { label: "route.bind action", detail: "标准动作 DSL", insertText: "{ actionId: 'route.bind', parameters: { productId: input.productId, deviceId: input.deviceId } }", kind: monaco.languages.CompletionItemKind.Snippet },
+    { label: "device.authenticate action", detail: "标准动作 DSL", insertText: "{ actionId: 'device.authenticate', parameters: { productId: input.productId, deviceId: input.deviceId } }", kind: monaco.languages.CompletionItemKind.Snippet }
+  ];
+  const provider = monaco.languages.registerCompletionItemProvider(['javascript', 'typescript', 'java', 'python', 'groovy', 'plaintext'], {
+    triggerCharacters: ['.', '/', "'", '"'],
+    provideCompletionItems(model, position) {
+      const line = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+      const suggestions = line.includes('import') || line.endsWith("'") || line.endsWith('"') ? moduleSuggestions : [...symbols, ...actionSnippets];
+      return { suggestions: suggestions.map(item => ({ ...item, range: undefined })) };
+    }
+  });
+  editor.onDidDispose(() => provider.dispose());
+}
+
 function App() {
   const [status, setStatus] = useState(fallback);
   const [components, setComponents] = useState([]);
   const [providers, setProviders] = useState([]);
   const [runtime, setRuntime] = useState({ protocol: { protocolIds: [] }, transports: [] });
   const [view, setView] = useState('dashboard');
+  const [scripts, setScripts] = useState({ scripts: [], engines: [] });
+  const [selectedScript, setSelectedScript] = useState(null);
+  const [scriptForm, setScriptForm] = useState({ scriptId: '', name: '', engineId: 'aviator', language: 'aviator', source: 'true', permissions: '', triggers: 'MESSAGE', timeoutMs: 2000 });
+  const [scriptDebugInput, setScriptDebugInput] = useState('{}');
+  const [scriptResult, setScriptResult] = useState(null);
+  const [scriptMessage, setScriptMessage] = useState('');
+  const [scriptError, setScriptError] = useState('');
   const [spi, setSpi] = useState({ services: [], handshakeProviders: [], authenticators: [] });
   const [external, setExternal] = useState({ enabled: false, plugins: [], errors: {} });
   const [configuration, setConfiguration] = useState([]);
@@ -192,6 +259,36 @@ function App() {
 
   useEffect(() => { if (view === 'configuration') loadConfiguration(); }, [view, loadConfiguration]);
   useEffect(() => { if (view === 'plugins') loadSpi(); }, [view, loadSpi]);
+
+  const loadScripts = useCallback(async () => {
+    try { const result = await getJson('/api/iot/gateway/scripts'); setScripts(result); setScriptError(''); }
+    catch (err) { setScriptError(err.message || '脚本 API 不可用'); }
+  }, []);
+  useEffect(() => { if (view === 'scripts') loadScripts(); }, [view, loadScripts]);
+
+  const chooseScript = async script => {
+    try {
+      const item = await getJson(`/api/iot/gateway/scripts/${encodeURIComponent(script.scriptId)}`);
+      setSelectedScript(item);
+      setScriptForm({ scriptId: item.scriptId, name: item.name, engineId: item.engineId, language: item.language, source: item.source, permissions: [...(item.permissions || [])].join(','), triggers: [...(item.triggers || [])].join(','), timeoutMs: durationToMs(item.timeout) });
+      setScriptResult(null);
+    } catch (err) { setScriptError(err.message || '脚本读取失败'); }
+  };
+  const newScript = () => { setSelectedScript(null); setScriptForm({ scriptId: `route-${Date.now()}`, name: '新脚本', engineId: 'aviator', language: 'aviator', source: 'true', permissions: '', triggers: 'MESSAGE', timeoutMs: 2000 }); setScriptResult(null); };
+  const saveScript = async () => {
+    try {
+      const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(scriptForm.scriptId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...scriptForm, permissions: scriptForm.permissions.split(',').map(item => item.trim()).filter(Boolean), triggers: scriptForm.triggers.split(',').map(item => item.trim()).filter(Boolean), timeoutMs: Number(scriptForm.timeoutMs) || 2000, metadata: {} }) });
+      const result = await response.json(); if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
+      setSelectedScript(result.script); setScriptMessage(result.validation.valid ? '脚本已保存，语法校验通过' : '脚本已保存，但校验未通过'); await loadScripts();
+    } catch (err) { setScriptError(err.message || '脚本保存失败'); }
+  };
+  const scriptAction = async (action, body) => {
+    if (!selectedScript) return;
+    try { const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(selectedScript.scriptId)}${action}`, { method: action === '/enabled' ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); const result = response.status === 204 ? null : await response.json(); if (!response.ok) throw new Error(result?.message || `${response.status} ${response.statusText}`); if (action !== '/validate') setSelectedScript(result || selectedScript); setScriptMessage(action === '/validate' ? (result.valid ? '脚本校验通过' : '脚本校验未通过') : '操作已完成'); await loadScripts(); }
+    catch (err) { setScriptError(err.message || '脚本操作失败'); }
+  };
+  const debugScript = async () => { try { const input = JSON.parse(scriptDebugInput || '{}'); const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(selectedScript.scriptId)}/debug`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ traceId: `console-${Date.now()}`, trigger: 'MANUAL', input, attributes: {} }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`); setScriptResult(result); } catch (err) { setScriptResult({ status: 'ERROR', reason: err.message || '调试失败' }); } };
+  const deleteScript = async () => { if (!selectedScript) return; try { const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(selectedScript.scriptId)}`, { method: 'DELETE' }); if (!response.ok) throw new Error(`${response.status} ${response.statusText}`); setSelectedScript(null); setScriptMessage('脚本已删除'); await loadScripts(); newScript(); } catch (err) { setScriptError(err.message || '脚本删除失败'); } };
 
   const loadDevices = useCallback(async (page = 1, pageSize = devicePage.pageSize) => {
     try {
@@ -414,6 +511,23 @@ function App() {
     </Modal>
   </Content>;
 
+  const scriptsView = <Content className="content">
+    <div className="page-heading"><div><Text className="eyebrow">SCRIPT ORCHESTRATION</Text><Title level={2}>脚本编排</Title><Text type="secondary">用脚本组合握手、认证、路由和消息处理 SPI</Text></div><Space><Button icon={<PlusOutlined />} onClick={newScript}>新建脚本</Button><Button icon={<ReloadOutlined />} onClick={loadScripts}>刷新</Button></Space></div>
+    {scriptError && <Alert className="device-alert" type="error" showIcon message="脚本操作失败" description={scriptError} closable onClose={() => setScriptError('')} />}
+    {scriptMessage && <Alert className="device-alert" type="success" showIcon message={scriptMessage} closable onClose={() => setScriptMessage('')} />}
+    <Row gutter={[16, 16]} className="script-layout">
+      <Col xs={24} lg={6}><Card title="脚本目录" bordered={false} className="script-list-card"><List dataSource={scripts.scripts || []} renderItem={item => <div className={`script-list-item ${selectedScript?.scriptId === item.scriptId ? 'active' : ''}`} onClick={() => chooseScript(item)}><div><Text strong>{item.name}</Text><Text type="secondary" ellipsis>{item.scriptId}</Text></div><Space><Tag>{item.engineId}</Tag><Badge status={item.enabled ? 'success' : 'default'} /></Space></div>} locale={{ emptyText: '暂无脚本' }} /></Card></Col>
+      <Col xs={24} lg={18}><Card bordered={false} className="script-editor-card">
+        <div className="script-toolbar"><Space wrap><Input addonBefore="ID" value={scriptForm.scriptId} disabled={Boolean(selectedScript)} onChange={event => setScriptForm({ ...scriptForm, scriptId: event.target.value })} /><Input addonBefore="名称" value={scriptForm.name} onChange={event => setScriptForm({ ...scriptForm, name: event.target.value })} /><Select aria-label="执行引擎" value={scriptForm.engineId} onChange={value => setScriptForm({ ...scriptForm, engineId: value, language: defaultLanguageForEngine(value) })} options={(scripts.engines || []).map(item => ({ value: item.id, label: `${item.id} · ${(item.languages || []).join(', ')}` }))} /><Select aria-label="代码语言" value={scriptForm.language} onChange={value => setScriptForm({ ...scriptForm, language: value })} options={SCRIPT_LANGUAGE_OPTIONS.map(item => ({ value: item.value, label: item.label }))} /></Space></div>
+        <div className="script-meta-row"><Input addonBefore="触发器" value={scriptForm.triggers} onChange={event => setScriptForm({ ...scriptForm, triggers: event.target.value })} placeholder="HANDSHAKE, AUTHENTICATE, ROUTE, MESSAGE" /><Input addonBefore="权限" value={scriptForm.permissions} onChange={event => setScriptForm({ ...scriptForm, permissions: event.target.value })} placeholder="device.read, route.bind" /><Input addonBefore="超时(ms)" type="number" value={scriptForm.timeoutMs} onChange={event => setScriptForm({ ...scriptForm, timeoutMs: event.target.value })} /></div>
+        <div className="script-editor-surface"><Editor height="420px" language={scriptForm.language === 'aviator' ? 'plaintext' : scriptForm.language} theme="vs-dark" value={scriptForm.source} onChange={value => setScriptForm({ ...scriptForm, source: value || '' })} onMount={configureScriptEditor} options={{ minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', automaticLayout: true, suggestOnTriggerCharacters: true }} /></div>
+        <div className="script-actions"><Space wrap><Button type="primary" icon={<SaveOutlined />} onClick={saveScript}>保存草稿</Button><Button onClick={() => scriptAction('/validate')}>校验</Button><Button onClick={() => scriptAction('/publish')}>发布</Button><Button onClick={() => scriptAction('/enabled', { enabled: !selectedScript?.enabled })} disabled={!selectedScript}>{selectedScript?.enabled ? '停用' : '启用'}</Button><Popconfirm title="确认删除脚本？" onConfirm={deleteScript}><Button danger icon={<DeleteOutlined />} disabled={!selectedScript}>删除</Button></Popconfirm></Space></div>
+        <Divider />
+        <Row gutter={[16, 16]}><Col xs={24} lg={11}><Input.TextArea rows={7} value={scriptDebugInput} onChange={event => setScriptDebugInput(event.target.value)} placeholder="Dry-run 输入 JSON" /><Button className="script-debug-button" type="primary" icon={<ThunderboltOutlined />} disabled={!selectedScript} onClick={debugScript}>Dry-run 调试</Button></Col><Col xs={24} lg={13}>{scriptResult ? <pre className="script-result">{JSON.stringify(scriptResult, null, 2)}</pre> : <Empty description="执行结果将在这里显示" />}</Col></Row>
+      </Card></Col>
+    </Row>
+  </Content>;
+
   const configurationView = <Content className="content">
     <div className="page-heading"><div><Text className="eyebrow">CONFIGURATION CENTER</Text><Title level={2}>配置管理</Title><Text type="secondary">通过当前激活的 {configurationMeta.provider} 配置中心管理网关运行配置</Text></div><Space><Badge status="processing" text={`${configurationMeta.provider} ACTIVE`} /><Button icon={<ReloadOutlined />} onClick={loadConfiguration}>刷新</Button></Space></div>
     {configurationError && <Alert type="error" showIcon message="配置操作失败" description={configurationError} closable onClose={() => setConfigurationError('')} />}
@@ -493,11 +607,12 @@ function App() {
       <div className={`nav-item ${view === 'devices' ? 'active' : ''}`} onClick={() => setView('devices')}><ApiOutlined /> 设备接入</div>
       <div className="nav-item"><ClusterOutlined /> 节点集群</div>
       <div className={`nav-item ${view === 'configuration' ? 'active' : ''}`} onClick={() => setView('configuration')}><SettingOutlined /> 配置管理</div>
+      <div className={`nav-item ${view === 'scripts' ? 'active' : ''}`} onClick={() => setView('scripts')}><FileTextOutlined /> 脚本编排</div>
       <div className={`nav-item ${view === 'plugins' ? 'active' : ''}`} onClick={() => setView('plugins')}><ThunderboltOutlined /> SPI 插件</div>
     </Sider>
     <Layout>
       <Header className="topbar"><Space><CloudServerOutlined /><Text strong>网关运行监控</Text><Tag color="cyan">DEV</Tag></Space><Space><Text type="secondary">自动刷新 10s</Text><ReloadOutlined onClick={load} className="clickable"/></Space></Header>
-      {view === 'devices' ? devicesView : view === 'configuration' ? configurationView : view === 'plugins' ? pluginView : <Content className="content">
+      {view === 'devices' ? devicesView : view === 'configuration' ? configurationView : view === 'scripts' ? scriptsView : view === 'plugins' ? pluginView : <Content className="content">
         <div className="page-heading"><div><Text className="eyebrow">MAGIC API IOT PLUGINS</Text><Title level={2}>Gateway Overview</Title><Text type="secondary">观察当前 Spring 容器中的 IoT 插件、连接能力与运行健康度</Text></div><Space><Badge status={status.status === 'UP' ? 'success' : 'error'} text={status.status === 'UP' ? '网关在线' : '连接异常'} /><Text type="secondary">{updatedAt ? `更新于 ${updatedAt.toLocaleTimeString()}` : '等待数据'}</Text></Space></div>
         {error && <Alert type="warning" showIcon message="无法读取网关状态" description={error} closable onClose={() => setError('')} />}
         <Row gutter={[16, 16]} className="metrics">

@@ -319,6 +319,28 @@ body {
   margin-top: 8px;
 }
 
+.script-layout { align-items: stretch; }
+.script-list-card, .script-editor-card { height: 100%; }
+.script-list-card .ant-card-body { padding: 8px; }
+.script-list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding: 10px 12px; border-bottom: 1px solid #edf0f4; cursor: pointer; }
+.script-list-item:last-child { border-bottom: 0; }
+.script-list-item.active { background: #eef6ff; border-left: 3px solid #1677ff; }
+.script-list-item > div:first-child { display: grid; min-width: 0; }
+.script-toolbar, .script-meta-row { margin-bottom: 14px; }
+.script-toolbar .ant-input-group-wrapper { width: 240px; }
+.script-meta-row { display: grid; grid-template-columns: 1fr 1fr 180px; gap: 12px; }
+.script-editor-surface { margin-top: 4px; margin-bottom: 20px; overflow: hidden; border: 1px solid #273449; border-radius: 6px; background: #1e1e1e; }
+.script-editor-surface .monaco-editor, .script-editor-surface .monaco-editor-background, .script-editor-surface .monaco-editor .margin { border-radius: 6px; }
+.script-actions { display: flex; align-items: center; min-height: 36px; margin: 0 0 20px; padding-top: 2px; }
+.script-actions .ant-space { row-gap: 10px; }
+.script-result { min-height: 190px; max-height: 260px; margin: 0; padding: 14px; overflow: auto; background: #111827; color: #d1fae5; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.script-debug-button { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .script-meta-row { grid-template-columns: 1fr; }
+  .script-toolbar .ant-input-group-wrapper { width: 100%; }
+}
+
 @media (max-width: 800px) {
   .app-sider {
     display: none;

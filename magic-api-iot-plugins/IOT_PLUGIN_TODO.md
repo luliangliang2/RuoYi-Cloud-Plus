@@ -124,6 +124,20 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Detect resource leaks with thread/channel/subscription leak tests.
 - [ ] Support rolling plugin upgrades across gateway nodes.
 
+## Script Orchestration
+
+- [x] Add framework-neutral script definition, engine, registry, version and execution contracts.
+- [x] Add AviatorScript, GraalVM JavaScript and Groovy engine providers.
+- [x] Add draft save, validate, publish, enable/disable, rollback, delete and dry-run APIs.
+- [x] Add Monaco Editor script management and dry-run console to the 5177 operations UI.
+- [x] Define a standard action-plan DSL for handshake, authentication, routing and message actions.
+- [ ] Persist script metadata, source and version history in a distributed provider instead of node memory.
+- [ ] Add configuration-center watch integration for desired script releases and event bindings.
+- [ ] Add permission-aware action executors backed by Handshake, Authenticator, Route, MessageBus and Command SPIs.
+- [ ] Add timeout isolation with dedicated executors/process workers and hard resource quotas.
+- [ ] Replace Groovy token checks with AST-level sandboxing and move untrusted Groovy execution to an isolated worker.
+- [ ] Add script audit logs, metrics, circuit breakers, invocation traces and cluster rolling release.
+
 ## Architecture Rules
 
 - New modules belong under `platform/`, `core/`, `features/`, `adapters/` or `providers/` according to the classification above.

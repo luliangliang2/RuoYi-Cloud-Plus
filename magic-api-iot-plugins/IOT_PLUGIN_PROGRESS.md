@@ -6,9 +6,9 @@
 ## 当前基线
 
 - 更新时间：2026-08-27
-- 当前阶段：第六步外部插件加载与 SPI 调试链路已完成，设备接入管理能力已落地，进入热插拔安全边界和指标建设
+- 当前阶段：第六步外部插件加载与 SPI 调试链路已完成，脚本编排中心初版已落地，进入脚本分布式持久化、动作执行器和指标建设
 - 总体进度：约 89%
-- 构建状态：设备注册 Memory/Redis Provider 定向测试、测试工程打包和 5177 前端构建均已通过
+- 构建状态：脚本运行时、三个脚本引擎单元测试、测试工程打包和 5177 前端构建均已通过
 - 测试工程：设备登记、查询、启停、凭证管理和握手认证链路等待最新 9218 实例的最终联调确认
 - 业务边界：IoT 插件不引入租户、住户等业务概念
 
@@ -225,6 +225,20 @@ magic-api-iot-plugins/
 
 ### 2026-08-27
 
+- 新增脚本编排中心初版：`magic-api-plugin-script-runtime` 统一脚本定义、版本、触发器、权限、校验、执行结果和标准动作计划。
+- 新增 AviatorScript、GraalVM JavaScript 和 Groovy 三种脚本引擎 Provider；GraalVM 禁止 HostAccess、Java 类查找、IO、Native 和线程创建。
+- 测试工程新增脚本草稿、校验、发布、启停、回滚、删除和 dry-run API；当前 Registry 为节点内存实现，生产持久化和配置中心 watch 已进入 TODO。
+- 5177 新增“脚本编排”页面，使用 Monaco Editor 管理引擎、源码、触发器、权限、超时和调试输入，并展示标准动作计划和执行结果。
+- 标准动作 DSL 支持脚本返回 `actions[{actionId,parameters}]`；当前 dry-run 只生成计划，真实 SPI 副作用执行器将在权限和审计边界完成后接入。
+- 脚本编排真实联调已通过：Aviator 条件判断、GraalVM JavaScript 嵌套输入与 `device.authenticate` 动作、Groovy `route.bind` 动作均执行成功。
+- 脚本生命周期接口已实测：保存草稿、发布、启用/停用、版本回滚和删除均成功；dry-run 动作均标记 `dryRun=true`，当前不会产生真实副作用。
+- 修复 5177 脚本目录使用 Ant Design `List.items` 导致目录可能不渲染的问题，改为 `dataSource`；编辑器兼容 `Duration` 的 ISO 字符串、对象和毫秒值回填。
+- 新增 `ScriptActionPlanTest` 和 `GraalVmScriptEngineProviderTest`，覆盖动作 DSL 容错、嵌套输入转换和安全执行边界。
+- 验证命令：脚本模块测试、GraalVM 模块安装、测试工程 `mvn clean package -DskipTests` 和 5177 `npm run build` 均通过。
+- Monaco 编辑器新增受控 IoT 模块 import 片段、`input`/`attributes`、动作 ID 和动作 DSL 的自动联想；脚本 API 返回模块目录，便于后续由 Provider 动态扩展。
+- 明确脚本 import 边界：当前支持编辑器引用提示和受控模块目录，不开放任意 Java、Spring Bean、文件系统或网络模块；真实模块执行 facade 将按权限和审计要求继续接入。
+- Monaco 脚本编辑器新增 Java、Python、JavaScript、Groovy、Aviator 语言选择；执行引擎与编辑器语言解耦，Java/Python 当前用于高亮和联想，未声明对应安全执行 Provider。
+- 当前开发实例：`http://127.0.0.1:9218`、`http://127.0.0.1:5177/`；本次为规避 Kafka `10.211.55.4:9092` 当前不可达，实例使用显式 `IOT_MESSAGE_BUS_PROVIDER=memory` 启动，生产配置仍保持 Kafka。
 - 设备注册管理与设备接入统一收敛到 5177 的“设备接入”页面，取消独立租户/住户概念。
 - 新增 `DeviceRegistryAdmin` 管理 SPI：设备分页查询、登记、启停、凭证类型查询、设置/轮换、删除和验证；运行时 `DeviceRegistry` 仍只负责查找、保存和认证。
 - 设备管理 API 已接入测试工程：`/api/iot/gateway/devices` 及状态、凭证子资源；启停动作使设备版本递增，凭证明文不提供读取接口，自动生成凭证只返回一次。
