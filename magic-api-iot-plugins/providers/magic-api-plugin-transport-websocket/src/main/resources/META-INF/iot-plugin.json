@@ -1,0 +1,1 @@
+{"id":"transport-websocket","name":"Netty WebSocket Transport Provider","version":"0.1.0-SNAPSHOT","apiVersion":"1.0","provider":"ryan","capabilities":["transport:websocket"],"requires":["protocol-runtime"],"optionalRequires":["observability-memory"],"loadOrder":254,"configPrefix":"iot.transports.websocket","failurePolicy":"REQUIRED"}

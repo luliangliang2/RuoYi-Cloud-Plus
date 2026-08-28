@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.ssssssss.magicapi.iot.core.spi.DeviceRegistry;
+import org.ssssssss.magicapi.iot.core.spi.SessionRepository;
 import org.ssssssss.magicapi.iot.core.spi.ProbeProviderHealthIndicator;
 import org.ssssssss.magicapi.iot.plugin.api.PluginHealth;
 import org.ssssssss.magicapi.iot.plugin.api.ProviderHealthIndicator;
@@ -18,8 +19,8 @@ import java.util.Map;
 public class MqttClientTransportAutoConfiguration {
     @Bean(destroyMethod = "close")
     PahoMqttClientTransportProvider mqttClientTransportProvider(MqttClientTransportProperties properties,
-                                                                 DeviceRegistry registry) {
-        return new PahoMqttClientTransportProvider(properties, registry);
+                                                                 DeviceRegistry registry, SessionRepository sessions) {
+        return new PahoMqttClientTransportProvider(properties, registry, sessions);
     }
 
     @Bean

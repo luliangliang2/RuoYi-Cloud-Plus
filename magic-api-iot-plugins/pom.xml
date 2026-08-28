@@ -55,6 +55,8 @@
         <module>providers/magic-api-plugin-transport-tcp</module>
         <module>providers/magic-api-plugin-transport-mqtt</module>
         <module>providers/magic-api-plugin-transport-mqtt-client</module>
+        <module>providers/magic-api-plugin-transport-udp</module>
+        <module>providers/magic-api-plugin-transport-websocket</module>
         <module>providers/magic-api-plugin-node-registry-nacos</module>
         <module>providers/magic-api-plugin-node-registry-zookeeper</module>
         <module>providers/magic-api-plugin-node-registry-etcd</module>

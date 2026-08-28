@@ -22,6 +22,11 @@ public class MqttClientTransportProperties {
     private boolean validateDevice = true;
     private String downlinkTopic = "devices/{productId}/{deviceId}/commands";
     private int downlinkQos = 1;
+    private String lifecycleClientIdPattern = "(?<productId>[^/]+)/(?<deviceId>[^/]+)";
+    private List<Subscription> lifecycleSubscriptions = new ArrayList<>(List.of(
+        new Subscription("$share/iot-gateway/$SYS/brokers/+/clients/+/connected", 1),
+        new Subscription("$share/iot-gateway/$SYS/brokers/+/clients/+/disconnected", 1)
+    ));
     private List<Subscription> subscriptions = new ArrayList<>(List.of(
         new Subscription("$share/iot-gateway/devices/+/+/properties", 1),
         new Subscription("$share/iot-gateway/devices/+/+/events/+", 1),
@@ -57,6 +62,10 @@ public class MqttClientTransportProperties {
     public void setDownlinkTopic(String downlinkTopic) { this.downlinkTopic = downlinkTopic; }
     public int getDownlinkQos() { return downlinkQos; }
     public void setDownlinkQos(int downlinkQos) { this.downlinkQos = downlinkQos; }
+    public String getLifecycleClientIdPattern() { return lifecycleClientIdPattern; }
+    public void setLifecycleClientIdPattern(String pattern) { this.lifecycleClientIdPattern = pattern; }
+    public List<Subscription> getLifecycleSubscriptions() { return lifecycleSubscriptions; }
+    public void setLifecycleSubscriptions(List<Subscription> subscriptions) { this.lifecycleSubscriptions = subscriptions; }
     public List<Subscription> getSubscriptions() { return subscriptions; }
     public void setSubscriptions(List<Subscription> subscriptions) { this.subscriptions = subscriptions; }
 

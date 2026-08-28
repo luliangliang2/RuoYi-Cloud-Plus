@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import Editor from '@monaco-editor/react';
 import { Alert, Badge, Button, Card, Col, ConfigProvider, Descriptions, Divider, Empty, Input, Layout, List, Modal, Popconfirm, Progress, Row, Select, Space, Statistic, Switch, Table, Tag, Tooltip, Typography } from 'antd';
@@ -131,6 +131,22 @@ function App() {
   const [credentialForm, setCredentialForm] = useState({ type: 'secret', value: '' });
   const [generatedCredential, setGeneratedCredential] = useState('');
   const [editingDevice, setEditingDevice] = useState(null);
+  const [dashboardSections, setDashboardSections] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('iot-dashboard-sections') || '{}');
+      return { providers: saved.providers !== false, components: saved.components !== false, summary: saved.summary !== false };
+    } catch { return { providers: true, components: true, summary: true }; }
+  });
+  const [activeDashboardSection, setActiveDashboardSection] = useState('components');
+  const dashboardRefs = useRef({});
+  const [spiSections, setSpiSections] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('iot-spi-sections') || '{}');
+      return { services: saved.services !== false, providers: saved.providers !== false, external: saved.external !== false, debug: saved.debug !== false };
+    } catch { return { services: true, providers: true, external: true, debug: true }; }
+  });
+  const [activeSpiSection, setActiveSpiSection] = useState('services');
+  const spiRefs = useRef({});
 
   const load = useCallback(async () => {
     try {
@@ -259,6 +275,28 @@ function App() {
 
   useEffect(() => { if (view === 'configuration') loadConfiguration(); }, [view, loadConfiguration]);
   useEffect(() => { if (view === 'plugins') loadSpi(); }, [view, loadSpi]);
+
+  const updateDashboardSections = next => {
+    setDashboardSections(next);
+    localStorage.setItem('iot-dashboard-sections', JSON.stringify(next));
+  };
+
+  const focusDashboardSection = section => {
+    if (!dashboardSections[section]) return;
+    setActiveDashboardSection(section);
+    dashboardRefs.current[section]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const updateSpiSections = next => {
+    setSpiSections(next);
+    localStorage.setItem('iot-spi-sections', JSON.stringify(next));
+  };
+
+  const focusSpiSection = section => {
+    if (!spiSections[section]) return;
+    setActiveSpiSection(section);
+    spiRefs.current[section]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const loadScripts = useCallback(async () => {
     try { const result = await getJson('/api/iot/gateway/scripts'); setScripts(result); setScriptError(''); }
@@ -575,33 +613,42 @@ function App() {
     </Space> }
   ];
   const pluginView = <Content className="content">
-    <div className="page-heading"><div><Text className="eyebrow">PLUGIN RUNTIME</Text><Title level={2}>SPI 与外部插件</Title><Text type="secondary">查看插件发现、ServiceLoader 注册、调用统计与加载错误</Text></div><Space><Button icon={<CheckCircleOutlined />} onClick={validateExternalPlugin}>验证 JAR</Button><Button icon={<PlusOutlined />} onClick={promptEnableExternalPlugin}>启用插件</Button><Button icon={<ReloadOutlined />} onClick={rescanExternalPlugins}>扫描并更新</Button><Button icon={<ReloadOutlined />} onClick={loadSpi}>刷新状态</Button></Space></div>
+    <div className="page-heading"><div><Text className="eyebrow">PLUGIN RUNTIME</Text><Title level={2}>SPI 与外部插件</Title><Text type="secondary">查看插件发现、ServiceLoader 注册、调用统计与加载错误</Text></div><Space wrap><Button icon={<CheckCircleOutlined />} onClick={validateExternalPlugin}>验证 JAR</Button><Button icon={<PlusOutlined />} onClick={promptEnableExternalPlugin}>启用插件</Button><Button icon={<ReloadOutlined />} onClick={rescanExternalPlugins}>扫描并更新</Button><Button icon={<ReloadOutlined />} onClick={loadSpi}>刷新状态</Button></Space></div>
+    <Card className="dashboard-controls" bordered={false} size="small">
+      <Space wrap>
+        <Text strong>显示内容</Text>
+        <Switch checked={spiSections.services} onChange={checked => updateSpiSections({ ...spiSections, services: checked })} /><Text type="secondary">SPI 服务</Text>
+        <Switch checked={spiSections.providers} onChange={checked => updateSpiSections({ ...spiSections, providers: checked })} /><Text type="secondary">握手认证</Text>
+        <Switch checked={spiSections.external} onChange={checked => updateSpiSections({ ...spiSections, external: checked })} /><Text type="secondary">外部插件</Text>
+        <Switch checked={spiSections.debug} onChange={checked => updateSpiSections({ ...spiSections, debug: checked })} /><Text type="secondary">调试验证</Text>
+      </Space>
+    </Card>
     <Row gutter={[16, 16]} className="metrics">
-      <Col xs={24} sm={8}><Card bordered={false}><Statistic title="已注册 SPI 服务" value={spi.services?.length || 0} prefix={<ApiOutlined />} /></Card></Col>
-      <Col xs={24} sm={8}><Card bordered={false}><Statistic title="握手 Provider" value={spi.handshakeProviders?.length || 0} prefix={<SettingOutlined />} /></Card></Col>
-      <Col xs={24} sm={8}><Card bordered={false}><Statistic title="外部插件" value={external.plugins?.length || 0} prefix={<CloudServerOutlined />} /></Card></Col>
+      <Col xs={24} sm={8}><Card bordered={false} className={`metric-link ${!spiSections.services ? 'metric-disabled' : ''}`} onClick={() => focusSpiSection('services')}><Statistic title="已注册 SPI 服务" value={spi.services?.length || 0} prefix={<ApiOutlined />} /><Text type="secondary">查看服务注册表</Text></Card></Col>
+      <Col xs={24} sm={8}><Card bordered={false} className={`metric-link ${!spiSections.providers ? 'metric-disabled' : ''}`} onClick={() => focusSpiSection('providers')}><Statistic title="握手 Provider" value={spi.handshakeProviders?.length || 0} prefix={<SettingOutlined />} /><Text type="secondary">查看握手与认证</Text></Card></Col>
+      <Col xs={24} sm={8}><Card bordered={false} className={`metric-link ${!spiSections.external ? 'metric-disabled' : ''}`} onClick={() => focusSpiSection('external')}><Statistic title="外部插件" value={external.plugins?.length || 0} prefix={<CloudServerOutlined />} /><Text type="secondary">查看插件状态</Text></Card></Col>
     </Row>
     {Object.keys(external.errors || {}).length > 0 && <Alert type="error" showIcon message="外部插件发现错误" description={Object.entries(external.errors).map(([jar, reason]) => <Space key={jar} direction="vertical"><Text>{jar}: {reason}</Text><Button size="small" icon={<PlusOutlined />} onClick={() => enableExternalPlugin(jar)}>尝试启用</Button></Space>)} />}
     {pluginValidation && <Alert className="plugin-validation" type={pluginValidation.dependenciesSatisfied && !pluginValidation.duplicatePluginId ? 'success' : 'warning'} showIcon message={`${pluginValidation.pluginId} JAR 验证${pluginValidation.dependenciesSatisfied && !pluginValidation.duplicatePluginId ? '通过' : '需处理'}`} description={<Space direction="vertical"><Text>版本：{pluginValidation.version}，SPI 服务：{pluginValidation.services?.length || 0} 个</Text>{pluginValidation.missingDependencies?.length > 0 && <Text type="danger">缺少依赖：{pluginValidation.missingDependencies.join(', ')}</Text>}{pluginValidation.duplicatePluginId && <Text type="danger">插件 ID 已存在</Text>}</Space>} closable onClose={() => setPluginValidation(null)} />}
     <div className="spi-sections">
-      <Card title="SPI 服务注册表" bordered={false}><Table rowKey={item => `${item.serviceType}:${item.serviceId}`} columns={spiColumns} dataSource={spi.services || []} pagination={false} locale={{ emptyText: <Empty description="暂无 SPI 服务" /> }} scroll={{ x: 900 }} /></Card>
-      <Card title="握手与认证 Provider" bordered={false}>
+      {spiSections.services && <Card ref={node => { spiRefs.current.services = node; }} className={`dashboard-section ${activeSpiSection === 'services' ? 'dashboard-section-active' : ''}`} title="SPI 服务注册表" bordered={false}><Table rowKey={item => `${item.serviceType}:${item.serviceId}`} columns={spiColumns} dataSource={spi.services || []} pagination={false} locale={{ emptyText: <Empty description="暂无 SPI 服务" /> }} scroll={{ x: 900 }} /></Card>}
+      {spiSections.providers && <Card ref={node => { spiRefs.current.providers = node; }} className={`dashboard-section ${activeSpiSection === 'providers' ? 'dashboard-section-active' : ''}`} title="握手与认证 Provider" bordered={false}>
         <Descriptions size="small" column={{ xs: 1, sm: 2 }} items={[
           { key: 'handshake', label: 'Handshake', children: (spi.handshakeProviders || []).map(item => `${item.id} [${(item.protocols || []).join(', ')}]`).join('; ') || '-' },
           { key: 'auth', label: 'Authenticator', children: (spi.authenticators || []).map(item => item.id).join(', ') || '-' }
         ]} />
-      </Card>
-      <Card title="外部插件" bordered={false} extra={<Tag color={external.enabled ? 'green' : 'default'}>{external.enabled ? '已启用' : '未启用'}</Tag>}>
+      </Card>}
+      {spiSections.external && <Card ref={node => { spiRefs.current.external = node; }} className={`dashboard-section ${activeSpiSection === 'external' ? 'dashboard-section-active' : ''}`} title="外部插件" bordered={false} extra={<Tag color={external.enabled ? 'green' : 'default'}>{external.enabled ? '已启用' : '未启用'}</Tag>}>
         <Table rowKey="pluginId" columns={externalPluginColumns} dataSource={external.plugins || []} pagination={false} locale={{ emptyText: <Empty description="暂无外部插件" /> }} scroll={{ x: 900 }} />
-      </Card>
-      <Card title="握手 SPI 调试验证" bordered={false}>
+      </Card>}
+      {spiSections.debug && <Card ref={node => { spiRefs.current.debug = node; }} className={`dashboard-section ${activeSpiSection === 'debug' ? 'dashboard-section-active' : ''}`} title="握手 SPI 调试验证" bordered={false}>
         <Row gutter={[12, 12]}>
           {['protocolId', 'transportId', 'remoteAddress', 'handshakeProviderId', 'encoding'].map(key => <Col xs={24} sm={12} lg={key === 'handshakeProviderId' ? 8 : 4} key={key}><Input addonBefore={key} value={debugRequest[key]} onChange={event => setDebugRequest({ ...debugRequest, [key]: event.target.value })} /></Col>)}
           <Col xs={24}><Input.TextArea rows={3} addonBefore="payload" value={debugRequest.payload} onChange={event => setDebugRequest({ ...debugRequest, payload: event.target.value })} /></Col>
           <Col xs={24}><Space><Button type="primary" icon={<ThunderboltOutlined />} loading={debugging} onClick={debugHandshake}>执行握手验证</Button>{debugResult && <Button onClick={() => setDebugResult(null)}>清除结果</Button>}</Space></Col>
           {debugResult && <Col xs={24}><pre className="spi-debug-result">{JSON.stringify(debugResult, null, 2)}</pre></Col>}
         </Row>
-      </Card>
+      </Card>}
     </div>
   </Content>;
 
@@ -618,20 +665,31 @@ function App() {
     <Layout>
       <Header className="topbar"><Space><CloudServerOutlined /><Text strong>网关运行监控</Text><Tag color="cyan">DEV</Tag></Space><Space><Text type="secondary">自动刷新 10s</Text><ReloadOutlined onClick={load} className="clickable"/></Space></Header>
       {view === 'devices' ? devicesView : view === 'configuration' ? configurationView : view === 'scripts' ? scriptsView : view === 'plugins' ? pluginView : <Content className="content">
-        <div className="page-heading"><div><Text className="eyebrow">MAGIC API IOT PLUGINS</Text><Title level={2}>Gateway Overview</Title><Text type="secondary">观察当前 Spring 容器中的 IoT 插件、连接能力与运行健康度</Text></div><Space><Badge status={status.status === 'UP' ? 'success' : 'error'} text={status.status === 'UP' ? '网关在线' : '连接异常'} /><Text type="secondary">{updatedAt ? `更新于 ${updatedAt.toLocaleTimeString()}` : '等待数据'}</Text></Space></div>
+        <div className="page-heading"><div><Text className="eyebrow">MAGIC API IOT PLUGINS</Text><Title level={2}>Gateway Overview</Title><Text type="secondary">观察当前 Spring 容器中的 IoT 插件、连接能力与运行健康度</Text></div><Space wrap><Badge status={status.status === 'UP' ? 'success' : 'error'} text={status.status === 'UP' ? '网关在线' : '连接异常'} /><Text type="secondary">{updatedAt ? `更新于 ${updatedAt.toLocaleTimeString()}` : '等待数据'}</Text></Space></div>
         {error && <Alert type="warning" showIcon message="无法读取网关状态" description={error} closable onClose={() => setError('')} />}
-        <Row gutter={[16, 16]} className="metrics">
-          <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="网关状态" value={status.status === 'UP' ? 'ONLINE' : status.status} prefix={<CheckCircleOutlined />} valueStyle={{ color: status.status === 'UP' ? '#16a34a' : '#dc2626' }}/></Card></Col>
-          <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="IoT 组件" value={components.length} prefix={<ThunderboltOutlined />} suffix="个"/></Card></Col>
-          <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="Provider 健康" value={healthyProviderCount} prefix={<HeartOutlined />} suffix={` / ${providers.length}`}/><Progress percent={providers.length ? Math.round(healthyProviderCount / providers.length * 100) : 0} showInfo={false} strokeColor={healthyProviderCount === providers.length ? '#16a34a' : '#dc2626'}/></Card></Col>
-          <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="TCP 活跃连接" value={transport?.activeConnections || 0} prefix={<DatabaseOutlined />} suffix="条"/></Card></Col>
-        </Row>
-        <Card className="provider-health" title={<Space><HeartOutlined />Provider 健康探测</Space>} extra={<Tag color={healthyProviderCount === providers.length ? 'green' : 'red'}>{healthyProviderCount} / {providers.length} UP</Tag>} bordered={false}>
-          <Table rowKey={item => `${item.providerType}:${item.providerId}`} columns={providerColumns} dataSource={providers} pagination={false} locale={{ emptyText: <Empty description="当前没有启用 Provider 探针" /> }} scroll={{ x: 840 }}/>
+        <Card className="dashboard-controls" bordered={false} size="small">
+          <Space wrap>
+            <Text strong>显示内容</Text>
+            <Switch checked={dashboardSections.providers} onChange={checked => updateDashboardSections({ ...dashboardSections, providers: checked })} />
+            <Text type="secondary">Provider 健康</Text>
+            <Switch checked={dashboardSections.components} onChange={checked => updateDashboardSections({ ...dashboardSections, components: checked })} />
+            <Text type="secondary">组件清单</Text>
+            <Switch checked={dashboardSections.summary} onChange={checked => updateDashboardSections({ ...dashboardSections, summary: checked })} />
+            <Text type="secondary">运行摘要</Text>
+          </Space>
         </Card>
+        <Row gutter={[16, 16]} className="metrics">
+          <Col xs={24} sm={12} lg={6}><Card bordered={false} className={`metric-link ${!dashboardSections.summary ? 'metric-disabled' : ''}`} onClick={() => focusDashboardSection('summary')}><Statistic title="网关状态" value={status.status === 'UP' ? 'ONLINE' : status.status} prefix={<CheckCircleOutlined />} valueStyle={{ color: status.status === 'UP' ? '#16a34a' : '#dc2626' }}/><Text type="secondary">查看运行摘要</Text></Card></Col>
+          <Col xs={24} sm={12} lg={6}><Card bordered={false} className={`metric-link ${!dashboardSections.components ? 'metric-disabled' : ''}`} onClick={() => focusDashboardSection('components')}><Statistic title="IoT 组件" value={components.length} prefix={<ThunderboltOutlined />} suffix="个"/><Text type="secondary">查看组件清单</Text></Card></Col>
+          <Col xs={24} sm={12} lg={6}><Card bordered={false} className={`metric-link ${!dashboardSections.providers ? 'metric-disabled' : ''}`} onClick={() => focusDashboardSection('providers')}><Statistic title="Provider 健康" value={healthyProviderCount} prefix={<HeartOutlined />} suffix={` / ${providers.length}`}/><Progress percent={providers.length ? Math.round(healthyProviderCount / providers.length * 100) : 0} showInfo={false} strokeColor={healthyProviderCount === providers.length ? '#16a34a' : '#dc2626'}/><Text type="secondary">查看健康探测</Text></Card></Col>
+          <Col xs={24} sm={12} lg={6}><Card bordered={false} className={`metric-link ${!dashboardSections.summary ? 'metric-disabled' : ''}`} onClick={() => focusDashboardSection('summary')}><Statistic title="TCP 活跃连接" value={transport?.activeConnections || 0} prefix={<DatabaseOutlined />} suffix="条"/><Text type="secondary">查看运行摘要</Text></Card></Col>
+        </Row>
+        {dashboardSections.providers && <Card ref={node => { dashboardRefs.current.providers = node; }} className={`provider-health dashboard-section ${activeDashboardSection === 'providers' ? 'dashboard-section-active' : ''}`} title={<Space><HeartOutlined />Provider 健康探测</Space>} extra={<Tag color={healthyProviderCount === providers.length ? 'green' : 'red'}>{healthyProviderCount} / {providers.length} UP</Tag>} bordered={false}>
+          <Table rowKey={item => `${item.providerType}:${item.providerId}`} columns={providerColumns} dataSource={providers} pagination={false} locale={{ emptyText: <Empty description="当前没有启用 Provider 探针" /> }} scroll={{ x: 840 }}/>
+        </Card>}
         <Row gutter={[16, 16]}>
-          <Col xs={24} lg={16}><Card title={<Space><ApiOutlined />组件清单</Space>} extra={<Tag color="green">{activeCount} UP</Tag>} bordered={false}><Table rowKey="id" columns={columns} dataSource={components} pagination={{ pageSize: 8 }} locale={{ emptyText: <Empty description="暂无组件探针数据" /> }} scroll={{ x: 680 }}/></Card></Col>
-          <Col xs={24} lg={8}><Card title={<Space><CloudServerOutlined />运行时摘要</Space>} bordered={false}><div className="summary-list"><div><span>设备注册</span><b>{status.deviceRegistry}</b></div><div><span>会话仓库</span><b>{status.sessionRepository}</b></div><div><span>消息总线</span><b>{status.messageBus}</b></div><div><span>协议</span><b>{runtime.protocol?.protocolIds?.join(', ') || '-'}</b></div><div><span>TCP 监听</span><b>{transportTarget(transport) || '-'}</b></div><div><span>接收/发布</span><b>{runtime.protocol?.receivedFrames || 0} / {runtime.protocol?.publishedMessages || 0}</b></div><div><span>流量</span><b>{transport?.receivedBytes || 0} B in / {transport?.sentBytes || 0} B out</b></div><div><span>健康入口</span><Tag color="blue">Actuator</Tag></div></div></Card><Card className="hint-card" bordered={false}><Text type="secondary">Provider 探针结果缓存 10 秒，与 Actuator 共享。Raw TCP 使用换行符分帧，当前连接身份为临时 channel ID。</Text></Card></Col>
+          {dashboardSections.components && <Col xs={24} lg={16}><Card ref={node => { dashboardRefs.current.components = node; }} className={`dashboard-section ${activeDashboardSection === 'components' ? 'dashboard-section-active' : ''}`} title={<Space><ApiOutlined />组件清单</Space>} extra={<Tag color="green">{activeCount} UP</Tag>} bordered={false}><Table rowKey="id" columns={columns} dataSource={components} pagination={{ pageSize: 8 }} locale={{ emptyText: <Empty description="暂无组件探针数据" /> }} scroll={{ x: 680 }}/></Card></Col>}
+          {dashboardSections.summary && <Col xs={24} lg={dashboardSections.components ? 8 : 24}><div ref={node => { dashboardRefs.current.summary = node; }} className={`dashboard-section ${activeDashboardSection === 'summary' ? 'dashboard-section-active' : ''}`}><Card title={<Space><CloudServerOutlined />运行时摘要</Space>} bordered={false}><div className="summary-list"><div><span>设备注册</span><b>{status.deviceRegistry}</b></div><div><span>会话仓库</span><b>{status.sessionRepository}</b></div><div><span>消息总线</span><b>{status.messageBus}</b></div><div><span>协议</span><b>{runtime.protocol?.protocolIds?.join(', ') || '-'}</b></div><div><span>TCP 监听</span><b>{transportTarget(transport) || '-'}</b></div><div><span>接收/发布</span><b>{runtime.protocol?.receivedFrames || 0} / {runtime.protocol?.publishedMessages || 0}</b></div><div><span>流量</span><b>{transport?.receivedBytes || 0} B in / {transport?.sentBytes || 0} B out</b></div><div><span>健康入口</span><Tag color="blue">Actuator</Tag></div></div></Card><Card className="hint-card" bordered={false}><Text type="secondary">Provider 探针结果缓存 10 秒，与 Actuator 共享。Raw TCP 使用换行符分帧，当前连接身份为临时 channel ID。</Text></Card></div></Col>}
         </Row>
       </Content>}
     </Layout>

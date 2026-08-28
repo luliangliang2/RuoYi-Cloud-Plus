@@ -54,7 +54,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Run shared behavior contracts against all Memory Providers.
 - [ ] Test lifecycle resource cleanup for threads, channels and subscriptions.
 - [x] Add an Actuator `iotProviders` health contributor backed by the shared provider health catalog.
-- [ ] Add Micrometer provider latency/status and plugin lifecycle metrics.
+- [x] Add Micrometer-backed TelemetryRecorder for provider latency/status and plugin lifecycle metrics.
 - [ ] Show plugin dependencies, capabilities, version and last error in the console.
 
 ## Distributed Gateway Cluster
@@ -99,8 +99,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Replace Redis Device Registry management-time `SCAN` pagination with maintained product/device indexes for large fleets.
 - [x] Add an embedded-broker MQTT transport with Topic mapping, registry authentication and runtime counters.
 - [x] Add an external MQTT/EMQX client transport with shared subscriptions, reconnect, registry validation and command downlink.
-- [ ] Add an EMQX lifecycle event adapter for authoritative device online/offline session updates.
-- [ ] Add UDP and WebSocket transport providers.
+- [x] Add an EMQX lifecycle event adapter for authoritative device online/offline session updates.
+- [x] Add UDP and WebSocket transport providers.
 - [x] Add Modbus TCP as the first production protocol adapter.
 - [x] Add MBAP-aware TCP stream framing, exception decoding and transaction-aware command correlation.
 

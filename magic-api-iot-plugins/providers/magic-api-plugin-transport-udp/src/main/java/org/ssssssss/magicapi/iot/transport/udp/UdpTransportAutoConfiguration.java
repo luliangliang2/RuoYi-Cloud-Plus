@@ -1,0 +1,5 @@
+package org.ssssssss.magicapi.iot.transport.udp;
+import org.springframework.boot.autoconfigure.AutoConfiguration; import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty; import org.springframework.boot.context.properties.EnableConfigurationProperties; import org.springframework.context.annotation.Bean; import org.ssssssss.magicapi.iot.core.spi.*; import org.ssssssss.magicapi.iot.plugin.api.*; import java.time.Duration; import java.util.Map;
+@AutoConfiguration @EnableConfigurationProperties(UdpTransportProperties.class) @ConditionalOnProperty(prefix="iot.transports.udp",name="enabled",havingValue="true")
+public class UdpTransportAutoConfiguration { @Bean(destroyMethod="close") NettyUdpTransportProvider udpTransportProvider(UdpTransportProperties p){return new NettyUdpTransportProvider(p);}
+ @Bean ProviderHealthIndicator udpTransportHealth(NettyUdpTransportProvider t){return new ProbeProviderHealthIndicator("transport","udp",Duration.ofSeconds(5),Duration.ofSeconds(1),()->t.isRunning()?ProbeProviderHealthIndicator.up(Map.of("snapshot",t.snapshot())):new PluginHealth(PluginHealth.Status.DOWN,"UDP transport is not listening",Map.of()));}}

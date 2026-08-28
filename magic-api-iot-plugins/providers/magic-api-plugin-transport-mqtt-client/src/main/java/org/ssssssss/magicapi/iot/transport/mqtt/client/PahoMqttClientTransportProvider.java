@@ -9,6 +9,7 @@ import org.ssssssss.magicapi.iot.core.spi.DeviceRegistry;
 import org.ssssssss.magicapi.iot.core.spi.ObservableTransportProvider;
 import org.ssssssss.magicapi.iot.core.spi.RegisteredDevice;
 import org.ssssssss.magicapi.iot.core.spi.TransportSnapshot;
+import org.ssssssss.magicapi.iot.core.session.SessionLifecycleCoordinator;
 
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -18,10 +19,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class PahoMqttClientTransportProvider implements ObservableTransportProvider {
     private final MqttClientTransportProperties properties;
     private final DeviceRegistry registry;
+    private final SessionLifecycleCoordinator sessions;
+    private final Pattern lifecycleClientIdPattern;
     private final MqttClientTopicMapper topics = new MqttClientTopicMapper();
     private final Map<String, ProtocolContext> deviceContexts = new ConcurrentHashMap<>();
     private final AtomicLong acceptedConnections = new AtomicLong();
@@ -35,8 +40,15 @@ public final class PahoMqttClientTransportProvider implements ObservableTranspor
     private volatile TransportMessageHandler handler;
 
     public PahoMqttClientTransportProvider(MqttClientTransportProperties properties, DeviceRegistry registry) {
+        this(properties, registry, null);
+    }
+
+    public PahoMqttClientTransportProvider(MqttClientTransportProperties properties, DeviceRegistry registry,
+                                           org.ssssssss.magicapi.iot.core.spi.SessionRepository sessionRepository) {
         this.properties = properties;
         this.registry = registry;
+        this.sessions = sessionRepository == null ? null : new SessionLifecycleCoordinator(sessionRepository, properties.getNodeId());
+        this.lifecycleClientIdPattern = Pattern.compile(properties.getLifecycleClientIdPattern());
     }
 
     @Override public String transportId() { return "mqtt-client"; }
@@ -122,8 +134,10 @@ public final class PahoMqttClientTransportProvider implements ObservableTranspor
                 "connectionId", connectionId, "brokerClientId", properties.clientId(), "topic", topic));
             if (deviceContexts.putIfAbsent(connectionId, context) == null) {
                 acceptedConnections.incrementAndGet();
+                if (sessions != null) sessions.connected(connectionId, context);
                 handler.connected(connectionId, context);
             }
+            if (sessions != null) sessions.touch(connectionId);
             byte[] payload = mqttMessage.getPayload();
             Map<String, String> metadata = new LinkedHashMap<>();
             metadata.put("topic", topic);
@@ -143,9 +157,11 @@ public final class PahoMqttClientTransportProvider implements ObservableTranspor
     }
 
     private void subscribe(MqttAsyncClient current) throws MqttException {
-        String[] filters = properties.getSubscriptions().stream().map(MqttClientTransportProperties.Subscription::getTopic)
+        java.util.List<MqttClientTransportProperties.Subscription> all = new java.util.ArrayList<>(properties.getSubscriptions());
+        all.addAll(properties.getLifecycleSubscriptions());
+        String[] filters = all.stream().map(MqttClientTransportProperties.Subscription::getTopic)
             .toArray(String[]::new);
-        int[] qos = properties.getSubscriptions().stream().mapToInt(MqttClientTransportProperties.Subscription::getQos)
+        int[] qos = all.stream().mapToInt(MqttClientTransportProperties.Subscription::getQos)
             .toArray();
         current.subscribe(filters, qos).waitForCompletion(properties.getConnectTimeout().toMillis());
     }
@@ -178,6 +194,49 @@ public final class PahoMqttClientTransportProvider implements ObservableTranspor
                 throw new IllegalStateException("MQTT subscription QoS must be between 0 and 2");
             }
         }
+        try { Pattern.compile(properties.getLifecycleClientIdPattern()); }
+        catch (RuntimeException exception) { throw new IllegalStateException("Invalid MQTT lifecycle clientId pattern", exception); }
+    }
+
+    private boolean lifecycleMessageArrived(String topic, MqttMessage message) {
+        String event = lifecycleEvent(topic);
+        if (event == null) return false;
+        String clientId = lifecycleClientId(topic);
+        Matcher matcher = lifecycleClientIdPattern.matcher(clientId);
+        if (!matcher.matches()) { errors.incrementAndGet(); return true; }
+        String productId = matcher.group("productId");
+        String deviceId = matcher.group("deviceId");
+        DeviceIdentity identity = new DeviceIdentity(productId, deviceId);
+        if (properties.isValidateDevice() && registry.find(identity).filter(RegisteredDevice::enabled).isEmpty()) return true;
+        String connectionId = identity.routingKey();
+        ProtocolContext context = new ProtocolContext("mqtt", properties.getServerUri(), identity, Map.of(
+            "connectionId", connectionId, "brokerClientId", clientId, "lifecycleEvent", event,
+            "topic", topic));
+        if ("connected".equals(event)) {
+            if (deviceContexts.putIfAbsent(connectionId, context) == null) {
+                acceptedConnections.incrementAndGet();
+                if (sessions != null) sessions.connected(connectionId, context);
+                if (handler != null) handler.connected(connectionId, context);
+            } else if (sessions != null) {
+                sessions.touch(connectionId);
+            }
+        } else {
+            ProtocolContext previous = deviceContexts.remove(connectionId);
+            if (sessions != null) sessions.disconnected(connectionId);
+            if (handler != null && previous != null) handler.disconnected(connectionId, previous, null);
+        }
+        return true;
+    }
+
+    private static String lifecycleEvent(String topic) {
+        if (topic.endsWith("/connected")) return "connected";
+        if (topic.endsWith("/disconnected")) return "disconnected";
+        return null;
+    }
+
+    private static String lifecycleClientId(String topic) {
+        String[] parts = topic.split("/");
+        return parts.length == 0 ? "" : parts[parts.length - 2];
     }
 
     private DeviceIdentity identity(String connectionId) {
@@ -216,7 +275,9 @@ public final class PahoMqttClientTransportProvider implements ObservableTranspor
                 disconnectVirtualDevices(cause);
             }
         }
-        @Override public void messageArrived(String topic, MqttMessage message) { PahoMqttClientTransportProvider.this.messageArrived(topic, message); }
+        @Override public void messageArrived(String topic, MqttMessage message) {
+            if (!lifecycleMessageArrived(topic, message)) PahoMqttClientTransportProvider.this.messageArrived(topic, message);
+        }
         @Override public void deliveryComplete(IMqttDeliveryToken token) { }
     }
 }
