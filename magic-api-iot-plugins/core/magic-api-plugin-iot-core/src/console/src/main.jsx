@@ -96,6 +96,7 @@ function App() {
   const [components, setComponents] = useState([]);
   const [providers, setProviders] = useState([]);
   const [runtime, setRuntime] = useState({ protocol: { protocolIds: [] }, transports: [] });
+  const [cluster, setCluster] = useState({ enabled: false, snapshot: null, nodes: [] });
   const [view, setView] = useState('dashboard');
   const [scripts, setScripts] = useState({ scripts: [], engines: [] });
   const [selectedScript, setSelectedScript] = useState(null);
@@ -150,16 +151,18 @@ function App() {
 
   const load = useCallback(async () => {
     try {
-      const [nextStatus, nextComponents, nextProviders, nextRuntime] = await Promise.all([
+      const [nextStatus, nextComponents, nextProviders, nextRuntime, nextCluster] = await Promise.all([
         getJson('/api/iot/gateway/status'),
         getJson('/api/iot/gateway/components'),
         getJson('/api/iot/gateway/providers'),
-        getJson('/api/iot/gateway/runtime')
+        getJson('/api/iot/gateway/runtime'),
+        getJson('/api/iot/gateway/cluster')
       ]);
       setStatus(nextStatus);
       setComponents(nextComponents.components || []);
       setProviders(nextProviders.providers || []);
       setRuntime(nextRuntime);
+      setCluster(nextCluster);
       setError('');
       setUpdatedAt(new Date());
     } catch (err) {
@@ -472,6 +475,9 @@ function App() {
   const healthyProviderCount = providers.filter(item => item.health?.status === 'UP').length;
   const groups = useMemo(() => new Set(components.map(item => item.module)).size, [components]);
   const transport = runtime.transports?.find(item => item.transportId === 'tcp') || runtime.transports?.[0];
+  const clusterNodes = cluster.nodes || [];
+  const clusterSnapshot = cluster.snapshot || {};
+  const localClusterPort = String(clusterNodes.find(item => item.nodeId === clusterSnapshot.nodeId)?.metadata?.clusterPort || '-');
   const columns = [
     { title: '组件', dataIndex: 'name', key: 'name', render: value => <Text strong>{value}</Text> },
     { title: '模块', dataIndex: 'module', key: 'module', render: value => <Tag color="blue">{value}</Tag> },
@@ -480,6 +486,14 @@ function App() {
       const badge = value === 'UP' ? 'success' : value === 'DEGRADED' ? 'warning' : value === 'DOWN' ? 'error' : value === 'REGISTERED' ? 'processing' : 'default';
       return <Badge status={badge} text={value} />;
     } }
+  ];
+  const clusterColumns = [
+    { title: '节点', dataIndex: 'nodeId', key: 'nodeId', render: value => <Text strong>{value}</Text> },
+    { title: '业务地址', dataIndex: 'address', key: 'address', render: value => <Text code>{value}</Text> },
+    { title: '集群通信地址', key: 'clusterAddress', render: (_, item) => <Text code>{item.metadata?.clusterAddress || '-'}</Text> },
+    { title: '容量', dataIndex: 'capacity', key: 'capacity' },
+    { title: '最后心跳', dataIndex: 'lastHeartbeat', key: 'lastHeartbeat', render: value => value ? new Date(value).toLocaleString() : '-' },
+    { title: '状态', key: 'status', render: (_, item) => <Badge status={item.nodeId === clusterSnapshot.nodeId ? 'success' : 'processing'} text={item.nodeId === clusterSnapshot.nodeId ? '本节点' : '在线'} /> }
   ];
   const healthBadge = value => {
     const status = value === 'UP' ? 'success' : value === 'DEGRADED' ? 'warning' : value === 'UNKNOWN' ? 'default' : 'error';
@@ -662,19 +676,47 @@ function App() {
     </div>
   </Content>;
 
+  const clusterView = <Content className="content">
+    <div className="page-heading">
+      <div><Text className="eyebrow">GATEWAY CLUSTER</Text><Title level={2}>节点集群</Title><Text type="secondary">查看 etcd 中的网关节点、心跳和集群内部通信状态</Text></div>
+      <Space wrap><Badge status={cluster.enabled ? 'success' : 'default'} text={cluster.enabled ? '集群已启用' : '集群未启用'} /><Button icon={<ReloadOutlined />} onClick={load}>刷新集群状态</Button></Space>
+    </div>
+    {!cluster.enabled && <Alert type="warning" showIcon message="集群功能未启用" description="请启用 iot.cluster.enabled 并配置 etcd 节点注册 Provider。" />}
+    <Row gutter={[16, 16]} className="metrics">
+      <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="在线节点" value={clusterNodes.length} prefix={<ClusterOutlined />} suffix="个" /></Card></Col>
+      <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="当前节点" value={clusterSnapshot.nodeId || '-'} prefix={<CloudServerOutlined />} /></Card></Col>
+      <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="节点注册中心" value={clusterSnapshot.providerId || 'UNKNOWN'} prefix={<DatabaseOutlined />} /></Card></Col>
+      <Col xs={24} sm={12} lg={6}><Card bordered={false}><Statistic title="集群通信端口" value={localClusterPort} prefix={<ApiOutlined />} /></Card></Col>
+    </Row>
+    <Row gutter={[16, 16]}>
+      <Col xs={24} lg={8}><Card className="dashboard-section" title={<Space><HeartOutlined />本节点状态</Space>} bordered={false}>
+        <div className="summary-list">
+          <div><span>运行状态</span><Badge status={clusterSnapshot.running ? 'success' : 'error'} text={clusterSnapshot.running ? 'RUNNING' : 'STOPPED'} /></div>
+          <div><span>etcd Provider</span><b>{clusterSnapshot.providerId || '-'}</b></div>
+          <div><span>最后心跳</span><b>{clusterSnapshot.lastHeartbeat ? new Date(clusterSnapshot.lastHeartbeat).toLocaleString() : '-'}</b></div>
+          <div><span>心跳错误</span><b>{clusterSnapshot.heartbeatErrors || 0}</b></div>
+          <div><span>节点通信</span><Tag color="green">{localClusterPort} / internal</Tag></div>
+        </div>
+      </Card></Col>
+      <Col xs={24} lg={16}><Card className="dashboard-section" title={<Space><ClusterOutlined />etcd 节点注册表</Space>} extra={<Tag color={clusterNodes.length ? 'green' : 'default'}>{clusterNodes.length} ONLINE</Tag>} bordered={false}>
+        <Table rowKey="nodeId" columns={clusterColumns} dataSource={clusterNodes} pagination={{ pageSize: 8 }} locale={{ emptyText: <Empty description="etcd 中暂无在线网关节点" /> }} scroll={{ x: 920 }} />
+      </Card></Col>
+    </Row>
+  </Content>;
+
   return <Layout className="app-shell">
     <Sider width={244} className="app-sider">
       <div className="brand"><div className="brand-mark"><DashboardOutlined /></div><div><b>IoT Gateway</b><span>Control Center</span></div></div>
       <div className={`nav-item ${view === 'dashboard' ? 'active' : ''}`} onClick={() => setView('dashboard')}><DashboardOutlined /> 运行监控</div>
       <div className={`nav-item ${view === 'devices' ? 'active' : ''}`} onClick={() => setView('devices')}><ApiOutlined /> 设备接入</div>
-      <div className="nav-item"><ClusterOutlined /> 节点集群</div>
+      <div className={`nav-item ${view === 'cluster' ? 'active' : ''}`} onClick={() => setView('cluster')}><ClusterOutlined /> 节点集群</div>
       <div className={`nav-item ${view === 'configuration' ? 'active' : ''}`} onClick={() => setView('configuration')}><SettingOutlined /> 配置管理</div>
       <div className={`nav-item ${view === 'scripts' ? 'active' : ''}`} onClick={() => setView('scripts')}><FileTextOutlined /> 脚本编排</div>
       <div className={`nav-item ${view === 'plugins' ? 'active' : ''}`} onClick={() => setView('plugins')}><ThunderboltOutlined /> SPI 插件</div>
     </Sider>
     <Layout>
       <Header className="topbar"><Space><CloudServerOutlined /><Text strong>网关运行监控</Text><Tag color="cyan">DEV</Tag></Space><Space><Text type="secondary">自动刷新 10s</Text><ReloadOutlined onClick={load} className="clickable"/></Space></Header>
-      {view === 'devices' ? devicesView : view === 'configuration' ? configurationView : view === 'scripts' ? scriptsView : view === 'plugins' ? pluginView : <Content className="content">
+      {view === 'devices' ? devicesView : view === 'cluster' ? clusterView : view === 'configuration' ? configurationView : view === 'scripts' ? scriptsView : view === 'plugins' ? pluginView : <Content className="content">
         <div className="page-heading"><div><Text className="eyebrow">MAGIC API IOT PLUGINS</Text><Title level={2}>Gateway Overview</Title><Text type="secondary">观察当前 Spring 容器中的 IoT 插件、连接能力与运行健康度</Text></div><Space wrap><Badge status={status.status === 'UP' ? 'success' : 'error'} text={status.status === 'UP' ? '网关在线' : '连接异常'} /><Text type="secondary">{updatedAt ? `更新于 ${updatedAt.toLocaleTimeString()}` : '等待数据'}</Text></Space></div>
         {error && <Alert type="warning" showIcon message="无法读取网关状态" description={error} closable onClose={() => setError('')} />}
         <Card className="dashboard-controls" bordered={false} size="small">

@@ -62,6 +62,8 @@ Business concepts such as tenant or household must stay outside the plugin platf
 
 - [x] Add a framework-neutral gateway `NodeRegistry` contract distinct from device registry and session routing.
 - [x] Add common node registration, heartbeat, discovery and graceful removal lifecycle coordination.
+- [x] Persist gateway node metadata in etcd lease-backed records, including the internal communication address.
+- [x] Add a dedicated node-to-node communication HTTP port with ping, status, drain and resume endpoints.
 - [x] Add a Nacos ephemeral Naming Provider.
 - [x] Add a ZooKeeper ephemeral ZNode Provider.
 - [x] Add an etcd lease-backed key Provider.

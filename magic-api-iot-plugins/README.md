@@ -88,6 +88,14 @@ Gateway node discovery is independent from device registration and device sessio
 `magic-api-plugin-iot-cluster` owns the common startup registration, heartbeat, discovery and
 graceful removal lifecycle. Select exactly one node registry Provider:
 
+The test gateway defaults to etcd and stores node records under `/iot/gateway/nodes/` with a
+lease. Each gateway also starts a separate internal HTTP listener on
+`iot.cluster.communication-port` (default `19218`) with `/internal/cluster/ping`,
+`/internal/cluster/status`, `/internal/cluster/drain` and `/internal/cluster/resume` endpoints.
+Set a unique `node-id` and network-reachable `communication-advertise-address` for every
+instance. In production set `communication-token`; protected drain/resume calls must send it
+as `X-Iot-Cluster-Token`.
+
 ```yaml
 iot:
   cluster:

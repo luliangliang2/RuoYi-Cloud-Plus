@@ -85,8 +85,14 @@ public final class GatewayNodeCoordinator implements SmartLifecycle {
     }
 
     private NodeRegistry.GatewayNode node() {
+        java.util.Map<String, String> metadata = new java.util.LinkedHashMap<>(properties.getMetadata());
+        metadata.put("clusterPort", String.valueOf(properties.getCommunicationPort()));
+        metadata.put("clusterAddress", properties.getCommunicationAdvertiseAddress() == null
+            || properties.getCommunicationAdvertiseAddress().isBlank()
+            ? properties.getAddress().replaceFirst("(:\\d+)$", ":" + properties.getCommunicationPort())
+            : properties.getCommunicationAdvertiseAddress());
         return new NodeRegistry.GatewayNode(properties.getNodeId(), properties.getAddress(), Instant.now(),
-            properties.getCapacity(), properties.getMetadata());
+            properties.getCapacity(), metadata);
     }
 
     private void validate() {
@@ -97,5 +103,9 @@ public final class GatewayNodeCoordinator implements SmartLifecycle {
         if (properties.getHeartbeatInterval() == null || properties.getHeartbeatInterval().isZero()
             || properties.getHeartbeatInterval().isNegative())
             throw new IllegalStateException("iot.cluster.heartbeat-interval must be positive");
+        if (properties.getCommunicationBindAddress() == null || properties.getCommunicationBindAddress().isBlank())
+            throw new IllegalStateException("iot.cluster.communication-bind-address must not be blank");
+        if (properties.getCommunicationPort() < 1 || properties.getCommunicationPort() > 65535)
+            throw new IllegalStateException("iot.cluster.communication-port must be between 1 and 65535");
     }
 }

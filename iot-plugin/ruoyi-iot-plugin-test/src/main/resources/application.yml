@@ -21,6 +21,10 @@ iot:
     address: ${IOT_GATEWAY_ADVERTISE_ADDRESS:127.0.0.1:9218}
     capacity: ${IOT_GATEWAY_CAPACITY:10000}
     heartbeat-interval: ${IOT_GATEWAY_HEARTBEAT_INTERVAL:5s}
+    communication-bind-address: ${IOT_CLUSTER_BIND_ADDRESS:0.0.0.0}
+    communication-port: ${IOT_CLUSTER_PORT:19218}
+    communication-advertise-address: ${IOT_CLUSTER_ADVERTISE_ADDRESS:127.0.0.1:19218}
+    communication-token: ${IOT_CLUSTER_TOKEN:}
     metadata:
       application: ${spring.application.name}
       environment: ${SPRING_PROFILES_ACTIVE:dev}
@@ -135,7 +139,7 @@ iot:
       service-url: ${IOT_PULSAR_SERVICE_URL:pulsar://10.211.55.4:6650}
       name-server: ${IOT_ROCKETMQ_NAME_SERVER:10.211.55.4:9876}
     node-registry:
-      type: ${IOT_NODE_REGISTRY_PROVIDER:nacos}
+      type: ${IOT_NODE_REGISTRY_PROVIDER:etcd}
     configuration-center:
       type: ${IOT_CONFIGURATION_CENTER_PROVIDER:nacos}
   script:
