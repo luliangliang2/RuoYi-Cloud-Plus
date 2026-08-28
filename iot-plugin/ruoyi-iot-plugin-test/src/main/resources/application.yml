@@ -42,7 +42,7 @@ iot:
       stale-after: ${IOT_NODE_STALE_AFTER:20s}
     etcd:
       endpoints:
-        - ${IOT_ETCD_ENDPOINT:http://127.0.0.1:2379}
+        - ${IOT_ETCD_ENDPOINT:http://10.211.55.4:2379}
       username: ${IOT_ETCD_USERNAME:}
       password: ${IOT_ETCD_PASSWORD:}
       root-prefix: ${IOT_ETCD_ROOT_PREFIX:/iot/gateway/nodes/}

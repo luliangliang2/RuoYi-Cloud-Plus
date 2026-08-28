@@ -398,3 +398,4 @@ magic-api-iot-plugins/
 - 新 Provider 增加 Spring Boot 自动装配、凭证/地址/路径/超时校验、Jackson Java Time 运行时依赖、Provider 健康探测和插件描述注册。
 - 新增 etcd 配置单测及真实集成测试；真实集成验证两个独立 Registry 实例之间的保存、查询、发布、回滚、删除通过。
 - 新模块定向测试、插件 reactor 安装和 `ruoyi-iot-plugin-test` `mvn clean package -DskipTests` 均通过。
+- 修复 `script-registry-etcd` 插件描述缺少 `apiVersion` 导致应用启动失败的问题；已重新安装 Provider 并重新打包测试应用。

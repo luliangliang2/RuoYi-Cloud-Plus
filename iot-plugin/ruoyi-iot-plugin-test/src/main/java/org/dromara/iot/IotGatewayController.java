@@ -453,14 +453,18 @@ public class IotGatewayController {
 				.orElse(snapshot.health().status().name());
 		String status = providerHealth.map(provider -> provider.health().status().name())
 				.orElse(providerPlugin ? "INACTIVE" : snapshot.state().name());
-		return Map.ofEntries(Map.entry("id", descriptor.id()), Map.entry("name", descriptor.name()),
-				Map.entry("module", module), Map.entry("implementation", descriptor.provider()),
-				Map.entry("status", status), Map.entry("health", health), Map.entry("version", descriptor.version()),
-				Map.entry("apiVersion", descriptor.apiVersion()), Map.entry("capabilities", descriptor.capabilities()),
+		return Map.ofEntries(Map.entry("id", safe(descriptor.id(), "unknown")), Map.entry("name", safe(descriptor.name(), descriptor.id())),
+				Map.entry("module", module), Map.entry("implementation", safe(descriptor.provider(), "unknown")),
+				Map.entry("status", status), Map.entry("health", health), Map.entry("version", safe(descriptor.version(), "unknown")),
+				Map.entry("apiVersion", safe(descriptor.apiVersion(), "unknown")), Map.entry("capabilities", descriptor.capabilities()),
 				Map.entry("requires", descriptor.requires()),
 				Map.entry("optionalRequires", descriptor.optionalRequires()),
 				Map.entry("failurePolicy", descriptor.failurePolicy().name()),
-				Map.entry("updatedAt", snapshot.updatedAt().toString()), Map.entry("lastError", snapshot.lastError()));
+				Map.entry("updatedAt", snapshot.updatedAt() == null ? "" : snapshot.updatedAt().toString()), Map.entry("lastError", safe(snapshot.lastError(), "")));
+	}
+
+	private static String safe(String value, String fallback) {
+		return value == null || value.isBlank() ? fallback : value;
 	}
 
 	public record ConfigurationWrite(String key, String value) {

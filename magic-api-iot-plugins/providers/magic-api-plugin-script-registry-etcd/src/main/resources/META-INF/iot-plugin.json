@@ -2,7 +2,12 @@
   "id": "script-registry-etcd",
   "name": "etcd Script Registry Provider",
   "version": "0.1.0-SNAPSHOT",
-  "category": "provider",
+  "apiVersion": "1.0",
+  "provider": "ryan",
   "capabilities": ["script-registry:etcd", "script-versioning", "script-distributed"],
-  "configPrefix": "iot.script.registry.etcd"
+  "requires": [],
+  "optionalRequires": [],
+  "loadOrder": 350,
+  "configPrefix": "iot.script.registry.etcd",
+  "failurePolicy": "REQUIRED"
 }

@@ -279,12 +279,12 @@ function App() {
     try {
       const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(scriptForm.scriptId)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...scriptForm, permissions: scriptForm.permissions.split(',').map(item => item.trim()).filter(Boolean), triggers: scriptForm.triggers.split(',').map(item => item.trim()).filter(Boolean), timeoutMs: Number(scriptForm.timeoutMs) || 2000, metadata: {} }) });
       const result = await response.json(); if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`);
-      setSelectedScript(result.script); setScriptMessage(result.validation.valid ? '脚本已保存，语法校验通过' : '脚本已保存，但校验未通过'); await loadScripts();
+      setSelectedScript(result.script); setScriptMessage(result.validation.valid ? '脚本已保存，语法校验通过' : '脚本已保存，但校验未通过'); await loadScripts(); await chooseScript(result.script);
     } catch (err) { setScriptError(err.message || '脚本保存失败'); }
   };
   const scriptAction = async (action, body) => {
     if (!selectedScript) return;
-    try { const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(selectedScript.scriptId)}${action}`, { method: action === '/enabled' ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); const result = response.status === 204 ? null : await response.json(); if (!response.ok) throw new Error(result?.message || `${response.status} ${response.statusText}`); if (action !== '/validate') setSelectedScript(result || selectedScript); setScriptMessage(action === '/validate' ? (result.valid ? '脚本校验通过' : '脚本校验未通过') : '操作已完成'); await loadScripts(); }
+    try { const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(selectedScript.scriptId)}${action}`, { method: action === '/enabled' ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); const result = response.status === 204 ? null : await response.json(); if (!response.ok) throw new Error(result?.message || `${response.status} ${response.statusText}`); if (action !== '/validate') setSelectedScript(result || selectedScript); setScriptMessage(action === '/validate' ? (result.valid ? '脚本校验通过' : '脚本校验未通过') : '操作已完成'); await loadScripts(); if (action !== '/validate') await chooseScript(selectedScript); }
     catch (err) { setScriptError(err.message || '脚本操作失败'); }
   };
   const debugScript = async () => { try { const input = JSON.parse(scriptDebugInput || '{}'); const response = await fetch(`/api/iot/gateway/scripts/${encodeURIComponent(selectedScript.scriptId)}/debug`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ traceId: `console-${Date.now()}`, trigger: 'MANUAL', input, attributes: {} }) }); const result = await response.json(); if (!response.ok) throw new Error(result.message || `${response.status} ${response.statusText}`); setScriptResult(result); } catch (err) { setScriptResult({ status: 'ERROR', reason: err.message || '调试失败' }); } };
@@ -366,6 +366,9 @@ function App() {
       setCredentialTypes(result.credentialTypes || []);
       setGeneratedCredential(result.generatedCredential || '');
       setCredentialForm({ ...credentialForm, value: '' });
+      await loadDevices(devicePage.page, devicePage.pageSize);
+      const refreshed = await getJson(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials`);
+      setCredentialTypes(refreshed.credentialTypes || []);
     } catch (err) { setDeviceError(err.message || '凭证设置失败'); }
   };
 
@@ -386,7 +389,9 @@ function App() {
       const { productId, deviceId } = credentialDevice.identity;
       const response = await fetch(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials/${encodeURIComponent(type)}`, { method: 'DELETE' });
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-      setCredentialTypes(credentialTypes.filter(item => item !== type));
+      await loadDevices(devicePage.page, devicePage.pageSize);
+      const refreshed = await getJson(`/api/iot/gateway/devices/${encodeURIComponent(productId)}/${encodeURIComponent(deviceId)}/credentials`);
+      setCredentialTypes(refreshed.credentialTypes || []);
     } catch (err) { setDeviceError(err.message || '凭证删除失败'); }
   };
 
