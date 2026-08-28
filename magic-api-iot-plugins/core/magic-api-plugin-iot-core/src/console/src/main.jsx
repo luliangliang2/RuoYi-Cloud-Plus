@@ -167,7 +167,17 @@ function App() {
     }
   }, []);
 
-  useEffect(() => { load(); const timer = setInterval(load, 10000); return () => clearInterval(timer); }, [load]);
+  useEffect(() => {
+    let disposed = false;
+    let timer;
+    const refresh = async () => {
+      if (disposed) return;
+      await load();
+      if (!disposed) timer = setTimeout(refresh, 10000);
+    };
+    refresh();
+    return () => { disposed = true; clearTimeout(timer); };
+  }, [load]);
 
   const loadConfiguration = useCallback(async () => {
     try {

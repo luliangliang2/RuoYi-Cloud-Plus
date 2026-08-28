@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -130,11 +131,27 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IOException.class)
     public void handleIoException(IOException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        if (requestURI.contains("sse")) {
-            // sse 经常性连接中断 例如关闭浏览器 直接屏蔽
+        if (requestURI.contains("sse") || isClientDisconnect(e)) {
+            // Browser navigation, polling cancellation and proxy timeouts can close the socket mid-response.
             return;
         }
         log.error("请求地址'{}',连接中断", requestURI, e);
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(AsyncRequestNotUsableException e) {
+        // The response is already unusable; attempting to write an error response only creates another exception.
+    }
+
+    private boolean isClientDisconnect(IOException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null && (message.contains("Broken pipe") || message.contains("Connection reset")
+                    || message.contains("断开的管道") || message.contains("连接被重置"))) return true;
+            current = current.getCause();
+        }
+        return false;
     }
 
     /**
