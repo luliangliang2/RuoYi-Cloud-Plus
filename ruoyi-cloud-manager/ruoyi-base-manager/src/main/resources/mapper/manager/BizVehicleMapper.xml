@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizVehicleMapper">
+
+    <select id="selectVehicleVoById" resultType="org.dromara.manager.api.domain.vo.BizVehicleVo">
+        select v.id,
+               v.tree_id,
+               v.category_node_id,
+               n.node_name as category_node_name,
+               v.vin,
+               v.plate_no,
+               v.brand,
+               v.vehicle_icon
+        from biz_vehicle v
+            left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+        where v.del_flag = 0
+          and v.id = #{id}
+    </select>
+
+    <select id="selectVehiclePage" resultType="org.dromara.manager.api.domain.vo.BizVehicleVo">
+        select v.id,
+               v.tree_id,
+               v.category_node_id,
+               coalesce(group_concat(distinct bn.node_name order by bn.node_id separator '、'), n.node_name) as category_node_name,
+               v.vin,
+               v.plate_no,
+               v.brand,
+               v.vehicle_icon,
+               v.create_time
+        from biz_vehicle v
+            left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+            left join biz_tree_category_bind cb
+                on cb.business_type = 'vehicle' and cb.business_id = v.id and cb.del_flag = '0'
+            left join biz_tree_node bn on bn.node_id = cb.node_id and bn.del_flag = '0'
+        <where>
+            v.del_flag = 0
+            <if test="bo.vin != null and bo.vin != ''">
+                and v.vin = #{bo.vin}
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and v.plate_no = #{bo.plateNo}
+            </if>
+            <if test="bo.brand != null and bo.brand != ''">
+                and v.brand = #{bo.brand}
+            </if>
+            <if test="bo.treeId != null">
+                and v.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+        </where>
+        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.vehicle_icon, v.create_time
+        order by v.id asc
+    </select>
+
+    <select id="selectVehicleList" resultType="org.dromara.manager.api.domain.vo.BizVehicleVo">
+        select v.id,
+               v.tree_id,
+               v.category_node_id,
+               coalesce(group_concat(distinct bn.node_name order by bn.node_id separator '、'), n.node_name) as category_node_name,
+               v.vin,
+               v.plate_no,
+               v.brand,
+               v.vehicle_icon,
+               v.create_time
+        from biz_vehicle v
+            left join biz_tree_node n on n.node_id = v.category_node_id and n.del_flag = '0'
+            left join biz_tree_category_bind cb
+                on cb.business_type = 'vehicle' and cb.business_id = v.id and cb.del_flag = '0'
+            left join biz_tree_node bn on bn.node_id = cb.node_id and bn.del_flag = '0'
+        <where>
+            v.del_flag = 0
+            <if test="bo.vin != null and bo.vin != ''">
+                and v.vin = #{bo.vin}
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and v.plate_no = #{bo.plateNo}
+            </if>
+            <if test="bo.brand != null and bo.brand != ''">
+                and v.brand = #{bo.brand}
+            </if>
+            <if test="bo.treeId != null">
+                and v.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'vehicle'
+                      and fcb.business_id = v.id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+        </where>
+        group by v.id, v.tree_id, v.category_node_id, n.node_name, v.vin, v.plate_no, v.brand, v.vehicle_icon, v.create_time
+        order by v.id asc
+    </select>
+
+    <select id="selectAuthorizedVinList" resultType="java.lang.String">
+        select distinct v.vin
+        from biz_vehicle v
+        <where>
+            v.del_flag = 0
+            and v.vin is not null
+            and v.vin != ''
+            <if test="bo.vin != null and bo.vin != ''">
+                and v.vin = #{bo.vin}
+            </if>
+            <if test="bo.plateNo != null and bo.plateNo != ''">
+                and v.plate_no = #{bo.plateNo}
+            </if>
+            <if test="bo.brand != null and bo.brand != ''">
+                and v.brand = #{bo.brand}
+            </if>
+        </where>
+        order by v.vin asc
+    </select>
+
+</mapper>

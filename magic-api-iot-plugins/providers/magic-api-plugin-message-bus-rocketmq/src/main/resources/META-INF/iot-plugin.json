@@ -1,0 +1,15 @@
+{
+	"id": "message-bus-rocketmq",
+	"name": "RocketMQ Message Bus Provider",
+	"version": "0.1.0-SNAPSHOT",
+	"apiVersion": "1.0",
+	"provider": "ryan",
+	"capabilities": [
+		"message-bus:rocketmq"
+	],
+	"requires": [],
+	"optionalRequires": [],
+	"loadOrder": 340,
+	"configPrefix": "iot.providers.message-bus",
+	"failurePolicy": "REQUIRED"
+}

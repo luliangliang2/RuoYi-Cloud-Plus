@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizSimCardMapper">
+
+    <select id="selectSimCardList" resultType="org.dromara.manager.domain.vo.BizSimCardVo">
+        select s.sim_id,
+               s.tree_id,
+               s.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               s.imei,
+               s.iccid,
+               s.phone_number,
+               s.monthly_data_quota,
+               s.activation_time,
+               s.expire_time,
+               s.current_data_usage,
+               s.status,
+               s.create_time,
+               s.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_sim_card s
+            left join biz_tree_node n on n.node_id = s.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '3' and b.equipment_id = s.sim_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            s.del_flag = '0'
+            <if test="bo.imei != null and bo.imei != ''">
+                and s.imei like concat('%', #{bo.imei}, '%')
+            </if>
+            <if test="bo.iccid != null and bo.iccid != ''">
+                and s.iccid like concat('%', #{bo.iccid}, '%')
+            </if>
+            <if test="bo.phoneNumber != null and bo.phoneNumber != ''">
+                and s.phone_number like concat('%', #{bo.phoneNumber}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and s.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and s.status = #{bo.status}
+            </if>
+        </where>
+        order by s.create_time desc, s.sim_id desc
+    </select>
+
+    <select id="selectSimCardPage" resultType="org.dromara.manager.domain.vo.BizSimCardVo">
+        select s.sim_id,
+               s.tree_id,
+               s.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               s.imei,
+               s.iccid,
+               s.phone_number,
+               s.monthly_data_quota,
+               s.activation_time,
+               s.expire_time,
+               s.current_data_usage,
+               s.status,
+               s.create_time,
+               s.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_sim_card s
+            left join biz_tree_node n on n.node_id = s.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '3' and b.equipment_id = s.sim_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            s.del_flag = '0'
+            <if test="bo.imei != null and bo.imei != ''">
+                and s.imei like concat('%', #{bo.imei}, '%')
+            </if>
+            <if test="bo.iccid != null and bo.iccid != ''">
+                and s.iccid like concat('%', #{bo.iccid}, '%')
+            </if>
+            <if test="bo.phoneNumber != null and bo.phoneNumber != ''">
+                and s.phone_number like concat('%', #{bo.phoneNumber}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and s.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'simCard'
+                      and fcb.business_id = s.sim_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and s.status = #{bo.status}
+            </if>
+        </where>
+        order by s.create_time desc, s.sim_id desc
+    </select>
+
+    <select id="selectBindableList" resultType="org.dromara.manager.domain.vo.BizSimCardVo">
+        select s.sim_id,
+               s.tree_id,
+               s.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               s.imei,
+               s.iccid,
+               s.phone_number,
+               s.monthly_data_quota,
+               s.activation_time,
+               s.expire_time,
+               s.current_data_usage,
+               s.status,
+               s.create_time,
+               s.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_sim_card s
+            left join biz_tree_node n on n.node_id = s.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '3' and b.equipment_id = s.sim_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            s.del_flag = '0'
+            and s.status = '0'
+            and (b.bind_id is null or b.vehicle_id = #{vehicleId})
+            <if test="keyword != null and keyword != ''">
+                and (
+                    s.iccid like concat('%', #{keyword}, '%')
+                    or s.imei like concat('%', #{keyword}, '%')
+                    or s.phone_number like concat('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        order by s.iccid asc, s.sim_id desc
+    </select>
+
+    <select id="selectSimCardVoByIds" resultType="org.dromara.manager.domain.vo.BizSimCardVo">
+        select s.sim_id,
+               s.tree_id,
+               s.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'simCard'
+                     and tcb.business_id = s.sim_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               s.imei,
+               s.iccid,
+               s.phone_number,
+               s.monthly_data_quota,
+               s.activation_time,
+               s.expire_time,
+               s.current_data_usage,
+               s.status,
+               s.create_time,
+               s.remark
+        from biz_sim_card s
+            left join biz_tree_node n on n.node_id = s.category_node_id and n.del_flag = '0'
+        where s.del_flag = '0'
+          and s.sim_id in
+        <foreach collection="simIds" item="simId" open="(" separator="," close=")">
+            #{simId}
+        </foreach>
+    </select>
+
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizSceneRouteMapper">
+
+    <select id="selectSceneRouteList" resultType="org.dromara.manager.domain.vo.BizSceneRouteVo">
+        select r.route_id,
+               r.tree_id,
+               r.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'sceneRoute'
+                     and tcb.business_id = r.route_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               r.route_name,
+               r.gcj02_path,
+               r.bd09_path,
+               r.wgs84_path,
+               r.stroke_color,
+               r.stroke_style,
+               r.stroke_weight,
+               r.status,
+               r.create_time,
+               r.remark
+        from biz_scene_route r
+            left join biz_tree_node n on n.node_id = r.category_node_id and n.del_flag = '0'
+        <where>
+            r.del_flag = '0'
+            <if test="bo.routeName != null and bo.routeName != ''">
+                and r.route_name like concat('%', #{bo.routeName}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and r.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneRoute'
+                      and fcb.business_id = r.route_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneRoute'
+                      and fcb.business_id = r.route_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and r.status = #{bo.status}
+            </if>
+        </where>
+        order by r.create_time desc, r.route_id desc
+    </select>
+
+    <select id="selectSceneRoutePage" resultType="org.dromara.manager.domain.vo.BizSceneRouteVo">
+        select r.route_id,
+               r.tree_id,
+               r.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'sceneRoute'
+                     and tcb.business_id = r.route_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               r.route_name,
+               r.gcj02_path,
+               r.bd09_path,
+               r.wgs84_path,
+               r.stroke_color,
+               r.stroke_style,
+               r.stroke_weight,
+               r.status,
+               r.create_time,
+               r.remark
+        from biz_scene_route r
+            left join biz_tree_node n on n.node_id = r.category_node_id and n.del_flag = '0'
+        <where>
+            r.del_flag = '0'
+            <if test="bo.routeName != null and bo.routeName != ''">
+                and r.route_name like concat('%', #{bo.routeName}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and r.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneRoute'
+                      and fcb.business_id = r.route_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneRoute'
+                      and fcb.business_id = r.route_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and r.status = #{bo.status}
+            </if>
+        </where>
+        order by r.create_time desc, r.route_id desc
+    </select>
+
+</mapper>

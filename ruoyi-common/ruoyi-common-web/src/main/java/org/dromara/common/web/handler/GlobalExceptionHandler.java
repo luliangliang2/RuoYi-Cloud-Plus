@@ -2,7 +2,6 @@ package org.dromara.common.web.handler;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpStatus;
-import com.fasterxml.jackson.core.JsonParseException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
@@ -12,8 +11,10 @@ import org.dromara.common.core.domain.R;
 import org.dromara.common.core.exception.ServiceException;
 import org.dromara.common.core.exception.SseException;
 import org.dromara.common.core.exception.base.BaseException;
+import org.dromara.common.core.utils.SpringUtils;
 import org.dromara.common.core.utils.StreamUtils;
 import org.dromara.common.json.utils.JsonUtils;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.expression.ExpressionException;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -80,7 +82,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleServletException(ServletException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
-        return R.fail(e.getMessage());
+        return R.fail("发生未知异常，请联系管理员");
     }
 
     /**
@@ -119,7 +121,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleNoHandlerFoundException(NoHandlerFoundException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}'不存在.", requestURI);
-        return R.fail(HttpStatus.HTTP_NOT_FOUND, e.getMessage());
+        return R.fail(HttpStatus.HTTP_NOT_FOUND, "请求地址不存在");
     }
 
     /**
@@ -129,11 +131,27 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IOException.class)
     public void handleIoException(IOException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        if (requestURI.contains("sse")) {
-            // sse 经常性连接中断 例如关闭浏览器 直接屏蔽
+        if (requestURI.contains("sse") || isClientDisconnect(e)) {
+            // Browser navigation, polling cancellation and proxy timeouts can close the socket mid-response.
             return;
         }
         log.error("请求地址'{}',连接中断", requestURI, e);
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(AsyncRequestNotUsableException e) {
+        // The response is already unusable; attempting to write an error response only creates another exception.
+    }
+
+    private boolean isClientDisconnect(IOException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            String message = current.getMessage();
+            if (message != null && (message.contains("Broken pipe") || message.contains("Connection reset")
+                    || message.contains("断开的管道") || message.contains("连接被重置"))) return true;
+            current = current.getCause();
+        }
+        return false;
     }
 
     /**
@@ -150,7 +168,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生未知异常.", requestURI, e);
-        return R.fail(e.getMessage());
+        return R.fail("发生未知异常，请联系管理员");
     }
 
     /**
@@ -160,7 +178,7 @@ public class GlobalExceptionHandler {
     public R<Void> handleException(Exception e, HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         log.error("请求地址'{}',发生系统异常.", requestURI, e);
-        return R.fail(e.getMessage());
+        return R.fail("发生系统异常，请联系管理员");
     }
 
     /**

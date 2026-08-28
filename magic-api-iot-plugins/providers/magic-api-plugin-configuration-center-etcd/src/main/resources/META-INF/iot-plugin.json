@@ -1,0 +1,13 @@
+{
+  "id": "configuration-center-etcd",
+  "name": "etcd Configuration Center Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["configuration-center:etcd", "configuration:watch", "configuration:cas"],
+  "requires": ["configuration-center-spi"],
+  "optionalRequires": [],
+  "loadOrder": 307,
+  "configPrefix": "iot.configuration-center.etcd",
+  "failurePolicy": "REQUIRED"
+}

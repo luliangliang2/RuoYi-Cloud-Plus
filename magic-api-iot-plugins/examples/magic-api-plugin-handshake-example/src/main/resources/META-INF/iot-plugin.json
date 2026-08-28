@@ -1,0 +1,13 @@
+{
+  "id": "handshake-vendor-pipe-example",
+  "name": "Vendor Pipe Handshake Example",
+  "version": "1.0.0",
+  "apiVersion": "1",
+  "provider": "external-example",
+  "capabilities": ["handshake:vendor-pipe-v1"],
+  "requires": [],
+  "optionalRequires": ["handshake-basic"],
+  "loadOrder": 200,
+  "configPrefix": "plugins.handshake-vendor-pipe-example",
+  "failurePolicy": "OPTIONAL"
+}

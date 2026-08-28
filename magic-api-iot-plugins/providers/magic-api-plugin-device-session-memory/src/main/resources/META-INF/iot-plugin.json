@@ -1,0 +1,13 @@
+{
+  "id": "device-session-memory",
+  "name": "In-Memory Device Session Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["device-session:memory"],
+  "requires": [],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 310,
+  "configPrefix": "iot.providers.device-session",
+  "failurePolicy": "OPTIONAL"
+}

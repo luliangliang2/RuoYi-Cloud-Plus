@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizRadarMapper">
+
+    <select id="selectRadarList" resultType="org.dromara.manager.domain.vo.BizRadarVo">
+        select r.radar_id,
+               r.tree_id,
+               r.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'radar'
+                     and tcb.business_id = r.radar_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               r.radar_code,
+               r.radar_name,
+               r.sn,
+               r.line_count,
+               r.detection_range,
+               r.manufacturer,
+               r.model_name,
+               r.status,
+               r.create_time,
+               r.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_radar r
+            left join biz_tree_node n on n.node_id = r.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '2' and b.equipment_id = r.radar_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            r.del_flag = '0'
+            <if test="bo.radarCode != null and bo.radarCode != ''">
+                and r.radar_code like concat('%', #{bo.radarCode}, '%')
+            </if>
+            <if test="bo.radarName != null and bo.radarName != ''">
+                and r.radar_name like concat('%', #{bo.radarName}, '%')
+            </if>
+            <if test="bo.sn != null and bo.sn != ''">
+                and r.sn like concat('%', #{bo.sn}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and r.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'radar'
+                      and fcb.business_id = r.radar_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'radar'
+                      and fcb.business_id = r.radar_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and r.status = #{bo.status}
+            </if>
+        </where>
+        order by r.create_time desc, r.radar_id desc
+    </select>
+
+    <select id="selectRadarPage" resultType="org.dromara.manager.domain.vo.BizRadarVo">
+        select r.radar_id,
+               r.tree_id,
+               r.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'radar'
+                     and tcb.business_id = r.radar_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               r.radar_code,
+               r.radar_name,
+               r.sn,
+               r.line_count,
+               r.detection_range,
+               r.manufacturer,
+               r.model_name,
+               r.status,
+               r.create_time,
+               r.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_radar r
+            left join biz_tree_node n on n.node_id = r.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '2' and b.equipment_id = r.radar_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            r.del_flag = '0'
+            <if test="bo.radarCode != null and bo.radarCode != ''">
+                and r.radar_code like concat('%', #{bo.radarCode}, '%')
+            </if>
+            <if test="bo.radarName != null and bo.radarName != ''">
+                and r.radar_name like concat('%', #{bo.radarName}, '%')
+            </if>
+            <if test="bo.sn != null and bo.sn != ''">
+                and r.sn like concat('%', #{bo.sn}, '%')
+            </if>
+            <if test="bo.treeId != null">
+                and r.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'radar'
+                      and fcb.business_id = r.radar_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'radar'
+                      and fcb.business_id = r.radar_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and r.status = #{bo.status}
+            </if>
+        </where>
+        order by r.create_time desc, r.radar_id desc
+    </select>
+
+    <select id="selectBindableList" resultType="org.dromara.manager.domain.vo.BizRadarVo">
+        select r.radar_id,
+               r.tree_id,
+               r.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'radar'
+                     and tcb.business_id = r.radar_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               r.radar_code,
+               r.radar_name,
+               r.sn,
+               r.line_count,
+               r.detection_range,
+               r.manufacturer,
+               r.model_name,
+               r.status,
+               r.create_time,
+               r.remark,
+               case when b.bind_id is null then false else true end as bound,
+               b.vehicle_id as bound_vehicle_id,
+               v.plate_no as bound_plate_no
+        from biz_radar r
+            left join biz_tree_node n on n.node_id = r.category_node_id and n.del_flag = '0'
+            left join biz_vehicle_equipment_bind b
+                on b.equipment_type = '2' and b.equipment_id = r.radar_id and b.del_flag = '0'
+            left join biz_vehicle v on v.id = b.vehicle_id and v.del_flag = 0
+        <where>
+            r.del_flag = '0'
+            and r.status = '0'
+            and (b.bind_id is null or b.vehicle_id = #{vehicleId})
+            <if test="keyword != null and keyword != ''">
+                and (
+                    r.radar_code like concat('%', #{keyword}, '%')
+                    or r.radar_name like concat('%', #{keyword}, '%')
+                    or r.sn like concat('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        order by r.radar_code asc, r.radar_id desc
+    </select>
+
+    <select id="selectRadarVoByIds" resultType="org.dromara.manager.domain.vo.BizRadarVo">
+        select r.radar_id,
+               r.tree_id,
+               r.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'radar'
+                     and tcb.business_id = r.radar_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               r.radar_code,
+               r.radar_name,
+               r.sn,
+               r.line_count,
+               r.detection_range,
+               r.manufacturer,
+               r.model_name,
+               r.status,
+               r.create_time,
+               r.remark
+        from biz_radar r
+            left join biz_tree_node n on n.node_id = r.category_node_id and n.del_flag = '0'
+        where r.del_flag = '0'
+          and r.radar_id in
+        <foreach collection="radarIds" item="radarId" open="(" separator="," close=")">
+            #{radarId}
+        </foreach>
+    </select>
+
+</mapper>

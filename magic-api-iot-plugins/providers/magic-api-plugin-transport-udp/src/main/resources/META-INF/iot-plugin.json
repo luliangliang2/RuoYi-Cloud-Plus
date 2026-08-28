@@ -1,0 +1,1 @@
+{"id":"transport-udp","name":"Netty UDP Transport Provider","version":"0.1.0-SNAPSHOT","apiVersion":"1.0","provider":"ryan","capabilities":["transport:udp"],"requires":["protocol-runtime"],"optionalRequires":["observability-memory"],"loadOrder":253,"configPrefix":"iot.transports.udp","failurePolicy":"REQUIRED"}

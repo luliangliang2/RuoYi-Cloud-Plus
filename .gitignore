@@ -25,7 +25,7 @@ target/
 *.iws
 *.iml
 *.ipr
-
+**/bin/
 ### JRebel ###
 rebel.xml
 ### NetBeans ###
@@ -47,3 +47,8 @@ nbdist/
 !*/build/*.xml
 
 .flattened-pom.xml
+**/node_modules/
+**/dist/
+**/spring.factories
+**/*.life.js
+**/.gitignore

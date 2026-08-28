@@ -1,0 +1,13 @@
+{
+  "id": "transport-tcp",
+  "name": "Netty TCP Transport Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["transport:tcp"],
+  "requires": ["protocol-runtime"],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 250,
+  "configPrefix": "iot.transports.tcp",
+  "failurePolicy": "REQUIRED"
+}

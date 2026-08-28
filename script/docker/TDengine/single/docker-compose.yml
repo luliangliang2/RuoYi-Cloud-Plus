@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  tdengine:
+    image: tdengine/tdengine:3.3.6.0
+    container_name: td-single
+    # 🌟 使用 host 模式直接借用宿主机网卡，彻底消灭端口映射不全、DNS 解析失败的问题
+    network_mode: "host" 
+    environment:
+      # 👈 如果在 Mac 本地跑，填 127.0.0.1；如果在 PD 虚拟机跑，填虚拟机的真实本地 IP
+      - TAOS_FQDN=127.0.0.1      
+      - TAOS_TIMEZONE=Asia/Shanghai
+    volumes:
+      # 🌟 将持久化数据和日志挂载出来，方便保留数据
+      - taosdata:/var/lib/taos
+      - taoslog:/var/log/taos
+    restart: always
+
+volumes:
+  taosdata:
+  taoslog:

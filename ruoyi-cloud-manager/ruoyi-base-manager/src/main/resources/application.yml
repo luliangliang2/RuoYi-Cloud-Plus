@@ -1,0 +1,36 @@
+server:
+  port: 9206
+
+spring:
+  application:
+    name: ruoyi-base-manager
+  profiles:
+    active: @profiles.active@
+
+  cloud:
+    nacos:
+      # nacos 服务地址
+      server-addr: @nacos.server@
+      username: @nacos.username@
+      password: @nacos.password@
+      discovery:
+        # 注册组
+        group: @nacos.discovery.group@
+        namespace: @nacos.namespace@
+      config:
+        # 配置组
+        group: @nacos.config.group@
+        namespace: @nacos.namespace@
+  config:
+    import:
+      - optional:nacos:application-common.yml
+      - optional:nacos:datasource.yml
+      - optional:nacos:${spring.application.name}.yml
+
+
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    table: flyway_schema_history

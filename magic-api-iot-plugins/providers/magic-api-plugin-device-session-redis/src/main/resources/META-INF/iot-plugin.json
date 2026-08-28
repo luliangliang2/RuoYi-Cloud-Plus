@@ -1,0 +1,13 @@
+{
+  "id": "device-session-redis",
+  "name": "Redis Device Session Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["device-session:redis"],
+  "requires": [],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 311,
+  "configPrefix": "iot.providers.device-session",
+  "failurePolicy": "REQUIRED"
+}

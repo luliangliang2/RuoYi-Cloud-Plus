@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.dromara.manager.mapper.BizSceneAreaMapper">
+
+    <select id="selectSceneAreaList" resultType="org.dromara.manager.domain.vo.BizSceneAreaVo">
+        select a.area_id,
+               a.tree_id,
+               a.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'sceneArea'
+                     and tcb.business_id = a.area_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               a.area_name,
+               a.area_type,
+               a.gcj02_path,
+               a.bd09_path,
+               a.wgs84_path,
+               a.fill_color,
+               a.stroke_color,
+               a.stroke_style,
+               a.stroke_weight,
+               a.status,
+               a.create_time,
+               a.remark
+        from biz_scene_area a
+            left join biz_tree_node n on n.node_id = a.category_node_id and n.del_flag = '0'
+        <where>
+            a.del_flag = '0'
+            <if test="bo.areaName != null and bo.areaName != ''">
+                and a.area_name like concat('%', #{bo.areaName}, '%')
+            </if>
+            <if test="bo.areaType != null and bo.areaType != ''">
+                and a.area_type = #{bo.areaType}
+            </if>
+            <if test="bo.treeId != null">
+                and a.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneArea'
+                      and fcb.business_id = a.area_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneArea'
+                      and fcb.business_id = a.area_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and a.status = #{bo.status}
+            </if>
+        </where>
+        order by a.create_time desc, a.area_id desc
+    </select>
+
+    <select id="selectSceneAreaPage" resultType="org.dromara.manager.domain.vo.BizSceneAreaVo">
+        select a.area_id,
+               a.tree_id,
+               a.category_node_id,
+               coalesce((
+                   select group_concat(distinct tbn.node_name order by tbn.node_id separator '、')
+                   from biz_tree_category_bind tcb
+                       inner join biz_tree_node tbn on tbn.node_id = tcb.node_id and tbn.del_flag = '0'
+                   where tcb.business_type = 'sceneArea'
+                     and tcb.business_id = a.area_id
+                     and tcb.del_flag = '0'
+               ), n.node_name) as category_node_name,
+               a.area_name,
+               a.area_type,
+               a.gcj02_path,
+               a.bd09_path,
+               a.wgs84_path,
+               a.fill_color,
+               a.stroke_color,
+               a.stroke_style,
+               a.stroke_weight,
+               a.status,
+               a.create_time,
+               a.remark
+        from biz_scene_area a
+            left join biz_tree_node n on n.node_id = a.category_node_id and n.del_flag = '0'
+        <where>
+            a.del_flag = '0'
+            <if test="bo.areaName != null and bo.areaName != ''">
+                and a.area_name like concat('%', #{bo.areaName}, '%')
+            </if>
+            <if test="bo.areaType != null and bo.areaType != ''">
+                and a.area_type = #{bo.areaType}
+            </if>
+            <if test="bo.treeId != null">
+                and a.tree_id = #{bo.treeId}
+            </if>
+            <if test="bo.categoryNodeIds != null and bo.categoryNodeIds.size > 0">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneArea'
+                      and fcb.business_id = a.area_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id in
+                    <foreach collection="bo.categoryNodeIds" item="categoryNodeId" open="(" separator="," close=")">
+                        #{categoryNodeId}
+                    </foreach>
+                )
+            </if>
+            <if test="(bo.categoryNodeIds == null or bo.categoryNodeIds.size == 0) and bo.categoryNodeId != null">
+                and exists (
+                    select 1
+                    from biz_tree_category_bind fcb
+                    where fcb.business_type = 'sceneArea'
+                      and fcb.business_id = a.area_id
+                      and fcb.del_flag = '0'
+                      and fcb.node_id = #{bo.categoryNodeId}
+                )
+            </if>
+            <if test="bo.status != null and bo.status != ''">
+                and a.status = #{bo.status}
+            </if>
+        </where>
+        order by a.create_time desc, a.area_id desc
+    </select>
+
+</mapper>

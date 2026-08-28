@@ -1,0 +1,227 @@
+server:
+  port: ${IOT_GATEWAY_PORT:9218}
+
+iot:
+  plugins:
+    external:
+      enabled: ${IOT_EXTERNAL_PLUGINS_ENABLED:true}
+      directory: ${IOT_EXTERNAL_PLUGINS_DIRECTORY:plugins}
+      data-directory: ${IOT_EXTERNAL_PLUGINS_DATA_DIRECTORY:data/iot-plugins}
+  handshake:
+    enabled: ${IOT_HANDSHAKE_ENABLED:false}
+    timeout: ${IOT_HANDSHAKE_TIMEOUT:10s}
+    max-attempts: ${IOT_HANDSHAKE_MAX_ATTEMPTS:3}
+    gateway-node-id: ${IOT_GATEWAY_NODE_ID:${spring.application.name}-${server.port}}
+    required-protocols: ${IOT_HANDSHAKE_REQUIRED_PROTOCOLS:}
+    providers:
+      raw: ${IOT_RAW_HANDSHAKE_PROVIDER:json-device-v1}
+  cluster:
+    enabled: ${IOT_CLUSTER_ENABLED:true}
+    node-id: ${IOT_GATEWAY_NODE_ID:${spring.application.name}-${server.port}}
+    address: ${IOT_GATEWAY_ADVERTISE_ADDRESS:127.0.0.1:9218}
+    capacity: ${IOT_GATEWAY_CAPACITY:10000}
+    heartbeat-interval: ${IOT_GATEWAY_HEARTBEAT_INTERVAL:5s}
+    communication-bind-address: ${IOT_CLUSTER_BIND_ADDRESS:0.0.0.0}
+    communication-port: ${IOT_CLUSTER_PORT:19218}
+    communication-advertise-address: ${IOT_CLUSTER_ADVERTISE_ADDRESS:127.0.0.1:19218}
+    communication-token: ${IOT_CLUSTER_TOKEN:}
+    metadata:
+      application: ${spring.application.name}
+      environment: ${SPRING_PROFILES_ACTIVE:dev}
+  node-registry:
+    nacos:
+      server-addr: ${NACOS_SERVER_ADDR:10.211.55.3:8848}
+      namespace: ${NACOS_NAMESPACE:public}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      service-name: ${IOT_NACOS_NODE_SERVICE:iot-gateway-nodes}
+      group: ${NACOS_DISCOVERY_GROUP:DEFAULT_GROUP}
+      cluster-name: ${IOT_NACOS_CLUSTER_NAME:DEFAULT}
+      stale-after: ${IOT_NODE_STALE_AFTER:20s}
+    zookeeper:
+      connect-string: ${IOT_ZOOKEEPER_CONNECT_STRING:127.0.0.1:2181}
+      root-path: ${IOT_ZOOKEEPER_ROOT_PATH:/iot/gateway/nodes}
+      session-timeout: ${IOT_ZOOKEEPER_SESSION_TIMEOUT:20s}
+      connection-timeout: ${IOT_ZOOKEEPER_CONNECTION_TIMEOUT:5s}
+      stale-after: ${IOT_NODE_STALE_AFTER:20s}
+    etcd:
+      endpoints:
+        - ${IOT_ETCD_ENDPOINT:http://10.211.55.4:2379}
+      username: ${IOT_ETCD_USERNAME:}
+      password: ${IOT_ETCD_PASSWORD:}
+      root-prefix: ${IOT_ETCD_ROOT_PREFIX:/iot/gateway/nodes/}
+      lease-ttl: ${IOT_ETCD_LEASE_TTL:20s}
+      request-timeout: ${IOT_ETCD_REQUEST_TIMEOUT:5s}
+      stale-after: ${IOT_NODE_STALE_AFTER:20s}
+  configuration-center:
+    nacos:
+      server-addr: ${NACOS_SERVER_ADDR:10.211.55.3:8848}
+      namespace: ${NACOS_NAMESPACE:public}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      data-id: ${IOT_NACOS_CONFIG_DATA_ID:iot-gateway-config.json}
+      group: ${IOT_NACOS_CONFIG_GROUP:DEFAULT_GROUP}
+      timeout: ${IOT_CONFIGURATION_TIMEOUT:5s}
+      max-cas-retries: ${IOT_CONFIGURATION_CAS_RETRIES:5}
+    zookeeper:
+      connect-string: ${IOT_ZOOKEEPER_CONNECT_STRING:127.0.0.1:2181}
+      root-path: ${IOT_ZOOKEEPER_CONFIG_ROOT_PATH:/iot/gateway/config}
+      session-timeout: ${IOT_ZOOKEEPER_SESSION_TIMEOUT:20s}
+      connection-timeout: ${IOT_ZOOKEEPER_CONNECTION_TIMEOUT:5s}
+    etcd:
+      endpoints:
+        - ${IOT_ETCD_ENDPOINT:http://127.0.0.1:2379}
+      username: ${IOT_ETCD_USERNAME:}
+      password: ${IOT_ETCD_PASSWORD:}
+      root-prefix: ${IOT_ETCD_CONFIG_ROOT_PREFIX:/iot/gateway/config/}
+      request-timeout: ${IOT_CONFIGURATION_TIMEOUT:5s}
+  transports:
+    tcp:
+      enabled: ${IOT_TCP_ENABLED:true}
+      host: ${IOT_TCP_HOST:0.0.0.0}
+      port: ${IOT_TCP_PORT:19000}
+      max-frame-length: ${IOT_TCP_MAX_FRAME_LENGTH:65536}
+      frame-mode: LINE
+      protocol-id: raw
+    modbus-tcp:
+      enabled: ${IOT_MODBUS_TCP_ENABLED:true}
+      host: ${IOT_MODBUS_TCP_HOST:0.0.0.0}
+      port: ${IOT_MODBUS_TCP_PORT:1502}
+      max-frame-length: ${IOT_MODBUS_TCP_MAX_FRAME_LENGTH:260}
+      protocol-role: ${IOT_MODBUS_TCP_ROLE:server}
+    mqtt:
+      enabled: ${IOT_MQTT_ENABLED:true}
+      host: ${IOT_MQTT_HOST:0.0.0.0}
+      port: ${IOT_MQTT_PORT:1883}
+      authentication-required: ${IOT_MQTT_AUTHENTICATION_REQUIRED:false}
+      credential-type: ${IOT_MQTT_CREDENTIAL_TYPE:secret}
+      downlink-topic: ${IOT_MQTT_DOWNLINK_TOPIC:devices/{productId}/{deviceId}/commands}
+    mqtt-client:
+      enabled: ${IOT_MQTT_CLIENT_ENABLED:true}
+      server-uri: ${IOT_MQTT_CLIENT_SERVER_URI:tcp://10.211.55.4:1883}
+      client-id-prefix: ${IOT_MQTT_CLIENT_ID_PREFIX:iot-gateway}
+      node-id: ${IOT_GATEWAY_NODE_ID:${HOSTNAME:${spring.application.name}}}
+      username: ${IOT_MQTT_CLIENT_USERNAME:}
+      password: ${IOT_MQTT_CLIENT_PASSWORD:}
+      automatic-reconnect: true
+      clean-session: true
+      keep-alive: 30s
+      connect-timeout: 10s
+      validate-device: ${IOT_MQTT_CLIENT_VALIDATE_DEVICE:true}
+      downlink-topic: ${IOT_MQTT_CLIENT_DOWNLINK_TOPIC:devices/{productId}/{deviceId}/commands}
+      subscriptions:
+        - topic: ${IOT_MQTT_CLIENT_PROPERTIES_TOPIC:$share/iot-gateway/devices/+/+/properties}
+          qos: 1
+        - topic: ${IOT_MQTT_CLIENT_EVENTS_TOPIC:$share/iot-gateway/devices/+/+/events/+}
+          qos: 1
+        - topic: ${IOT_MQTT_CLIENT_REPLIES_TOPIC:$share/iot-gateway/devices/+/+/commands/reply}
+          qos: 1
+        - topic: ${IOT_MQTT_CLIENT_HEARTBEAT_TOPIC:$share/iot-gateway/devices/+/+/heartbeat}
+          qos: 1
+  protocols:
+    modbus-tcp:
+      enabled: ${IOT_MODBUS_TCP_ENABLED:true}
+  health:
+    cache-ttl: ${IOT_HEALTH_CACHE_TTL:10s}
+    timeout: ${IOT_HEALTH_TIMEOUT:3s}
+  providers:
+    device-registry:
+      type: ${IOT_DEVICE_REGISTRY_PROVIDER:redis}
+    device-session:
+      type: ${IOT_DEVICE_SESSION_PROVIDER:redis}
+    message-bus:
+      type: ${IOT_MESSAGE_BUS_PROVIDER:kafka}
+      topic: ${IOT_MESSAGE_BUS_TOPIC:iot-device-messages}
+      retries: ${IOT_MESSAGE_BUS_RETRIES:3}
+      retry-delay: ${IOT_MESSAGE_BUS_RETRY_DELAY:1s}
+      retry-delay-ms: ${IOT_MESSAGE_BUS_RETRY_DELAY_MS:1000}
+      max-pending: ${IOT_MESSAGE_BUS_MAX_PENDING:1000}
+      service-url: ${IOT_PULSAR_SERVICE_URL:pulsar://10.211.55.4:6650}
+      name-server: ${IOT_ROCKETMQ_NAME_SERVER:10.211.55.4:9876}
+    node-registry:
+      type: ${IOT_NODE_REGISTRY_PROVIDER:etcd}
+    configuration-center:
+      type: ${IOT_CONFIGURATION_CENTER_PROVIDER:nacos}
+  script:
+    registry:
+      type: ${IOT_SCRIPT_REGISTRY_PROVIDER:etcd}
+      etcd:
+        endpoints:
+          - ${IOT_SCRIPT_ETCD_ENDPOINT:http://10.211.55.4:2379}
+          - ${IOT_SCRIPT_ETCD_ENDPOINT_2:http://10.211.55.4:22379}
+          - ${IOT_SCRIPT_ETCD_ENDPOINT_3:http://10.211.55.4:32379}
+        username: ${IOT_SCRIPT_ETCD_USERNAME:}
+        password: ${IOT_SCRIPT_ETCD_PASSWORD:}
+        root-prefix: ${IOT_SCRIPT_ETCD_ROOT_PREFIX:/iot/gateway/scripts/}
+        request-timeout: ${IOT_SCRIPT_ETCD_REQUEST_TIMEOUT:5s}
+
+spring:
+  application:
+    name: ${IOT_GATEWAY_APP_NAME:ruoyi-iot-plugin-test}
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:10.211.55.4}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      database: ${SPRING_DATA_REDIS_DATABASE:0}
+      username: ${SPRING_DATA_REDIS_USERNAME:}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:10.211.55.4:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: latest
+  autoconfigure:
+    exclude:
+      - com.baomidou.lock.spring.boot.autoconfigure.LockAutoConfiguration
+      - com.baomidou.lock.spring.boot.autoconfigure.RedissonLockAutoConfiguration
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    nacos:
+      server-addr: ${NACOS_SERVER_ADDR:10.211.55.3:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        enabled: ${NACOS_DISCOVERY_ENABLED:true}
+        group: ${NACOS_DISCOVERY_GROUP:DEFAULT_GROUP}
+        namespace: ${NACOS_NAMESPACE:public}
+      config:
+        enabled: ${NACOS_CONFIG_ENABLED:true}
+        group: ${NACOS_CONFIG_GROUP:DEFAULT_GROUP}
+        namespace: ${NACOS_NAMESPACE:public}
+  config:
+    import:
+      - optional:nacos:application-common.yml
+      - optional:nacos:${spring.application.name}.yml
+
+rocketmq:
+  name-server: ${IOT_ROCKETMQ_NAME_SERVER:10.211.55.4:9876}
+  producer:
+    group: ${IOT_ROCKETMQ_PRODUCER_GROUP:ruoyi-iot-gateway-producer}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+magic-api:
+  web: /magic-editor
+  resource:
+    type: file
+    location: ${MAGIC_API_RESOURCE_LOCATION:./data/magic-api}
+  prefix: /magic-api
+  security:
+    username: ${MAGIC_API_USERNAME:admin}
+    password: ${MAGIC_API_PASSWORD:admin123}

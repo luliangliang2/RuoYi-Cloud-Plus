@@ -1,0 +1,13 @@
+{
+  "id": "transport-mqtt-client",
+  "name": "MQTT Broker Client Transport Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["transport:mqtt-client", "mqtt:shared-subscription", "emqx:ingress"],
+  "requires": ["protocol-runtime"],
+  "optionalRequires": ["observability-memory", "device-registry"],
+  "loadOrder": 252,
+  "configPrefix": "iot.transports.mqtt-client",
+  "failurePolicy": "REQUIRED"
+}

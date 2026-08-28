@@ -1,0 +1,25 @@
+package org.ssssssss.magicapi.iot.testkit;
+
+import org.junit.jupiter.api.Test;
+import org.ssssssss.magicapi.iot.core.model.DeviceIdentity;
+import org.ssssssss.magicapi.iot.core.spi.*;
+import java.util.Map;
+import static org.junit.jupiter.api.Assertions.*;
+
+public abstract class DeviceRegistryContract {
+	protected abstract DeviceRegistry registry();
+
+	protected void setCredential(DeviceIdentity identity, DeviceCredential credential) {
+	}
+
+	@Test
+	void savesFindsAndAuthenticatesEnabledDevice() {
+		DeviceIdentity id = new DeviceIdentity("product", "device-1");
+		DeviceCredential credential = new DeviceCredential("secret", "value");
+		registry().save(new RegisteredDevice(id, true, "test", Map.of(), 1));
+		setCredential(id, credential);
+		assertTrue(registry().find(id).isPresent());
+		assertTrue(registry().authenticate(id, credential));
+		assertFalse(registry().authenticate(id, new DeviceCredential("secret", "wrong")));
+	}
+}

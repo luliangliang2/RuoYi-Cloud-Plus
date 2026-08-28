@@ -1,0 +1,13 @@
+{
+  "id": "protocol-modbus-tcp",
+  "name": "Modbus TCP Protocol Adapter",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["protocol:modbus-tcp"],
+  "requires": ["protocol-runtime", "transport-tcp"],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 261,
+  "configPrefix": "iot.protocols.modbus-tcp",
+  "failurePolicy": "REQUIRED"
+}

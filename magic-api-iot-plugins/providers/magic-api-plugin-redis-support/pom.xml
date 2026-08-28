@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.ssssssss.magicapi.iot</groupId>
+        <artifactId>magic-api-iot-plugins</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+    <artifactId>magic-api-plugin-redis-support</artifactId>
+    <dependencies>
+        <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-autoconfigure</artifactId></dependency>
+        <dependency><groupId>org.springframework.data</groupId><artifactId>spring-data-redis</artifactId></dependency>
+        <dependency><groupId>io.lettuce</groupId><artifactId>lettuce-core</artifactId></dependency>
+    </dependencies>
+</project>

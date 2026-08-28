@@ -1,0 +1,13 @@
+{
+  "id": "configuration-center-zookeeper",
+  "name": "ZooKeeper Configuration Center Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["configuration-center:zookeeper", "configuration:watch", "configuration:cas"],
+  "requires": ["configuration-center-spi"],
+  "optionalRequires": [],
+  "loadOrder": 306,
+  "configPrefix": "iot.configuration-center.zookeeper",
+  "failurePolicy": "REQUIRED"
+}

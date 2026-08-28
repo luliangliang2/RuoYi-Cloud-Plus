@@ -15,7 +15,7 @@
     </description>
 
     <properties>
-        <revision>2.5.2</revision>
+        <revision>2.6.1</revision>
     </properties>
 
     <dependencyManagement>
@@ -38,6 +38,13 @@
             <dependency>
                 <groupId>org.dromara</groupId>
                 <artifactId>ruoyi-api-workflow</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- manager接口 -->
+            <dependency>
+                <groupId>org.dromara</groupId>
+                <artifactId>ruoyi-api-manager</artifactId>
                 <version>${revision}</version>
             </dependency>
 

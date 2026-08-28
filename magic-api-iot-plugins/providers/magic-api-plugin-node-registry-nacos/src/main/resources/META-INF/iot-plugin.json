@@ -1,0 +1,13 @@
+{
+  "id": "node-registry-nacos",
+  "name": "Nacos Gateway Node Registry Provider",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["node-registry:nacos", "cluster:ephemeral-node"],
+  "requires": [],
+  "optionalRequires": ["iot-gateway-cluster"],
+  "loadOrder": 300,
+  "configPrefix": "iot.node-registry.nacos",
+  "failurePolicy": "REQUIRED"
+}

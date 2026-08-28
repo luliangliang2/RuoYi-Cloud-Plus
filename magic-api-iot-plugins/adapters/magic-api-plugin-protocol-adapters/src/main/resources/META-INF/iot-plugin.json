@@ -1,0 +1,13 @@
+{
+  "id": "protocol-adapters",
+  "name": "Raw Protocol Adapter",
+  "version": "0.1.0-SNAPSHOT",
+  "apiVersion": "1.0",
+  "provider": "ryan",
+  "capabilities": ["protocol:raw"],
+  "requires": ["protocol-runtime"],
+  "optionalRequires": ["observability-memory"],
+  "loadOrder": 260,
+  "configPrefix": "iot.protocols",
+  "failurePolicy": "REQUIRED"
+}
