@@ -12,5 +12,8 @@ public interface ConfigurationParser<T> {
 
     default void apply(T parsed) { }
 
+    /** Only explicitly refreshable parsers may mutate a running provider after startup. */
+    default boolean refreshable() { return false; }
+
     default Object snapshot(T parsed) { return parsed; }
 }

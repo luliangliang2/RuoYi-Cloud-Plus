@@ -55,6 +55,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Test lifecycle resource cleanup for threads, channels and subscriptions.
 - [x] Add an Actuator `iotProviders` health contributor backed by the shared provider health catalog.
 - [x] Add Micrometer-backed TelemetryRecorder for provider latency/status and plugin lifecycle metrics.
+- [x] Instrument protocol handshake, decode, message publish and error paths with provider latency/status metrics.
 - [ ] Show plugin dependencies, capabilities, version and last error in the console.
 
 ## Distributed Gateway Cluster
@@ -97,6 +98,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Register the Raw protocol adapter and connect transport frames to the protocol pipeline and message bus.
 - [ ] Add device authentication handshake before promoting temporary TCP connection identities to registered devices.
 - [x] Replace Redis Device Registry management-time `SCAN` pagination with maintained product/device indexes for large fleets.
+- [x] Add Redis device index initialization, consistency verification and repair/rebuild operations.
 - [x] Add an embedded-broker MQTT transport with Topic mapping, registry authentication and runtime counters.
 - [x] Add an external MQTT/EMQX client transport with shared subscriptions, reconnect, registry validation and command downlink.
 - [x] Add an EMQX lifecycle event adapter for authoritative device online/offline session updates.
@@ -112,7 +114,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [x] Add enable, disable, reload, upgrade and rollback operations.
 - [x] Discover `IotPlugin` and `PluginService` through `ServiceLoader`.
 - [x] Register and expose plugin descriptors and SPI diagnostics.
-- [ ] Support configuration refresh only for explicitly refreshable fields.
+- [x] Support configuration refresh only for explicitly refreshable parsers.
 - [ ] Persist plugin installation and desired-state records.
 
 ## P2 - Safe Hot Plugging
@@ -122,7 +124,7 @@ Business concepts such as tenant or household must stay outside the plugin platf
 - [ ] Migrate or close device channels before transport plugin removal.
 - [x] Close external plugin class loaders during disable, reload, upgrade and shutdown.
 - [ ] Detect resource leaks with thread/channel/subscription leak tests.
-- [ ] Support rolling plugin upgrades across gateway nodes.
+- [x] Add a node-by-node rolling plugin upgrade coordinator with drain, readiness, rollback and resume hooks.
 
 ## Script Orchestration
 

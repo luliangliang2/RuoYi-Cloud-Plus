@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -21,6 +22,7 @@ public final class InMemoryConfigurationRuntime implements ConfigurationRuntime 
     private final Map<String, String> parserErrors = new ConcurrentHashMap<>();
     private final List<ConfigurationParser<?>> parsers = new CopyOnWriteArrayList<>();
     private final AtomicBoolean closed = new AtomicBoolean();
+    private final Set<String> initializedParsers = ConcurrentHashMap.newKeySet();
     private final ConfigurationCenter.WatchSubscription subscription;
 
     public InMemoryConfigurationRuntime(ConfigurationCenter center) {
@@ -72,7 +74,7 @@ public final class InMemoryConfigurationRuntime implements ConfigurationRuntime 
         if (parsers.stream().anyMatch(existing -> existing.id().equals(parser.id())))
             throw new IllegalArgumentException("Duplicate configuration parser: " + parser.id());
         parsers.add(parser);
-        reparse(parser);
+        reparse(parser, false);
     }
 
     private void reload() {
@@ -99,17 +101,18 @@ public final class InMemoryConfigurationRuntime implements ConfigurationRuntime 
     }
 
     private void reparseAll() {
-        parsers.forEach(this::reparse);
+        parsers.forEach(parser -> reparse(parser, false));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void reparse(ConfigurationParser parser) {
+    private void reparse(ConfigurationParser parser, boolean forceApply) {
         Map<String, ConfigurationCenter.ConfigurationValue> snapshot = values.values().stream()
             .filter(value -> value.key().startsWith(parser.prefix()))
             .collect(Collectors.toUnmodifiableMap(ConfigurationCenter.ConfigurationValue::key, value -> value));
         try {
             Object result = Objects.requireNonNull(parser.parse(snapshot), "parsed configuration");
-            parser.apply(result);
+            if (forceApply || !initializedParsers.contains(parser.id()) || parser.refreshable()) parser.apply(result);
+            initializedParsers.add(parser.id());
             parsed.put(parser.id(), Objects.requireNonNull(parser.snapshot(result), "configuration snapshot"));
             parserErrors.remove(parser.id());
         } catch (RuntimeException exception) {

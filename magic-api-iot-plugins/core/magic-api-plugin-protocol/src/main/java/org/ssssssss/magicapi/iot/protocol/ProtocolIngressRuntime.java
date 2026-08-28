@@ -6,8 +6,11 @@ import org.ssssssss.magicapi.iot.core.model.DeviceMessage;
 import org.ssssssss.magicapi.iot.core.spi.DeviceMessageBus;
 import org.ssssssss.magicapi.iot.core.spi.TransportProvider;
 import org.ssssssss.magicapi.iot.core.spi.HandshakeCoordinator;
+import org.ssssssss.magicapi.iot.core.spi.TelemetryRecorder;
 
 import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,6 +21,7 @@ public final class ProtocolIngressRuntime implements SmartLifecycle, TransportPr
     private final DeviceMessageBus messageBus;
     private final List<TransportProvider> transports;
     private final HandshakeCoordinator handshakes;
+    private final TelemetryRecorder telemetry;
     private final AtomicBoolean running = new AtomicBoolean();
     private final AtomicLong activeConnections = new AtomicLong();
     private final AtomicLong receivedFrames = new AtomicLong();
@@ -33,15 +37,30 @@ public final class ProtocolIngressRuntime implements SmartLifecycle, TransportPr
                 return Decision.forward(context);
             }
             @Override public void disconnected(String connectionId) { }
+        }, new TelemetryRecorder() {
+            @Override public void increment(String metric, Map<String, String> tags) { }
+            @Override public void record(String metric, Duration duration, Map<String, String> tags) { }
+            @Override public long value(String metric, Map<String, String> tags) { return 0; }
         });
     }
 
     public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
                                   List<TransportProvider> transports, HandshakeCoordinator handshakes) {
+        this(pipelines, messageBus, transports, handshakes, new TelemetryRecorder() {
+            @Override public void increment(String metric, Map<String, String> tags) { }
+            @Override public void record(String metric, Duration duration, Map<String, String> tags) { }
+            @Override public long value(String metric, Map<String, String> tags) { return 0; }
+        });
+    }
+
+    public ProtocolIngressRuntime(ProtocolPipelineRegistry pipelines, DeviceMessageBus messageBus,
+                                  List<TransportProvider> transports, HandshakeCoordinator handshakes,
+                                  TelemetryRecorder telemetry) {
         this.pipelines = Objects.requireNonNull(pipelines, "pipelines");
         this.messageBus = Objects.requireNonNull(messageBus, "messageBus");
         this.transports = List.copyOf(transports);
         this.handshakes = Objects.requireNonNull(handshakes, "handshakes");
+        this.telemetry = Objects.requireNonNull(telemetry, "telemetry");
     }
 
     @Override
@@ -69,17 +88,23 @@ public final class ProtocolIngressRuntime implements SmartLifecycle, TransportPr
     @Override
     public void connected(String connectionId, ProtocolContext context) {
         activeConnections.incrementAndGet();
+        long started = System.nanoTime();
         try {
             handshakes.connected(connectionId, context);
+            telemetry.increment("iot.provider.calls", tags("handshake", context.transport(), "success"));
         } catch (RuntimeException exception) {
             errors.incrementAndGet();
+            telemetry.increment("iot.provider.calls", tags("handshake", context.transport(), "error"));
             transport(context.transport()).ifPresent(transport -> transport.disconnect(connectionId));
+        } finally {
+            telemetry.record("iot.provider.latency", elapsed(started), tags("handshake", context.transport(), "done"));
         }
     }
 
     @Override
     public void received(String connectionId, ByteBuffer payload, ProtocolContext context) {
         receivedFrames.incrementAndGet();
+        long started = System.nanoTime();
         try {
             HandshakeCoordinator.Decision decision = handshakes.received(connectionId, payload.asReadOnlyBuffer(), context);
             if (decision.response().hasRemaining())
@@ -98,20 +123,30 @@ public final class ProtocolIngressRuntime implements SmartLifecycle, TransportPr
             pipeline.orElseThrow().decode(payload.asReadOnlyBuffer(), effectiveContext).forEach(message -> {
                 messageBus.publish(message);
                 publishedMessages.incrementAndGet();
+                telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "success"));
             });
+            telemetry.increment("iot.provider.calls", tags("protocol", effectiveContext.transport(), "success"));
         } catch (RuntimeException exception) {
             errors.incrementAndGet();
+            telemetry.increment("iot.provider.calls", tags("protocol", context.transport(), "error"));
+        } finally {
+            telemetry.record("iot.provider.latency", elapsed(started), tags("protocol", context.transport(), "done"));
         }
     }
 
     @Override
     public void received(String connectionId, DeviceMessage message, ProtocolContext context) {
         receivedFrames.incrementAndGet();
+        long started = System.nanoTime();
         try {
             messageBus.publish(message);
             publishedMessages.incrementAndGet();
+            telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "success"));
         } catch (RuntimeException exception) {
             errors.incrementAndGet();
+            telemetry.increment("iot.provider.calls", tags("message-bus", context.transport(), "error"));
+        } finally {
+            telemetry.record("iot.provider.latency", elapsed(started), tags("message-bus", context.transport(), "done"));
         }
     }
 
@@ -134,5 +169,14 @@ public final class ProtocolIngressRuntime implements SmartLifecycle, TransportPr
 
     private java.util.Optional<TransportProvider> transport(String transportId) {
         return transports.stream().filter(transport -> transport.transportId().equals(transportId)).findFirst();
+    }
+
+    private static Duration elapsed(long started) {
+        return Duration.ofNanos(System.nanoTime() - started);
+    }
+
+    private static Map<String, String> tags(String provider, String transport, String status) {
+        return Map.of("provider", provider == null ? "unknown" : provider,
+            "transport", transport == null ? "unknown" : transport, "status", status);
     }
 }

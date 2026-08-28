@@ -23,6 +23,11 @@ public class RedisDeviceRegistryAutoConfiguration {
 	}
 
 	@Bean
+	RedisDeviceIndexMaintenance redisDeviceIndexMaintenance(StringRedisTemplate redis, ObjectMapper mapper) {
+		return new RedisDeviceIndexMaintenance(redis, mapper);
+	}
+
+	@Bean
 	ProviderHealthIndicator redisDeviceRegistryHealth(StringRedisTemplate redis,
 			org.springframework.core.env.Environment environment) {
 		return new ProbeProviderHealthIndicator("device-registry", "redis", cacheTtl(environment),

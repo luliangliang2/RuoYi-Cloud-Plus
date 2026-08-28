@@ -49,8 +49,11 @@ public class RedisDeviceRegistry implements DeviceRegistry, DeviceRegistryAdmin 
 	@Override
 	public RegisteredDevice save(RegisteredDevice device) {
 		try {
+			String oldProduct = find(device.identity()).map(existing -> existing.identity().productId()).orElse(null);
 			redis.opsForValue().set(key(device.identity()), mapper.writeValueAsString(device));
 			redis.opsForSet().add(allDevicesIndex(), device.identity().routingKey());
+			if (oldProduct != null && !oldProduct.equals(device.identity().productId()))
+				redis.opsForSet().remove(productIndex(oldProduct), device.identity().routingKey());
 			redis.opsForSet().add(productIndex(device.identity().productId()), device.identity().routingKey());
 			return device;
 		} catch (Exception e) {
